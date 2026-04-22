@@ -49,4 +49,18 @@ export const listsAPI = {
     api.post(`/api/clients/${workspaceId}/subscriber-lists`, data),
 }
 
+export const brandingAPI = {
+  get: (workspaceId) =>
+    api.get(`/api/clients/${workspaceId}/branding`),
+  update: (workspaceId, data) =>
+    api.put(`/api/clients/${workspaceId}/branding`, data),
+}
+
+export const automationsAPI = {
+  list: (workspaceId, params) =>
+    api.get(`/api/clients/${workspaceId}/automations`, { params }),
+  create: (workspaceId, data) =>
+    api.post(`/api/clients/${workspaceId}/automations`, data),
+}
+
 export default api
