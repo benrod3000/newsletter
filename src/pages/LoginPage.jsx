@@ -31,19 +31,19 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0d] px-6 py-10 text-white">
-      <div className="w-full max-w-xl">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0d] px-5 py-10 text-white sm:px-6">
+      <div className="w-full max-w-lg">
         <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-amber-400">
           Client Portal
         </p>
 
-        <h1 className="text-5xl font-bold leading-tight tracking-tight text-white sm:text-6xl">
+        <h1 className="text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl">
           Access{' '}
           <span className="text-amber-400">→</span>{' '}
           Workspace
         </h1>
 
-        <p className="mt-5 text-lg leading-relaxed text-zinc-400">
+        <p className="mt-4 max-w-md text-base leading-relaxed text-zinc-400 sm:text-lg">
           Log in to manage subscribers, campaigns, branding, and automations.
           <br />
           Built for agencies and high-performance teams.
@@ -51,7 +51,7 @@ export default function LoginPage() {
 
         <div className="my-8 h-px w-16 bg-zinc-700" />
 
-        <div className="mx-auto w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900/70 p-5 shadow-2xl shadow-black/35 backdrop-blur-sm">
+        <div className="mx-auto w-full max-w-sm rounded-xl border border-zinc-800 bg-zinc-900/70 p-5 shadow-2xl shadow-black/35 backdrop-blur-sm sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-3">
             {error && (
               <div className="rounded-lg border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-400">
