@@ -2,130 +2,54 @@ import { Link } from 'react-router-dom'
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#0d0d0d] px-5 text-white sm:px-6">
-      {/* Navigation */}
-      <nav className="py-6">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <div className="text-xl font-bold">📬 Newsletter Elite</div>
-          <div className="space-x-4">
-            <Link to="/demo" className="text-zinc-400 hover:text-white">
-              Demo
-            </Link>
-            <Link
-              to="/login"
-              className="bg-amber-500 text-black px-4 py-2 rounded-lg font-semibold hover:bg-amber-400"
-            >
-              Login
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <div className="mx-auto max-w-2xl py-12 sm:py-16">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0d] px-6 text-white">
+      <div className="w-full max-w-xl">
         <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-amber-400">
-          Client Platform
+          Newsletter Elite
         </p>
-        <h1 className="mb-5 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-          White-Label Newsletter Platform
+
+        <h1 className="text-5xl font-bold leading-tight tracking-tight text-white sm:text-6xl">
+          White-Label{' '}
+          <span className="text-amber-400">→</span>{' '}
+          Control
         </h1>
-        <p className="mb-8 max-w-xl text-base leading-relaxed text-zinc-400 sm:text-lg">
-          Give your clients a professional email marketing dashboard. Manage subscribers,
-          run campaigns, track analytics — all with your branding.
+
+        <p className="mt-5 text-lg leading-relaxed text-zinc-400">
+          Give your clients a professional email marketing dashboard.
+          <br />
+          Subscribers, campaigns, analytics, and branding in one place.
         </p>
 
-        <div className="mb-8 h-px w-16 bg-zinc-700" />
+        <div className="my-8 h-px w-16 bg-zinc-700" />
 
-        <div className="flex flex-col items-start gap-3 sm:flex-row">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <Link
             to="/login"
-            className="inline-block bg-amber-500 text-black px-8 py-3 rounded-lg font-bold hover:bg-amber-400 transition"
+            className="rounded-lg bg-amber-400 px-6 py-3 text-sm font-bold text-black transition hover:bg-amber-300"
           >
-            Get Started
+            Login
           </Link>
           <Link
             to="/demo"
-            className="inline-block border border-zinc-700 text-zinc-200 px-8 py-3 rounded-lg font-bold hover:border-zinc-600 transition"
+            className="rounded-lg border border-zinc-700 px-6 py-3 text-sm font-bold text-zinc-200 transition hover:border-zinc-600"
           >
             View Demo
           </Link>
         </div>
-      </div>
 
-      {/* Features Section */}
-      <div className="mx-auto max-w-3xl py-12 sm:py-16">
-        <h2 className="mb-8 text-3xl font-bold">
-          Features Your Clients Will Love
-        </h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-            <div className="text-3xl mb-3">👥</div>
-            <h3 className="font-bold mb-2">Subscriber Management</h3>
-            <p className="text-zinc-400">
-              Import, organize, and segment your audience with powerful list tools.
-            </p>
-          </div>
-
-          <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-            <div className="text-3xl mb-3">✉️</div>
-            <h3 className="font-bold mb-2">Campaign Builder</h3>
-            <p className="text-zinc-400">
-              Drag-and-drop campaign editor with HTML support and performance tracking.
-            </p>
-          </div>
-
-          <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-            <div className="text-3xl mb-3">📊</div>
-            <h3 className="font-bold mb-2">Real-Time Analytics</h3>
-            <p className="text-zinc-400">
-              Track opens, clicks, geographic data, and subscriber engagement.
-            </p>
-          </div>
-
-          <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-            <div className="text-3xl mb-3">🔒</div>
-            <h3 className="font-bold mb-2">GDPR Compliant</h3>
-            <p className="text-zinc-400">
-              Built-in consent management, DSAR support, and privacy controls.
-            </p>
-          </div>
-
-          <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-            <div className="text-3xl mb-3">🌍</div>
-            <h3 className="font-bold mb-2">Geo-Targeting</h3>
-            <p className="text-zinc-400">
-              Segment audiences by location for hyper-targeted campaigns.
-            </p>
-          </div>
-
-          <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-            <div className="text-3xl mb-3">🎨</div>
-            <h3 className="font-bold mb-2">White-Label Ready</h3>
-            <p className="text-zinc-400">
-              Custom branding, domains, and sender identities for each workspace.
-            </p>
-          </div>
+        <div className="mt-8 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-4">
+          <p className="text-sm text-zinc-300">Built for agencies and operators who need:</p>
+          <ul className="mt-3 space-y-2 text-sm text-zinc-400">
+            <li>Subscriber and list management</li>
+            <li>Campaign sending and analytics</li>
+            <li>Branding and automation controls</li>
+          </ul>
         </div>
-      </div>
 
-      {/* CTA Section */}
-      <div className="mx-auto max-w-xl border-t border-zinc-800 py-12 sm:py-16">
-        <h2 className="mb-4 text-3xl font-bold">Ready to get started?</h2>
-        <p className="mb-8 text-zinc-400">
-          Create an account or log in to your workspace.
+        <p className="mt-6 text-xs text-zinc-600">
+          Demo available. Login required for workspace access.
         </p>
-        <Link
-          to="/login"
-          className="inline-block rounded-lg bg-amber-500 px-8 py-3 font-bold text-black transition hover:bg-amber-400"
-        >
-          Login to Dashboard
-        </Link>
       </div>
-
-      {/* Footer */}
-      <footer className="mx-auto max-w-3xl border-t border-zinc-800 py-6 text-zinc-600">
-        <p>&copy; 2024 Newsletter Elite. All rights reserved.</p>
-      </footer>
-    </div>
+    </main>
   )
 }
