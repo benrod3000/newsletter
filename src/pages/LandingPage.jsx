@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom'
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0d0d0d] to-[#1a1a1a] text-white px-6">
+    <div className="min-h-screen bg-gradient-to-b from-[#0d0d0d] to-[#1a1a1a] px-6 text-white">
       {/* Navigation */}
       <nav className="border-b border-zinc-800 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="text-xl font-bold">📬 Newsletter Elite</div>
           <div className="space-x-4">
             <Link to="/demo" className="text-zinc-400 hover:text-white">
@@ -22,11 +22,11 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <div className="max-w-5xl mx-auto py-20 text-center">
-        <h1 className="text-6xl font-bold mb-6">
+      <div className="mx-auto max-w-3xl py-20 text-center">
+        <h1 className="mb-6 text-5xl font-bold leading-tight sm:text-6xl">
           White-Label Newsletter Platform
         </h1>
-        <p className="text-xl text-zinc-400 mb-10 leading-relaxed">
+        <p className="mb-10 text-lg leading-relaxed text-zinc-400 sm:text-xl">
           Give your clients a professional email marketing dashboard. Manage subscribers,
           run campaigns, track analytics — all with your branding.
         </p>
@@ -48,7 +48,7 @@ export default function LandingPage() {
       </div>
 
       {/* Features Section */}
-      <div className="max-w-5xl mx-auto py-20">
+      <div className="mx-auto max-w-4xl py-20">
         <h2 className="text-3xl font-bold mb-10 text-center">
           Features Your Clients Will Love
         </h2>
@@ -104,7 +104,7 @@ export default function LandingPage() {
       </div>
 
       {/* CTA Section */}
-      <div className="max-w-3xl mx-auto py-20 text-center border-t border-zinc-800">
+      <div className="mx-auto max-w-2xl border-t border-zinc-800 py-20 text-center">
         <h2 className="text-3xl font-bold mb-4">Ready to get started?</h2>
         <p className="text-zinc-400 mb-8">
           Create an account or log in to your workspace.
