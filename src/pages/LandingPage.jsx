@@ -2,10 +2,10 @@ import { Link } from 'react-router-dom'
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0d0d0d] to-[#1a1a1a] px-5 text-white sm:px-6">
+    <div className="min-h-screen bg-[#0d0d0d] px-5 text-white sm:px-6">
       {/* Navigation */}
-      <nav className="border-b border-zinc-800 py-4">
-        <div className="mx-auto flex max-w-4xl items-center justify-between">
+      <nav className="py-6">
+        <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div className="text-xl font-bold">📬 Newsletter Elite</div>
           <div className="space-x-4">
             <Link to="/demo" className="text-zinc-400 hover:text-white">
@@ -22,16 +22,21 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <div className="mx-auto max-w-2xl py-16 text-center sm:py-20">
+      <div className="mx-auto max-w-2xl py-12 sm:py-16">
+        <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-amber-400">
+          Client Platform
+        </p>
         <h1 className="mb-5 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
           White-Label Newsletter Platform
         </h1>
-        <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-zinc-400 sm:text-lg">
+        <p className="mb-8 max-w-xl text-base leading-relaxed text-zinc-400 sm:text-lg">
           Give your clients a professional email marketing dashboard. Manage subscribers,
           run campaigns, track analytics — all with your branding.
         </p>
 
-        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <div className="mb-8 h-px w-16 bg-zinc-700" />
+
+        <div className="flex flex-col items-start gap-3 sm:flex-row">
           <Link
             to="/login"
             className="inline-block bg-amber-500 text-black px-8 py-3 rounded-lg font-bold hover:bg-amber-400 transition"
@@ -48,11 +53,11 @@ export default function LandingPage() {
       </div>
 
       {/* Features Section */}
-      <div className="mx-auto max-w-3xl py-16 sm:py-20">
-        <h2 className="mb-8 text-center text-3xl font-bold">
+      <div className="mx-auto max-w-3xl py-12 sm:py-16">
+        <h2 className="mb-8 text-3xl font-bold">
           Features Your Clients Will Love
         </h2>
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
             <div className="text-3xl mb-3">👥</div>
             <h3 className="font-bold mb-2">Subscriber Management</h3>
@@ -104,21 +109,21 @@ export default function LandingPage() {
       </div>
 
       {/* CTA Section */}
-      <div className="mx-auto max-w-xl border-t border-zinc-800 py-16 text-center sm:py-20">
-        <h2 className="text-3xl font-bold mb-4">Ready to get started?</h2>
-        <p className="text-zinc-400 mb-8">
+      <div className="mx-auto max-w-xl border-t border-zinc-800 py-12 sm:py-16">
+        <h2 className="mb-4 text-3xl font-bold">Ready to get started?</h2>
+        <p className="mb-8 text-zinc-400">
           Create an account or log in to your workspace.
         </p>
         <Link
           to="/login"
-          className="inline-block bg-amber-500 text-black px-8 py-3 rounded-lg font-bold hover:bg-amber-400 transition"
+          className="inline-block rounded-lg bg-amber-500 px-8 py-3 font-bold text-black transition hover:bg-amber-400"
         >
           Login to Dashboard
         </Link>
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-800 py-6 text-center text-zinc-600">
+      <footer className="mx-auto max-w-3xl border-t border-zinc-800 py-6 text-zinc-600">
         <p>&copy; 2024 Newsletter Elite. All rights reserved.</p>
       </footer>
     </div>
