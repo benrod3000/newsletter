@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom'
 
 export default function LandingPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0d] px-6 text-white">
-      <div className="w-full max-w-xl">
+    <main className="editorial-shell bg-[#0d0d0d] text-white">
+      <div className="editorial-column">
         <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-amber-400">
           Newsletter Elite
         </p>
@@ -14,7 +14,7 @@ export default function LandingPage() {
           Control
         </h1>
 
-        <p className="mt-5 text-lg leading-relaxed text-zinc-400">
+        <p className="editorial-copy mt-5 text-lg leading-relaxed text-zinc-400">
           Give your clients a professional email marketing dashboard.
           <br />
           Subscribers, campaigns, analytics, and branding in one place.
@@ -22,22 +22,22 @@ export default function LandingPage() {
 
         <div className="my-8 h-px w-16 bg-zinc-700" />
 
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="editorial-actions">
           <Link
             to="/login"
-            className="rounded-lg bg-amber-400 px-6 py-3 text-center text-sm font-bold text-black transition hover:bg-amber-300"
+            className="editorial-button"
           >
             Login
           </Link>
           <Link
             to="/demo"
-            className="rounded-lg border border-zinc-700 px-6 py-3 text-center text-sm font-bold text-zinc-200 transition hover:border-zinc-600"
+            className="editorial-button-secondary"
           >
             View Demo
           </Link>
         </div>
 
-        <div className="mt-8">
+        <div className="editorial-copy mt-8">
           <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
             Built for agencies and operators who need
           </p>
