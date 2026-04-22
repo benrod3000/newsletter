@@ -31,7 +31,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0d] px-6 text-white">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0d] px-6 py-10 text-white">
       <div className="w-full max-w-xl">
         <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-amber-400">
           Client Portal
@@ -51,55 +51,57 @@ export default function LoginPage() {
 
         <div className="my-8 h-px w-16 bg-zinc-700" />
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          {error && (
-            <div className="rounded-lg border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-400">
-              {error}
-            </div>
-          )}
+        <div className="mx-auto w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900/70 p-5 shadow-2xl shadow-black/35 backdrop-blur-sm">
+          <form onSubmit={handleSubmit} className="space-y-3">
+            {error && (
+              <div className="rounded-lg border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-400">
+                {error}
+              </div>
+            )}
 
-          <label htmlFor="email" className="sr-only">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
-            required
-          />
+            <label htmlFor="email" className="sr-only">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              required
+            />
 
-          <label htmlFor="password" className="sr-only">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
-            required
-          />
+            <label htmlFor="password" className="sr-only">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              required
+            />
 
-          <input
-            type="text"
-            value={workspaceId}
-            onChange={(e) => setWorkspaceId(e.target.value)}
-            placeholder="Workspace ID (optional)"
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-zinc-200 placeholder-zinc-500 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
-          />
+            <input
+              type="text"
+              value={workspaceId}
+              onChange={(e) => setWorkspaceId(e.target.value)}
+              placeholder="Workspace ID (optional)"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-zinc-200 placeholder-zinc-500 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+            />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-amber-400 px-6 py-3 text-sm font-bold text-black transition hover:bg-amber-300 active:scale-95 disabled:opacity-60"
-          >
-            {loading ? 'Logging in…' : 'Log In'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-amber-400 px-6 py-3 text-sm font-bold text-black transition hover:bg-amber-300 active:scale-95 disabled:opacity-60"
+            >
+              {loading ? 'Logging in…' : 'Log In'}
+            </button>
+          </form>
+        </div>
 
         <p className="mt-6 text-xs text-zinc-600">
           Need access?{' '}
