@@ -3,18 +3,18 @@ import { Link } from 'react-router-dom'
 export default function LandingPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0d] px-6 text-white">
-      <div className="w-full max-w-xl">
+      <div className="w-full max-w-lg">
         <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-amber-400">
           Newsletter Elite
         </p>
 
-        <h1 className="text-5xl font-bold leading-tight tracking-tight text-white sm:text-6xl">
+        <h1 className="max-w-md text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl">
           White-Label{' '}
           <span className="text-amber-400">→</span>{' '}
           Control
         </h1>
 
-        <p className="mt-5 text-lg leading-relaxed text-zinc-400">
+        <p className="mt-5 max-w-md text-base leading-relaxed text-zinc-400 sm:text-lg">
           Give your clients a professional email marketing dashboard.
           <br />
           Subscribers, campaigns, analytics, and branding in one place.
@@ -37,7 +37,7 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        <div className="mt-8 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-4">
+        <div className="mt-8 max-w-md rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-4">
           <p className="text-sm text-zinc-300">Built for agencies and operators who need:</p>
           <ul className="mt-3 space-y-2 text-sm text-zinc-400">
             <li>Subscriber and list management</li>

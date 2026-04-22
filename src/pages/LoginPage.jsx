@@ -32,18 +32,18 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-[#0d0d0d] px-5 py-10 text-white sm:px-6">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-sm">
         <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-amber-400">
           Client Portal
         </p>
 
-        <h1 className="text-4xl font-bold leading-tight tracking-tight text-white">
+        <h1 className="max-w-xs text-4xl font-bold leading-tight tracking-tight text-white">
           Access{' '}
           <span className="text-amber-400">→</span>{' '}
           Workspace
         </h1>
 
-        <p className="mt-4 max-w-sm text-base leading-relaxed text-zinc-400">
+        <p className="mt-4 max-w-xs text-sm leading-relaxed text-zinc-400 sm:text-base">
           Log in to manage subscribers, campaigns, branding, and automations.
           <br />
           Built for agencies and high-performance teams.
