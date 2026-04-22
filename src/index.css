@@ -121,6 +121,15 @@ body {
   color: #f87171;
 }
 
+.editorial-meta {
+  max-width: 32rem;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #71717a;
+}
+
 @media (min-width: 640px) {
   .editorial-actions {
     width: auto;
