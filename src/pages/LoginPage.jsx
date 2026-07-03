@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authAPI } from '../lib/api'
 
@@ -36,7 +36,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-            Client Portal
+            Veloce
           </p>
 
           <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">
