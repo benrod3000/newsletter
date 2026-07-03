@@ -1,8 +1,18 @@
 import { Link } from 'react-router-dom'
+import { useRef } from 'react'
+import { useReveal } from '../App'
 
 export default function LandingPage() {
+  const ref = useRef(null)
+
+  useReveal(ref, {
+    y: 14,
+    duration: 0.7,
+    stagger: 0.08,
+  })
+
   return (
-    <main className="min-h-screen bg-black text-white px-6 py-20">
+    <main ref={ref} className="min-h-screen bg-black text-white px-6 py-20">
       <div className="max-w-2xl mx-auto space-y-10">
         <div className="space-y-4">
           <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
