@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-// Brutalist UI primitives (temporary inline system layer)
+// Brutalist UI primitives (inline system layer)
 function Panel({ children, className = '' }) {
   return (
     <div className={`border border-zinc-800 bg-black text-white ${className}`}>
@@ -115,7 +115,7 @@ export default function DemoPage() {
       <div className="max-w-5xl mx-auto space-y-10">
 
         <PageHeader
-          title="Client Portal"
+          title="Veloce"
           subtitle="Interactive workspace demo with campaigns, subscribers, and performance data"
         />
 
