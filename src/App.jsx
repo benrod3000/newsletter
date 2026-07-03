@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
+import { useEffect, useRef } from 'react'
+import gsap from 'gsap'
 import './App.css'
 
 // Pages
@@ -13,6 +15,58 @@ import ListsPage from './pages/Dashboard/Lists'
 import AnalyticsPage from './pages/Dashboard/Analytics'
 import SettingsPage from './pages/Dashboard/Settings'
 import DemoPage from './pages/Demo'
+
+// -----------------------------
+// Veloce Motion System (GSAP)
+// -----------------------------
+
+export function useReveal(ref, options = {}) {
+  const {
+    y = 12,
+    duration = 0.6,
+    delay = 0,
+    stagger = 0.06,
+    opacity = 0,
+  } = options
+
+  useEffect(() => {
+    if (!ref?.current) return
+
+    const elements = ref.current.children
+
+    gsap.fromTo(
+      elements,
+      {
+        opacity,
+        y,
+      },
+      {
+        opacity: 1,
+        y: 0,
+        duration,
+        delay,
+        stagger,
+        ease: 'power2.out',
+      }
+    )
+  }, [ref])
+}
+
+export function PageTransition({ children }) {
+  const ref = useRef(null)
+
+  useEffect(() => {
+    if (!ref.current) return
+
+    gsap.fromTo(
+      ref.current,
+      { opacity: 0, y: 10 },
+      { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
+    )
+  }, [])
+
+  return <div ref={ref}>{children}</div>
+}
 
 function PublicLayout({ children }) {
   return (
