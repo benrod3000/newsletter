@@ -14,6 +14,16 @@ import AnalyticsPage from './pages/Dashboard/Analytics'
 import SettingsPage from './pages/Dashboard/Settings'
 import DemoPage from './pages/Demo'
 
+function PublicLayout({ children }) {
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        {children}
+      </div>
+    </div>
+  )
+}
+
 // Protected Route Component
 function ProtectedRoute({ children }) {
   const token = useAuthStore((state) => state.token)
@@ -30,10 +40,33 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/demo" element={<DemoPage />} />
-        
+        <Route
+          path="/"
+          element={
+            <PublicLayout>
+              <LandingPage />
+            </PublicLayout>
+          }
+        />
+
+        <Route
+          path="/login"
+          element={
+            <PublicLayout>
+              <LoginPage />
+            </PublicLayout>
+          }
+        />
+
+        <Route
+          path="/demo"
+          element={
+            <PublicLayout>
+              <DemoPage />
+            </PublicLayout>
+          }
+        />
+
         {/* Protected Dashboard Routes */}
         <Route
           path="/dashboard"
@@ -50,7 +83,7 @@ function App() {
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
-        
+
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -59,4 +92,3 @@ function App() {
 }
 
 export default App
-
