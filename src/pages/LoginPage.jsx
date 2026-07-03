@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [workspaceId, setWorkspaceId] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
   const navigate = useNavigate()
   const setAuth = useAuthStore((state) => state.setAuth)
 
@@ -24,93 +25,85 @@ export default function LoginPage() {
       setAuth(token, wId, userEmail, role)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.')
+      setError(err.response?.data?.error || 'Login failed. Try again.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <main className="editorial-shell bg-[#0d0d0d] text-white">
-      <div className="editorial-column">
-        <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-amber-400">
-          Client Portal
-        </p>
+    <main className="min-h-screen bg-black text-white flex items-center justify-center px-6">
+      <div className="w-full max-w-md space-y-8">
+        <div className="space-y-3">
+          <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+            Client Portal
+          </p>
 
-        <h1 className="text-5xl font-bold leading-tight tracking-tight text-white sm:text-6xl">
-          Access{' '}
-          <span className="text-amber-400">→</span>{' '}
-          Workspace
-        </h1>
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">
+            Access
+            <span className="block text-zinc-400">Workspace</span>
+          </h1>
 
-        <p className="editorial-copy mt-5 text-lg leading-relaxed text-zinc-400">
-          Log in to manage subscribers, campaigns, branding, and automations.
-          <br />
-          Built for agencies and high-performance teams.
-        </p>
+          <p className="text-sm text-zinc-400 leading-relaxed">
+            Login to manage subscribers, campaigns, automations, and branding.
+          </p>
+        </div>
 
-        <div className="my-8 h-px w-16 bg-zinc-700" />
+        <div className="h-px w-16 bg-zinc-800" />
 
-        <form onSubmit={handleSubmit} className="editorial-form space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <p className="editorial-error">
+            <div className="text-xs border border-zinc-800 p-2 text-zinc-400">
               {error}
-            </p>
+            </div>
           )}
 
-          <label htmlFor="email" className="editorial-label">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="editorial-input"
-            required
-          />
+          <div className="space-y-1">
+            <label className="text-xs uppercase tracking-wide text-zinc-500">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-black border border-zinc-800 px-3 py-2 text-sm focus:outline-none focus:border-white"
+              placeholder="you@example.com"
+              required
+            />
+          </div>
 
-          <label htmlFor="password" className="editorial-label">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            className="editorial-input"
-            required
-          />
+          <div className="space-y-1">
+            <label className="text-xs uppercase tracking-wide text-zinc-500">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-black border border-zinc-800 px-3 py-2 text-sm focus:outline-none focus:border-white"
+              placeholder="••••••••"
+              required
+            />
+          </div>
 
-          <label htmlFor="workspaceId" className="editorial-label">
-            Workspace ID
-          </label>
-          <input
-            id="workspaceId"
-            type="text"
-            value={workspaceId}
-            onChange={(e) => setWorkspaceId(e.target.value)}
-            placeholder="Optional"
-            className="editorial-input"
-          />
+          <div className="space-y-1">
+            <label className="text-xs uppercase tracking-wide text-zinc-500">Workspace ID</label>
+            <input
+              type="text"
+              value={workspaceId}
+              onChange={(e) => setWorkspaceId(e.target.value)}
+              className="w-full bg-black border border-zinc-800 px-3 py-2 text-sm focus:outline-none focus:border-white"
+              placeholder="optional"
+            />
+          </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="editorial-button"
+            className="w-full border border-zinc-700 py-2 text-sm uppercase tracking-wide hover:border-white transition"
           >
-            {loading ? 'Logging in…' : 'Log In'}
+            {loading ? 'Authenticating...' : 'Login'}
           </button>
         </form>
 
-        <p className="mt-6 text-xs text-zinc-600">
-          Need access?{' '}
-          <Link to="/" className="editorial-text-link">
-            Contact your administrator
-          </Link>
-          .
+        <p className="text-xs text-zinc-600">
+          Minimal system interface. No marketing gloss.
         </p>
       </div>
     </main>
