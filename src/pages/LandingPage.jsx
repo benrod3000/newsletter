@@ -2,48 +2,46 @@ import { Link } from 'react-router-dom'
 
 export default function LandingPage() {
   return (
-    <main className="editorial-shell bg-[#0d0d0d] text-white">
-      <div className="editorial-column">
-        <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-amber-400">
-          Newsletter Elite
-        </p>
+    <main className="min-h-screen bg-black text-white px-6 py-20">
+      <div className="max-w-2xl mx-auto space-y-10">
+        <div className="space-y-4">
+          <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+            Newsletter System
+          </p>
 
-        <h1 className="text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl">
-          White-Label{' '}
-          <span className="text-amber-400">→</span>{' '}
-          Control
-        </h1>
+          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
+            White-Label
+            <span className="block text-zinc-400">Control Layer</span>
+          </h1>
 
-        <p className="editorial-copy mt-4 text-base leading-relaxed text-zinc-400 sm:text-lg">
-          Give your clients a professional email marketing dashboard.
-          <br />
-          Subscribers, campaigns, analytics, and branding in one place.
-        </p>
+          <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
+            Manage subscribers, campaigns, automations, and branding in a single workspace.
+            Built for multi-tenant systems that need clarity over decoration.
+          </p>
+        </div>
 
-        <div className="my-8 h-px w-16 bg-zinc-700" />
+        <div className="h-px w-16 bg-zinc-800" />
 
-        <div className="editorial-actions">
+        <div className="flex gap-3">
           <Link
             to="/login"
-            className="editorial-button"
+            className="px-4 py-2 border border-zinc-700 text-sm uppercase tracking-wide hover:border-white transition"
           >
             Login
           </Link>
+
           <Link
             to="/demo"
-            className="editorial-button-secondary"
+            className="px-4 py-2 border border-zinc-800 text-sm uppercase tracking-wide text-zinc-400 hover:text-white hover:border-zinc-600 transition"
           >
-            View Demo
+            Demo
           </Link>
         </div>
 
-        <p className="editorial-meta mt-7">
-          Subscriber management / Campaign delivery / Analytics / Branding controls
-        </p>
-
-        <p className="mt-6 text-xs text-zinc-600">
-          Demo available. Login required for workspace access.
-        </p>
+        <div className="pt-10 space-y-2 text-xs text-zinc-600 uppercase tracking-wide">
+          <p>Subscribers / Campaigns / Analytics / Automations</p>
+          <p>Workspace isolated architecture</p>
+        </div>
       </div>
     </main>
   )
