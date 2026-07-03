@@ -1,10 +1,19 @@
 import { useAuthStore } from '../../stores/authStore'
+import { useRef } from 'react'
+import { useReveal } from '../../App'
 
 export default function DashboardHome() {
   const { email, workspaceId } = useAuthStore()
+  const ref = useRef(null)
+
+  useReveal(ref, {
+    y: 10,
+    duration: 0.6,
+    stagger: 0.06,
+  })
 
   return (
-    <div>
+    <div ref={ref}>
       <h2 className="text-3xl font-bold mb-6">Dashboard</h2>
       
       <div className="grid md:grid-cols-4 gap-4 mb-10">
