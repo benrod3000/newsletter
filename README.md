@@ -1,76 +1,167 @@
 # Newsletter - Client Portal
 
-A modern, white-label email marketing client portal built with React and Vite. Manage subscribers, campaigns, automations, and branding for your email marketing platform.
+A client portal for managing email marketing campaigns, subscribers, and automations.
+
+Built with React and Vite as a multi-tenant dashboard for a white-label email platform.
+
+---
+
+## What this is
+
+This is the frontend for a newsletter/email marketing system. It lets clients log in, manage their workspace, and handle things like:
+
+- subscribers
+- campaigns
+- automations
+- branding
+
+Each workspace is isolated so data stays separate between clients.
+
+---
 
 ## Features
 
-- 📧 **Subscriber Management** - Add, segment, and manage email lists
-- 📬 **Campaign Dashboard** - Monitor open rates, click rates, and campaign performance
-- 🤖 **Workflow Automation** - Set up trigger-based automations (subscriber joins, lead magnet claims, location changes, scheduled actions)
-- 🎨 **White-Label Branding** - Customize logos, colors, domain names, and sender information
-- 🔐 **Multi-Tenant Workspace Isolation** - Role-based access control (owner, editor, viewer)
-- 📊 **Analytics & Reporting** - Real-time campaign metrics and subscriber insights
-- 🌙 **Dark Mode** - Native dark/light theme support with Tailwind CSS
+- Subscriber management (lists, segments, imports)
+- Campaign dashboard (open/click tracking, performance overview)
+- Automation workflows (trigger-based email actions)
+- White-label branding (logos, colors, sender info, domains)
+- Multi-tenant workspace isolation (role-based access: owner/editor/viewer)
+- Analytics dashboard (campaign + subscriber insights)
+- Dark mode support
+
+---
 
 ## Tech Stack
 
-- **Frontend Framework**: React 19.2.4
-- **Build Tool**: Vite 8.0.4
-- **State Management**: Zustand (auth) + localStorage persistence
-- **HTTP Client**: Axios with JWT interceptors
-- **UI Framework**: Tailwind CSS with custom dark theme
-- **Routing**: React Router v6
-- **Build Time**: 259ms
-- **Bundle Size**: 304KB unminified → 96KB gzipped
+- React 19
+- Vite
+- Tailwind CSS
+- Zustand (auth + workspace state)
+- Axios (API client with JWT handling)
+- React Router v6
 
-## Quick Start
+---
 
-### Prerequisites
-- Node.js 18+
-- npm or yarn
-- Environment variables configured
+## Performance Notes
 
-### Installation
+- Production bundle: ~96KB gzipped
+- Code-split routes for dashboard pages
+- Lazy-loaded views for performance
+- Auth state persisted in localStorage
+
+---
+
+## Project Structure
+
+```
+src/
+├── lib/               # API client (Axios + JWT handling)
+├── stores/            # Zustand state (auth + workspace)
+├── pages/
+│   ├── Dashboard/     # Main app views
+│   ├── Login.jsx
+│   ├── Landing.jsx
+│   ├── Demo.jsx
+│   └── Unsubscribe.jsx
+└── App.jsx
+```
+
+---
+
+## Authentication
+
+- JWT-based auth
+- 30-day token expiry
+- Persistent login via localStorage
+- Protected routes for authenticated users
+
+---
+
+## Workspaces
+
+Each client account is fully isolated:
+
+- workspace_id is embedded in JWT
+- API validates workspace on every request
+- database uses Row-Level Security (RLS)
+- UI context managed through Zustand
+
+No cross-workspace data access.
+
+---
+
+## API
+
+All requests go through `/api` with JWT authentication.
+
+Key endpoints:
+
+- `POST /api/auth/token`
+- `GET /api/auth/verify`
+- `/api/clients/:workspaceId/subscribers`
+- `/api/clients/:workspaceId/campaigns`
+- `/api/clients/:workspaceId/branding`
+- `/api/clients/:workspaceId/automations`
+
+Full API docs are available at `/api/docs` (OpenAPI).
+
+---
+
+## Running locally
 
 ```bash
 git clone https://github.com/benrod3000/newsletter.git
 cd newsletter
 npm install
-```
-
-### Environment Setup
-
-Create a `.env.local` file:
-
-```env
-VITE_API_URL=http://localhost:3000
-```
-
-### Development
-
-```bash
 npm run dev
 ```
 
-Runs on `http://localhost:5173`
+App runs at:
+```
+http://localhost:5173
+```
 
-### Production Build
+---
+
+## Build
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## Project Structure
+---
 
-```
-src/
-├── lib/
-│   └── api.js              # Axios client with JWT interceptors
-├── stores/
-│   └── authStore.js        # Zustand auth state management
-├── pages/
-│   ├── Dashboard/
+## Notes
+
+This project is still evolving. A lot of the structure is in place, but the focus right now is:
+
+- keeping the dashboard fast
+- keeping the state model simple
+- making multi-tenancy safe and predictable
+
+---
+
+## License
+
+MIT
+
+---
+
+## Support
+
+Issues and feature requests:
+https://github.com/benrod3000/newsletter/issues
+
+---
+
+## Related
+
+Backend API:
+https://github.com/benrod3000/newsletter-core
+
+Version: v1.0.0-beta
+Last updated: April 2026│   ├── Dashboard/
 │   │   ├── Home.jsx        # Main dashboard with metrics
 │   │   ├── Subscribers.jsx # Subscriber management
 │   │   ├── Campaigns.jsx   # Campaign management
