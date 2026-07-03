@@ -6,11 +6,11 @@ export default function LandingPage() {
       <div className="max-w-2xl mx-auto space-y-10">
         <div className="space-y-4">
           <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-            Newsletter System
+            Veloce
           </p>
 
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
-            White-Label
+            Veloce
             <span className="block text-zinc-400">Control Layer</span>
           </h1>
 
