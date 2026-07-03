@@ -1,6 +1,56 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
+// Brutalist UI primitives (temporary inline system layer)
+function Panel({ children, className = '' }) {
+  return (
+    <div className={`border border-zinc-800 bg-black text-white ${className}`}>
+      {children}
+    </div>
+  )
+}
+
+function MetricCard({ label, value }) {
+  return (
+    <div className="border border-zinc-800 p-3">
+      <p className="text-xs text-zinc-500 uppercase tracking-wide">
+        {label}
+      </p>
+      <p className="text-2xl font-semibold mt-2">
+        {value}
+      </p>
+    </div>
+  )
+}
+
+function PageHeader({ title, subtitle }) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          {title}
+        </h1>
+        {subtitle && (
+          <p className="text-sm text-zinc-400 mt-2">
+            {subtitle}
+          </p>
+        )}
+      </div>
+      <div className="h-px w-16 bg-zinc-800" />
+    </div>
+  )
+}
+
+function Table({ children }) {
+  return (
+    <div className="border border-zinc-800 overflow-x-auto">
+      <table className="w-full text-sm">
+        {children}
+      </table>
+    </div>
+  )
+}
+
 const mockCampaigns = [
   {
     id: '1',
@@ -63,49 +113,34 @@ export default function DemoPage() {
   return (
     <main className="min-h-screen bg-black text-white px-6 py-16">
       <div className="max-w-5xl mx-auto space-y-10">
-        {/* Header */}
-        <div className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-            Demo Workspace
-          </p>
 
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-            Client Portal
-            <span className="block text-zinc-400">Interactive Demo</span>
-          </h1>
+        <PageHeader
+          title="Client Portal"
+          subtitle="Interactive workspace demo with campaigns, subscribers, and performance data"
+        />
 
-          <p className="text-sm sm:text-base text-zinc-400 leading-relaxed">
-            Sample workspace showing campaigns, subscribers, and performance data.
-          </p>
-
-          <div className="h-px w-16 bg-zinc-800" />
-
-          <div className="flex gap-3">
-            <Link
-              to="/login"
-              className="px-4 py-2 border border-zinc-700 text-xs uppercase tracking-wide hover:border-white transition"
-            >
-              Login
-            </Link>
-            <Link
-              to="/"
-              className="px-4 py-2 border border-zinc-800 text-xs uppercase tracking-wide text-zinc-400 hover:text-white hover:border-zinc-600 transition"
-            >
-              Home
-            </Link>
-          </div>
+        <div className="flex gap-3">
+          <Link
+            to="/login"
+            className="px-4 py-2 border border-zinc-700 text-xs uppercase tracking-wide hover:border-white transition"
+          >
+            Login
+          </Link>
+          <Link
+            to="/"
+            className="px-4 py-2 border border-zinc-800 text-xs uppercase tracking-wide text-zinc-400 hover:text-white hover:border-zinc-600 transition"
+          >
+            Home
+          </Link>
         </div>
 
-        {/* Frame */}
-        <div className="border border-zinc-800">
-          {/* Topbar */}
+        <Panel>
           <div className="border-b border-zinc-800 px-4 py-3">
             <p className="text-sm font-semibold">Demo Workspace</p>
             <p className="text-xs text-zinc-500">View-only environment</p>
           </div>
 
           <div className="flex">
-            {/* Sidebar */}
             <aside className="w-56 border-r border-zinc-800">
               <nav className="p-3 space-y-1">
                 {navItems.map((item) => (
@@ -124,67 +159,47 @@ export default function DemoPage() {
               </nav>
             </aside>
 
-            {/* Content */}
             <div className="flex-1 p-6">
               {activeTab === 'dashboard' && (
                 <div className="space-y-6">
                   <h2 className="text-xl font-semibold">Dashboard</h2>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="border border-zinc-800 p-3">
-                      <p className="text-xs text-zinc-500 uppercase">Subscribers</p>
-                      <p className="text-2xl font-semibold mt-2">{totalSubscribers.toLocaleString()}</p>
-                    </div>
-                    <div className="border border-zinc-800 p-3">
-                      <p className="text-xs text-zinc-500 uppercase">Sent</p>
-                      <p className="text-2xl font-semibold mt-2">{totalSent.toLocaleString()}</p>
-                    </div>
-                    <div className="border border-zinc-800 p-3">
-                      <p className="text-xs text-zinc-500 uppercase">Open Rate</p>
-                      <p className="text-2xl font-semibold mt-2">{avgOpenRate}%</p>
-                    </div>
-                    <div className="border border-zinc-800 p-3">
-                      <p className="text-xs text-zinc-500 uppercase">Click Rate</p>
-                      <p className="text-2xl font-semibold mt-2">{avgClickRate}%</p>
-                    </div>
+                    <MetricCard label="Subscribers" value={totalSubscribers.toLocaleString()} />
+                    <MetricCard label="Sent" value={totalSent.toLocaleString()} />
+                    <MetricCard label="Open Rate" value={`${avgOpenRate}%`} />
+                    <MetricCard label="Click Rate" value={`${avgClickRate}%`} />
                   </div>
 
-                  <div className="border border-zinc-800">
-                    <div className="p-3 border-b border-zinc-800">
-                      <p className="text-sm font-semibold">Recent Campaigns</p>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead className="text-xs text-zinc-500 uppercase">
-                          <tr>
-                            <th className="text-left p-3">Campaign</th>
-                            <th className="text-right p-3">Sent</th>
-                            <th className="text-right p-3">Opens</th>
-                            <th className="text-right p-3">Clicks</th>
-                            <th className="text-right p-3">Open Rate</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {mockCampaigns.map((c) => (
-                            <tr key={c.id} className="border-t border-zinc-800">
-                              <td className="p-3">{c.name}</td>
-                              <td className="p-3 text-right">{c.sent.toLocaleString()}</td>
-                              <td className="p-3 text-right">{c.opened.toLocaleString()}</td>
-                              <td className="p-3 text-right">{c.clicked.toLocaleString()}</td>
-                              <td className="p-3 text-right">
-                                {((c.opened / c.sent) * 100).toFixed(1)}%
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                  <Table>
+                    <thead className="text-xs text-zinc-500 uppercase">
+                      <tr>
+                        <th className="text-left p-3">Campaign</th>
+                        <th className="text-right p-3">Sent</th>
+                        <th className="text-right p-3">Opens</th>
+                        <th className="text-right p-3">Clicks</th>
+                        <th className="text-right p-3">Open Rate</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mockCampaigns.map((c) => (
+                        <tr key={c.id} className="border-t border-zinc-800">
+                          <td className="p-3">{c.name}</td>
+                          <td className="p-3 text-right">{c.sent.toLocaleString()}</td>
+                          <td className="p-3 text-right">{c.opened.toLocaleString()}</td>
+                          <td className="p-3 text-right">{c.clicked.toLocaleString()}</td>
+                          <td className="p-3 text-right">
+                            {((c.opened / c.sent) * 100).toFixed(1)}%
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
                 </div>
               )}
 
               {activeTab !== 'dashboard' && (
-                <div className="border border-zinc-800 p-6">
+                <Panel className="p-6">
                   <p className="text-zinc-400">
                     {activeTab === 'campaigns' && 'Campaign management view'}
                     {activeTab === 'subscribers' && 'Subscriber database view'}
@@ -192,11 +207,11 @@ export default function DemoPage() {
                     {activeTab === 'analytics' && 'Performance analytics view'}
                     {activeTab === 'settings' && 'Workspace configuration view'}
                   </p>
-                </div>
+                </Panel>
               )}
             </div>
           </div>
-        </div>
+        </Panel>
       </div>
     </main>
   )
