@@ -3,19 +3,19 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 
 const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-  { path: '/dashboard/campaigns', label: 'Campaigns', icon: '✉️' },
-  { path: '/dashboard/subscribers', label: 'Subscribers', icon: '👥' },
-  { path: '/dashboard/lists', label: 'Lists', icon: '📋' },
-  { path: '/dashboard/analytics', label: 'Analytics', icon: '📈' },
-  { path: '/dashboard/settings', label: 'Settings', icon: '⚙️' },
+  { path: '/dashboard', label: 'Dashboard', icon: '█' },
+  { path: '/dashboard/campaigns', label: 'Campaigns', icon: '■' },
+  { path: '/dashboard/subscribers', label: 'Subscribers', icon: '●' },
+  { path: '/dashboard/lists', label: 'Lists', icon: '▣' },
+  { path: '/dashboard/analytics', label: 'Analytics', icon: '▤' },
+  { path: '/dashboard/settings', label: 'Settings', icon: '⚙' },
 ]
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const navigate = useNavigate()
   const location = useLocation()
-  const { email, role, clearAuth } = useAuthStore()
+  const { role, clearAuth } = useAuthStore()
 
   const handleLogout = () => {
     clearAuth()
@@ -23,26 +23,26 @@ export default function DashboardLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0d0d0d] to-[#1a1a1a] text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Top Bar */}
-      <div className="border-b border-zinc-800 bg-zinc-900/80 backdrop-blur px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+      <div className="border-b border-zinc-800 bg-black px-6 py-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-zinc-800 rounded-lg"
+            className="p-2 border border-zinc-700 hover:bg-zinc-900"
           >
             ☰
           </button>
-          <h1 className="text-lg font-bold">📬 Newsletter Elite</h1>
+          <h1 className="text-sm tracking-widest uppercase">newsletter</h1>
         </div>
 
         <div className="flex items-center gap-4">
-          <span className="text-xs text-zinc-400 capitalize">{role}</span>
+          <span className="text-xs text-zinc-500 uppercase">{role}</span>
           <button
             onClick={handleLogout}
-            className="px-3 py-1 text-sm border border-zinc-700 rounded-lg hover:border-zinc-600 hover:bg-zinc-800/50 transition"
+            className="px-3 py-1 text-xs border border-zinc-700 hover:bg-zinc-900"
           >
-            Logout
+            exit
           </button>
         </div>
       </div>
@@ -50,7 +50,7 @@ export default function DashboardLayout() {
       <div className="flex">
         {/* Sidebar */}
         <div
-          className={`border-r border-zinc-800 bg-zinc-950/50 transition-all duration-200 ${
+          className={`border-r border-zinc-800 bg-black transition-all duration-200 ${
             sidebarOpen ? 'w-56' : 'w-0'
           } overflow-hidden`}
         >
@@ -61,10 +61,10 @@ export default function DashboardLayout() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`block px-4 py-2.5 rounded-lg transition ${
+                  className={`block px-3 py-2 text-xs uppercase tracking-wide border transition ${
                     isActive
-                      ? 'bg-amber-500/20 border border-amber-500 text-amber-300'
-                      : 'text-zinc-400 hover:bg-zinc-800'
+                      ? 'border-white text-white'
+                      : 'border-transparent text-zinc-500 hover:text-white hover:border-zinc-700'
                   }`}
                 >
                   <span className="mr-2">{item.icon}</span>
@@ -76,7 +76,7 @@ export default function DashboardLayout() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-6 bg-black">
           <Outlet />
         </div>
       </div>
