@@ -33,7 +33,7 @@ export default function DashboardLayout() {
           >
             ☰
           </button>
-          <h1 className="text-sm tracking-widest uppercase">newsletter</h1>
+          <h1 className="text-sm tracking-widest uppercase">Veloce</h1>
         </div>
 
         <div className="flex items-center gap-4">
