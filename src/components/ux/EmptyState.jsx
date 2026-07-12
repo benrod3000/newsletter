@@ -4,12 +4,12 @@ export default function EmptyState({
   action,
 }) {
   return (
-    <div className="border border-zinc-800 p-6 text-center space-y-3">
-      <p className="text-sm uppercase tracking-widest text-zinc-400">
+    <div className="border-brutal border-brutal-fg bg-brutal-surface p-8 text-center space-y-4">
+      <p className="text-sm font-bold uppercase tracking-[0.15em] text-brutal-fg">
         {title}
       </p>
 
-      <p className="text-xs text-zinc-600">
+      <p className="text-sm text-brutal-muted">
         {description}
       </p>
 

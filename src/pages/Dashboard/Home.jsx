@@ -6,11 +6,11 @@ import { LoadingState } from '../../components/ux'
 
 function StatCard({ label, value }) {
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4">
-      <p className="text-xs font-medium uppercase text-zinc-500">
+    <div className="border-brutal border-brutal-fg bg-white p-5">
+      <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">
         {label}
       </p>
-      <p className="text-2xl font-bold mt-2">
+      <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">
         {value}
       </p>
     </div>
@@ -63,8 +63,8 @@ export default function DashboardHome() {
   return (
     <div ref={ref} className="space-y-10">
       <div>
-        <h2 className="text-3xl font-bold">Dashboard</h2>
-        <p className="text-sm text-zinc-500 mt-1">
+        <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">Dashboard</h2>
+        <p className="text-sm font-bold text-brutal-muted uppercase tracking-wider mt-2">
           Overview of your workspace activity
         </p>
       </div>
@@ -75,11 +75,11 @@ export default function DashboardHome() {
       ) : (
         <>
           {error && (
-            <p className="text-xs text-amber-500 uppercase tracking-wide">
+            <p className="text-xs font-bold text-brutal-fg bg-brutal-yellow border-brutal border-brutal-fg p-3 uppercase tracking-wide">
               {error} — showing last known values
             </p>
           )}
-          <div className="grid md:grid-cols-4 gap-4">
+          <div className="grid md:grid-cols-4 gap-5">
             <StatCard label="Total Subscribers" value={fmt(stats?.total_subscribers)} />
             <StatCard label="Campaigns Sent" value={fmt(stats?.campaigns_sent)} />
             <StatCard label="Avg Open Rate" value={fmtPct(stats?.avg_open_rate)} />
@@ -89,17 +89,17 @@ export default function DashboardHome() {
       )}
 
       {/* WORKSPACE INFO */}
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-6">
-        <h3 className="font-bold mb-4 text-white">
+      <div className="border-brutal border-brutal-fg bg-white p-6">
+        <h3 className="font-heading text-xl uppercase tracking-wide mb-4">
           Workspace Info
         </h3>
 
-        <p className="text-sm text-zinc-400">
-          <strong>Email:</strong> {email}
+        <p className="text-sm font-bold text-brutal-fg">
+          Email: <span className="font-normal text-brutal-muted">{email}</span>
         </p>
 
-        <p className="text-sm text-zinc-400 mt-2">
-          <strong>Workspace ID:</strong> {workspaceId}
+        <p className="text-sm font-bold text-brutal-fg mt-2">
+          Workspace ID: <span className="font-normal text-brutal-muted">{workspaceId}</span>
         </p>
       </div>
     </div>

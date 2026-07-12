@@ -39,6 +39,15 @@ export const subscribersAPI = {
     api.post(`/api/clients/${workspaceId}/subscribers`, data),
   remove: (workspaceId, id) =>
     api.delete(`/api/clients/${workspaceId}/subscribers/${id}`),
+  bulkRemove: (workspaceId, ids) =>
+    api.delete(`/api/clients/${workspaceId}/subscribers`, { data: { ids } }),
+  exportCsv: (workspaceId, params) =>
+    api.get(`/api/clients/${workspaceId}/subscribers/export`, {
+      params,
+      responseType: 'blob',
+    }),
+  importCsv: (workspaceId, csv, confirmed = false) =>
+    api.post(`/api/clients/${workspaceId}/subscribers/import`, { csv, confirmed }),
 }
 
 // list/create existed already. update()/remove() call the new

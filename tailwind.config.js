@@ -7,20 +7,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#0a0a0a',
-        surface: '#111111',
-        surfaceAlt: '#161616',
-        border: '#2a2a2a',
-        text: '#f5f5f5',
-        muted: '#9a9a9a',
-        danger: '#ff3b3b',
-      },
-      borderRadius: {
-        none: '0px',
+        brutal: {
+          bg: '#f5f5f0',
+          fg: '#0a0a0a',
+          yellow: '#f5e642',
+          green: '#2f7f5f',
+          'green-neon': '#00e060',
+          muted: '#a8a49a',
+          surface: '#e8e8e0',
+          border: '#0a0a0a',
+        },
       },
       fontFamily: {
-        sans: ['ui-sans-serif', 'system-ui'],
-        mono: ['ui-monospace', 'SFMono-Regular'],
+        heading: ['"Bebas Neue"', 'Impact', '"Arial Black"', 'sans-serif'],
+        sans: ['Inter', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'monospace'],
+      },
+      borderWidth: {
+        brutal: '3px',
       },
     },
   },

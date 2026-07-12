@@ -12,6 +12,11 @@ export default function SettingsPage() {
     custom_domain: '',
     sender_name: '',
     sender_email: '',
+    email_provider: 'sendgrid',
+    ses_region: 'us-east-1',
+    ses_access_key: '',
+    ses_secret_key: '',
+    ses_from_email: '',
   })
   const [automations, setAutomations] = useState([])
   const [showNewAutomation, setShowNewAutomation] = useState(false)
@@ -90,34 +95,34 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h2 className="text-3xl font-bold mb-6">Settings</h2>
+      <h2 className="text-4xl font-heading uppercase tracking-tight leading-none mb-8">Settings</h2>
 
       {/* Tabs */}
-      <div className="flex gap-4 mb-6 border-b border-zinc-800">
+      <div className="flex border-brutal border-brutal-fg overflow-hidden mb-8">
         {['branding', 'automations'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 font-medium border-b-2 transition ${
+            className={`px-6 py-3 font-bold text-sm uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ${
               activeTab === tab
-                ? 'border-amber-500 text-amber-500'
-                : 'border-transparent text-zinc-400 hover:text-white'
+                ? 'bg-brutal-yellow text-brutal-fg'
+                : 'bg-white text-brutal-muted hover:text-brutal-fg'
             }`}
           >
-            {tab === 'branding' ? '🎨 Branding' : '⚙️ Automations'}
+            {tab === 'branding' ? 'Branding' : 'Automations'}
           </button>
         ))}
       </div>
 
       {/* Branding Tab */}
       {activeTab === 'branding' && (
-        <div className="space-y-6">
-          <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-6">
-            <h3 className="text-xl font-semibold mb-4">Workspace Branding</h3>
+        <div className="space-y-8">
+          <div className="border-brutal border-brutal-fg bg-white p-8">
+            <h3 className="font-heading text-2xl uppercase tracking-wide mb-6">Workspace Branding</h3>
 
             {/* Logo URL */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
+            <div className="mb-5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
                 Logo URL
               </label>
               <input
@@ -127,21 +132,21 @@ export default function SettingsPage() {
                   setBranding({ ...branding, logo_url: e.target.value })
                 }
                 placeholder="https://..."
-                className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
               {branding.logo_url && (
                 <img
                   src={branding.logo_url}
                   alt="Logo preview"
-                  className="mt-2 h-16 rounded"
+                  className="mt-2 h-16 border border-brutal-fg"
                   onError={() => console.error('Logo failed to load')}
                 />
               )}
             </div>
 
             {/* Sender Name */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
+            <div className="mb-5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
                 Sender Name (for emails)
               </label>
               <input
@@ -151,13 +156,13 @@ export default function SettingsPage() {
                   setBranding({ ...branding, sender_name: e.target.value })
                 }
                 placeholder="e.g., My Newsletter"
-                className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
             </div>
 
             {/* Sender Email */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
+            <div className="mb-5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
                 Sender Email (from address)
               </label>
               <input
@@ -167,13 +172,13 @@ export default function SettingsPage() {
                   setBranding({ ...branding, sender_email: e.target.value })
                 }
                 placeholder="noreply@example.com"
-                className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
             </div>
 
             {/* Custom Domain */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
                 Custom Domain
               </label>
               <input
@@ -183,18 +188,133 @@ export default function SettingsPage() {
                   setBranding({ ...branding, custom_domain: e.target.value })
                 }
                 placeholder="newsletter.yourdomain.com"
-                className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs font-bold text-brutal-muted mt-1.5 uppercase tracking-wider">
                 Configure DNS CNAME for white-label branding
               </p>
             </div>
 
+            {/* Email Provider */}
+            <div className="mb-6 border-t border-brutal-fg pt-6">
+              <h4 className="font-heading text-lg uppercase tracking-wide mb-4">Email Provider</h4>
+
+              <div className="mb-5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                  Provider
+                </label>
+                <select
+                  value={branding.email_provider || 'sendgrid'}
+                  onChange={(e) =>
+                    setBranding({ ...branding, email_provider: e.target.value })
+                  }
+                  className="w-full sm:w-64 px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm font-bold focus:outline-none"
+                >
+                  <option value="sendgrid">SendGrid (default)</option>
+                  <option value="ses">Amazon SES ($1/10K emails)</option>
+                </select>
+                <p className="text-xs font-bold text-brutal-muted mt-1.5 uppercase tracking-wider">
+                  {branding.email_provider === 'ses'
+                    ? 'Amazon SES costs ~$1 per 10,000 emails sent'
+                    : 'SendGrid free tier: 100 emails/day'}
+                </p>
+              </div>
+
+              {branding.email_provider === 'ses' && (
+                <>
+                  {/* AWS Setup Instructions */}
+                  <div className="border border-brutal-fg bg-brutal-yellow/20 p-4 mb-5">
+                    <p className="text-xs font-bold uppercase tracking-wider mb-2">
+                      📋 AWS Setup Instructions (takes ~10 minutes)
+                    </p>
+                    <ol className="text-sm text-brutal-fg/80 space-y-1 list-decimal list-inside">
+                      <li>Create an AWS account at <a href="https://aws.amazon.com" target="_blank" rel="noopener" className="underline font-bold">aws.amazon.com</a></li>
+                      <li>Go to IAM → Users → Create a new user with <strong>Programmatic access</strong></li>
+                      <li>Attach the policy <strong>AmazonSESFullAccess</strong></li>
+                      <li>Copy the <strong>Access Key ID</strong> and <strong>Secret Access Key</strong></li>
+                      <li>Go to SES → Verified Identities → verify your sending email</li>
+                      <li>Paste the keys below and save</li>
+                    </ol>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-5 mb-5">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                        AWS Access Key ID
+                      </label>
+                      <input
+                        type="text"
+                        value={branding.ses_access_key || ''}
+                        onChange={(e) =>
+                          setBranding({ ...branding, ses_access_key: e.target.value })
+                        }
+                        placeholder="AKIA..."
+                        className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                        AWS Secret Access Key
+                      </label>
+                      <input
+                        type="password"
+                        value={branding.ses_secret_key || ''}
+                        onChange={(e) =>
+                          setBranding({ ...branding, ses_secret_key: e.target.value })
+                        }
+                        placeholder="••••••••"
+                        className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-5 mb-5">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                        SES Region
+                      </label>
+                      <select
+                        value={branding.ses_region || 'us-east-1'}
+                        onChange={(e) =>
+                          setBranding({ ...branding, ses_region: e.target.value })
+                        }
+                        className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm font-bold focus:outline-none"
+                      >
+                        <option value="us-east-1">US East (N. Virginia)</option>
+                        <option value="us-west-2">US West (Oregon)</option>
+                        <option value="eu-west-1">EU (Ireland)</option>
+                        <option value="eu-central-1">EU (Frankfurt)</option>
+                        <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                        <option value="ap-northeast-1">Asia Pacific (Tokyo)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                        SES Verified From Email
+                      </label>
+                      <input
+                        type="email"
+                        value={branding.ses_from_email || ''}
+                        onChange={(e) =>
+                          setBranding({ ...branding, ses_from_email: e.target.value })
+                        }
+                        placeholder="noreply@yourdomain.com"
+                        className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                      />
+                      <p className="text-xs font-bold text-brutal-muted mt-1">
+                        Must be verified in AWS SES console
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
             {/* Brand Colors */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-2 gap-5 mb-6">
               {['primary', 'secondary'].map((color) => (
                 <div key={color}>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
                     {color === 'primary' ? 'Primary Color' : 'Secondary Color'}
                   </label>
                   <div className="flex gap-2">
@@ -210,7 +330,7 @@ export default function SettingsPage() {
                           },
                         })
                       }
-                      className="w-12 h-10 rounded cursor-pointer"
+                      className="w-12 h-10 border-brutal border-brutal-fg cursor-pointer"
                     />
                     <input
                       type="text"
@@ -224,7 +344,7 @@ export default function SettingsPage() {
                           },
                         })
                       }
-                      className="flex-1 px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white font-mono text-sm"
+                      className="flex-1 px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg font-mono text-sm focus:outline-none focus:bg-brutal-yellow/10"
                     />
                   </div>
                 </div>
@@ -234,7 +354,7 @@ export default function SettingsPage() {
             <button
               onClick={saveBranding}
               disabled={loading}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-medium rounded disabled:opacity-50"
+              className="px-6 py-3 border-brutal border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
             >
               {loading ? 'Saving...' : 'Save Branding'}
             </button>
@@ -244,12 +364,12 @@ export default function SettingsPage() {
 
       {/* Automations Tab */}
       {activeTab === 'automations' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Workflow Automations</h3>
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <h3 className="font-heading text-2xl uppercase tracking-wide">Workflow Automations</h3>
             <button
               onClick={() => setShowNewAutomation(!showNewAutomation)}
-              className="px-3 py-1 text-sm bg-amber-500 hover:bg-amber-600 text-black font-medium rounded"
+              className="px-4 py-2 border-brutal border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
             >
               + New Automation
             </button>
@@ -257,11 +377,11 @@ export default function SettingsPage() {
 
           {/* New Automation Form */}
           {showNewAutomation && (
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-6 mb-6">
-              <h4 className="font-semibold mb-4">Create New Automation</h4>
-              <div className="space-y-4">
+            <div className="border-brutal border-brutal-fg bg-white p-8 mb-8">
+              <h4 className="font-heading text-xl uppercase tracking-wide mb-6">Create New Automation</h4>
+              <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
                     Automation Name
                   </label>
                   <input
@@ -271,13 +391,13 @@ export default function SettingsPage() {
                       setNewAutomation({ ...newAutomation, name: e.target.value })
                     }
                     placeholder="e.g., Welcome Email"
-                    className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500"
+                    className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
                       Trigger Type
                     </label>
                     <select
@@ -288,7 +408,7 @@ export default function SettingsPage() {
                           trigger_type: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white"
+                      className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm font-bold focus:outline-none"
                     >
                       <option value="subscriber_joined">Subscriber Joined</option>
                       <option value="lead_magnet_claimed">Lead Magnet Claimed</option>
@@ -298,7 +418,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
                       Action Type
                     </label>
                     <select
@@ -309,7 +429,7 @@ export default function SettingsPage() {
                           action_type: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white"
+                      className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm font-bold focus:outline-none"
                     >
                       <option value="send_email">Send Email</option>
                       <option value="add_to_list">Add to List</option>
@@ -318,17 +438,17 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     onClick={createAutomation}
                     disabled={loading}
-                    className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-medium rounded disabled:opacity-50"
+                    className="px-5 py-2.5 border-brutal border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
                   >
                     {loading ? 'Creating...' : 'Create Automation'}
                   </button>
                   <button
                     onClick={() => setShowNewAutomation(false)}
-                    className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded"
+                    className="px-5 py-2.5 border-brutal border-brutal-fg bg-white text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
                   >
                     Cancel
                   </button>
@@ -338,35 +458,35 @@ export default function SettingsPage() {
           )}
 
           {/* Automations List */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             {automations.length === 0 ? (
-              <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-6 text-center text-zinc-400">
-                No automations yet. Create one to get started!
+              <div className="border-brutal border-brutal-fg bg-white p-8 text-center">
+                <p className="font-bold text-brutal-muted uppercase tracking-wider text-sm">No automations yet. Create one to get started!</p>
               </div>
             ) : (
               automations.map((auto) => (
                 <div
                   key={auto.id}
-                  className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4"
+                  className="border-brutal border-brutal-fg bg-white p-5"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h4 className="font-semibold text-white">{auto.name}</h4>
-                      <p className="text-sm text-zinc-400 mt-1">
+                      <h4 className="font-heading text-lg uppercase tracking-wide">{auto.name}</h4>
+                      <p className="text-sm text-brutal-muted mt-1">
                         {auto.trigger_type} → {auto.action_type}
                       </p>
                       {auto.description && (
-                        <p className="text-sm text-zinc-500 mt-1">
+                        <p className="text-sm text-brutal-muted mt-1">
                           {auto.description}
                         </p>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-xs px-2 py-1 rounded ${
+                        className={`text-xs font-bold px-2 py-1 border border-brutal-fg ${
                           auto.is_active
-                            ? 'bg-green-900/30 text-green-400'
-                            : 'bg-red-900/30 text-red-400'
+                            ? 'bg-brutal-green text-white'
+                            : 'bg-brutal-bg text-brutal-muted'
                         }`}
                       >
                         {auto.is_active ? 'Active' : 'Inactive'}

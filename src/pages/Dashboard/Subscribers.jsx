@@ -13,6 +13,10 @@ const STATUS_FILTERS = [
   { value: 'pending', label: 'Pending' },
 ]
 
+const btn = 'px-4 py-2 border-brutal border-brutal-fg font-bold text-xs uppercase tracking-wider'
+const btnPrimary = `${btn} bg-brutal-yellow text-brutal-fg hover:opacity-80`
+const btnSecondary = `${btn} bg-white text-brutal-fg hover:opacity-80`
+
 export default function SubscribersPage() {
   const { workspaceId } = useAuthStore()
   const [subscribers, setSubscribers] = useState([])
@@ -25,6 +29,17 @@ export default function SubscribersPage() {
   const [newSubscriber, setNewSubscriber] = useState({ email: '', first_name: '', last_name: '' })
   const [saving, setSaving] = useState(false)
   const [removingId, setRemovingId] = useState(null)
+
+  // CSV import
+  const [showImport, setShowImport] = useState(false)
+  const [importCsvText, setImportCsvText] = useState('')
+  const [importConfirmed, setImportConfirmed] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const [importResult, setImportResult] = useState(null)
+
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState(new Set())
+  const [bulkRemoving, setBulkRemoving] = useState(false)
 
   useEffect(() => {
     if (workspaceId) loadSubscribers(statusFilter)
@@ -92,29 +107,179 @@ export default function SubscribersPage() {
     }
   }
 
+  function toggleSelect(id) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function selectAll() {
+    if (selectedIds.size === filtered.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(filtered.map((s) => s.id)))
+    }
+  }
+
+  async function bulkRemove() {
+    if (!confirm(`Delete ${selectedIds.size} subscriber(s)? This cannot be undone.`)) return
+    setBulkRemoving(true)
+    try {
+      await subscribersAPI.bulkRemove(workspaceId, Array.from(selectedIds))
+      setSubscribers((prev) => prev.filter((s) => !selectedIds.has(s.id)))
+      setTotal((prev) => Math.max(0, prev - selectedIds.size))
+      setSelectedIds(new Set())
+    } catch (err) {
+      console.error('Bulk delete failed:', err)
+      const message = err?.response?.data?.error || 'Bulk delete failed'
+      alert(message)
+    } finally {
+      setBulkRemoving(false)
+    }
+  }
+
+  async function exportCsv() {
+    try {
+      const response = await subscribersAPI.exportCsv(workspaceId, statusFilter ? { status: statusFilter } : undefined)
+      const blob = response.data
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `subscribers-${workspaceId.slice(0, 8)}.csv`
+      a.click()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Export failed:', err)
+      alert('Failed to export subscribers')
+    }
+  }
+
+  async function importSubscribers() {
+    if (!importCsvText.trim()) {
+      alert('Paste CSV data first')
+      return
+    }
+    setImporting(true)
+    setImportResult(null)
+    try {
+      const { data } = await subscribersAPI.importCsv(workspaceId, importCsvText, importConfirmed)
+      setImportResult(data)
+      setImportCsvText('')
+      await loadSubscribers(statusFilter)
+    } catch (err) {
+      console.error('Import failed:', err)
+      const message = err?.response?.data?.error || 'Import failed'
+      alert(message)
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  function handleFileDrop(e) {
+    e.preventDefault()
+    const file = e.dataTransfer?.files?.[0] || e.target?.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => setImportCsvText(ev.target.result)
+    reader.readAsText(file)
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold">Subscribers</h2>
-        <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="px-3 py-1 text-sm bg-amber-500 hover:bg-amber-600 text-black font-medium rounded"
-        >
-          + Add Subscriber
-        </button>
+        <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">Subscribers</h2>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowImport(!showImport)}
+            className={btnSecondary}
+          >
+            {showImport ? 'Cancel Import' : 'Import CSV'}
+          </button>
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className={btnPrimary}
+          >
+            + Add Subscriber
+          </button>
+        </div>
       </div>
+
+      {/* CSV Import */}
+      {showImport && (
+        <div className="border-brutal border-brutal-fg bg-white p-8 space-y-5">
+          <h4 className="font-heading text-xl uppercase tracking-wide">Import Subscribers (CSV)</h4>
+          <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">
+            Paste CSV or drag a .csv file. Must include an <strong>email</strong> column. Optional: first_name, last_name, phone_number, country, region, city, timezone
+          </p>
+          <div
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleFileDrop}
+            className="border-2 border-dashed border-brutal-fg/30 p-8 text-center cursor-pointer hover:border-brutal-fg transition"
+          >
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleFileDrop}
+              className="hidden"
+              id="csv-file-input"
+            />
+            <label htmlFor="csv-file-input" className="cursor-pointer">
+              <p className="text-sm font-bold uppercase tracking-wider text-brutal-muted">
+                {importCsvText ? 'File loaded ✓' : 'Drop CSV file here or click to browse'}
+              </p>
+            </label>
+          </div>
+          <textarea
+            value={importCsvText}
+            onChange={(e) => setImportCsvText(e.target.value)}
+            rows={6}
+            placeholder="Or paste CSV here...&#10;email,first_name,last_name&#10;jane@example.com,Jane,Doe"
+            className="w-full px-4 py-3 bg-brutal-bg border-brutal border-brutal-fg text-sm font-mono focus:outline-none resize-y placeholder:text-brutal-muted"
+          />
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={importConfirmed}
+              onChange={(e) => setImportConfirmed(e.target.checked)}
+              id="import-confirmed"
+              className="w-4 h-4 accent-brutal-fg"
+            />
+            <label htmlFor="import-confirmed" className="text-xs font-bold text-brutal-fg/60 uppercase tracking-wider">
+              Mark as confirmed (skip verification emails)
+            </label>
+          </div>
+          {importResult && (
+            <div className="border border-brutal-fg p-3 bg-brutal-bg text-sm">
+              <span className="font-bold">Imported: {importResult.processed}</span>
+              {importResult.skipped > 0 && (
+                <span className="text-brutal-muted ml-3">Skipped: {importResult.skipped}</span>
+              )}
+            </div>
+          )}
+          <button
+            onClick={importSubscribers}
+            disabled={importing || !importCsvText.trim()}
+            className={btnPrimary + ' disabled:opacity-50'}
+          >
+            {importing ? 'Importing...' : 'Import Subscribers'}
+          </button>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex gap-1 border border-zinc-800 rounded overflow-hidden">
+        <div className="flex border-brutal border-brutal-fg overflow-hidden">
           {STATUS_FILTERS.map((f) => (
             <button
               key={f.value}
               onClick={() => setStatusFilter(f.value)}
-              className={`px-3 py-1.5 text-xs uppercase tracking-wide transition ${
+              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ${
                 statusFilter === f.value
-                  ? 'bg-amber-500 text-black font-medium'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-brutal-yellow text-brutal-fg'
+                  : 'bg-white text-brutal-muted hover:text-brutal-fg'
               }`}
             >
               {f.label}
@@ -126,65 +291,94 @@ export default function SubscribersPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Filter loaded results by email or name..."
-          className="flex-1 max-w-sm px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 text-sm"
+          className="flex-1 max-w-sm px-4 py-2.5 bg-white border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
         />
         {!loading && !error && (
-          <span className="text-xs text-zinc-500 uppercase tracking-wide ml-auto">
+          <span className="text-xs font-bold text-brutal-muted uppercase tracking-wider ml-auto">
             {total.toLocaleString()} total
           </span>
         )}
       </div>
 
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="border-brutal border-brutal-fg bg-brutal-yellow p-4 flex items-center gap-4 flex-wrap">
+          <span className="text-sm font-bold uppercase tracking-wider">
+            {selectedIds.size} selected
+          </span>
+          <span className="flex-1" />
+          <button
+            onClick={exportCsv}
+            className={btnSecondary}
+          >
+            Export CSV
+          </button>
+          <button
+            onClick={bulkRemove}
+            disabled={bulkRemoving}
+            className="px-4 py-2 bg-white border-brutal border-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
+          >
+            {bulkRemoving ? 'Deleting...' : `Delete ${selectedIds.size}`}
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="text-xs font-bold uppercase tracking-wider hover:opacity-70"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
       {/* Add form */}
       {showAddForm && (
-        <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-6 space-y-4">
-          <h4 className="font-semibold">New Subscriber</h4>
-          <div className="grid sm:grid-cols-3 gap-4">
+        <div className="border-brutal border-brutal-fg bg-white p-8 space-y-5">
+          <h4 className="font-heading text-xl uppercase tracking-wide">New Subscriber</h4>
+          <div className="grid sm:grid-cols-3 gap-5">
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">Email</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Email</label>
               <input
                 type="email"
                 value={newSubscriber.email}
                 onChange={(e) => setNewSubscriber({ ...newSubscriber, email: e.target.value })}
                 placeholder="subscriber@example.com"
-                className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">First name</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">First name</label>
               <input
                 type="text"
                 value={newSubscriber.first_name}
                 onChange={(e) => setNewSubscriber({ ...newSubscriber, first_name: e.target.value })}
                 placeholder="Jane"
-                className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">Last name</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Last name</label>
               <input
                 type="text"
                 value={newSubscriber.last_name}
                 onChange={(e) => setNewSubscriber({ ...newSubscriber, last_name: e.target.value })}
                 placeholder="Doe"
-                className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
             </div>
           </div>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">
             New subscribers are added as unconfirmed (pending) — the same as a normal signup.
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               onClick={addSubscriber}
               disabled={saving}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-medium rounded disabled:opacity-50"
+              className={btnPrimary + ' disabled:opacity-50'}
             >
               {saving ? 'Adding...' : 'Add Subscriber'}
             </button>
             <button
               onClick={() => setShowAddForm(false)}
-              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded"
+              className={btnSecondary}
             >
               Cancel
             </button>
@@ -202,7 +396,7 @@ export default function SubscribersPage() {
           action={
             <button
               onClick={() => loadSubscribers(statusFilter)}
-              className="px-4 py-2 text-xs uppercase tracking-wide border border-zinc-700 hover:border-white transition"
+              className={btnSecondary}
             >
               Retry
             </button>
@@ -218,14 +412,22 @@ export default function SubscribersPage() {
           }
         />
       ) : (
-        <div className="rounded-lg border border-zinc-800 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-xs text-zinc-500 uppercase bg-zinc-900/60">
-              <tr>
-                <th className="text-left p-3">Email</th>
-                <th className="text-left p-3">Name</th>
-                <th className="text-left p-3">Status</th>
-                <th className="text-left p-3">Joined</th>
+        <div className="border-brutal border-brutal-fg overflow-x-auto bg-white">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b-3 border-brutal-fg bg-brutal-bg">
+                <th className="w-10 p-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.size === filtered.length && filtered.length > 0}
+                    onChange={selectAll}
+                    className="w-4 h-4 accent-brutal-fg cursor-pointer"
+                  />
+                </th>
+                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider">Email</th>
+                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider">Name</th>
+                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider">Status</th>
+                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider">Joined</th>
                 <th className="text-right p-3"></th>
               </tr>
             </thead>
@@ -233,28 +435,36 @@ export default function SubscribersPage() {
               {filtered.map((s) => {
                 const name = [s.first_name, s.last_name].filter(Boolean).join(' ')
                 return (
-                  <tr key={s.id} className="border-t border-zinc-800">
-                    <td className="p-3">{s.email}</td>
-                    <td className="p-3 text-zinc-400">{name || '—'}</td>
+                  <tr key={s.id} className="border-t border-brutal-fg">
+                    <td className="p-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(s.id)}
+                        onChange={() => toggleSelect(s.id)}
+                        className="w-4 h-4 accent-brutal-fg cursor-pointer"
+                      />
+                    </td>
+                    <td className="p-3 font-bold">{s.email}</td>
+                    <td className="p-3 text-brutal-muted">{name || '—'}</td>
                     <td className="p-3">
                       <span
-                        className={`text-xs px-2 py-1 rounded ${
+                        className={`text-xs font-bold px-2 py-1 border border-brutal-fg ${
                           s.confirmed
-                            ? 'bg-green-900/30 text-green-400'
-                            : 'bg-amber-900/30 text-amber-400'
+                            ? 'bg-brutal-green text-white'
+                            : 'bg-brutal-yellow text-brutal-fg'
                         }`}
                       >
                         {s.confirmed ? 'confirmed' : 'pending'}
                       </span>
                     </td>
-                    <td className="p-3 text-zinc-400">
+                    <td className="p-3 text-brutal-muted text-xs">
                       {s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}
                     </td>
                     <td className="p-3 text-right">
                       <button
                         onClick={() => removeSubscriber(s.id)}
                         disabled={removingId === s.id}
-                        className="text-xs text-zinc-500 hover:text-red-400 uppercase tracking-wide disabled:opacity-50"
+                        className="text-xs font-bold text-brutal-fg/50 uppercase tracking-wider hover:text-brutal-fg disabled:opacity-50"
                       >
                         {removingId === s.id ? 'Removing...' : 'Remove'}
                       </button>

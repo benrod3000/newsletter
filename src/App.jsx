@@ -70,7 +70,7 @@ export function PageTransition({ children }) {
 
 function PublicLayout({ children }) {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-brutal-bg text-brutal-fg">
       <div className="max-w-6xl mx-auto px-6 py-16">
         {children}
       </div>

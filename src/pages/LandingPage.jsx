@@ -1,57 +1,45 @@
 import { Link } from 'react-router-dom'
-import { useRef } from 'react'
-import { useReveal } from '../App'
 
 export default function LandingPage() {
-  const ref = useRef(null)
-
-  useReveal(ref, {
-    y: 14,
-    duration: 0.7,
-    stagger: 0.08,
-  })
-
   return (
-    <main ref={ref} className="min-h-screen bg-black text-white px-6 py-20">
-      <div className="max-w-2xl mx-auto space-y-10">
-        <div className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-            Veloce
-          </p>
+    <main className="space-y-12">
+      <div className="max-w-2xl space-y-6">
+        <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/50">
+          Veloce
+        </p>
 
-          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-tight">
-            Veloce
-            <span className="block text-zinc-400">Control Layer</span>
-          </h1>
+        <h1 className="text-5xl sm:text-7xl font-heading tracking-tight leading-[0.9] uppercase">
+          Veloce
+          <span className="block text-brutal-muted mt-1">Control Layer</span>
+        </h1>
 
-          <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
-            Manage subscribers, campaigns, automations, and branding in a single workspace.
-            Built for multi-tenant systems that need clarity over decoration.
-          </p>
-        </div>
+        <p className="text-base sm:text-lg text-brutal-fg/70 leading-relaxed max-w-lg">
+          Manage subscribers, campaigns, automations, and branding in a single workspace.
+          Built for multi-tenant systems that need clarity over decoration.
+        </p>
 
-        <div className="h-px w-16 bg-zinc-800" />
+        <div className="h-1 w-16 bg-brutal-fg" />
+      </div>
 
-        <div className="flex gap-3">
-          <Link
-            to="/login"
-            className="px-4 py-2 border border-zinc-700 text-sm uppercase tracking-wide hover:border-white transition"
-          >
-            Login
-          </Link>
+      <div className="flex gap-4">
+        <Link
+          to="/login"
+          className="px-6 py-3 border-brutal border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
+        >
+          Login
+        </Link>
 
-          <Link
-            to="/demo"
-            className="px-4 py-2 border border-zinc-800 text-sm uppercase tracking-wide text-zinc-400 hover:text-white hover:border-zinc-600 transition"
-          >
-            Demo
-          </Link>
-        </div>
+        <Link
+          to="/demo"
+          className="px-6 py-3 border-brutal border-brutal-fg bg-brutal-bg text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
+        >
+          Demo
+        </Link>
+      </div>
 
-        <div className="pt-10 space-y-2 text-xs text-zinc-600 uppercase tracking-wide">
-          <p>Subscribers / Campaigns / Analytics / Automations</p>
-          <p>Workspace isolated architecture</p>
-        </div>
+      <div className="pt-8 space-y-2 text-xs font-bold text-brutal-muted uppercase tracking-[0.15em]">
+        <p>Subscribers / Campaigns / Analytics / Automations</p>
+        <p>Workspace isolated architecture</p>
       </div>
     </main>
   )
