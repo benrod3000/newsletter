@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { brandingAPI, automationsAPI } from '../../lib/api'
 import { useToast } from '../../components/Toast'
+import { Eye, EyeOff } from 'lucide-react'
 
 export default function SettingsPage() {
   const { workspaceId } = useAuthStore()
@@ -27,6 +28,8 @@ export default function SettingsPage() {
     trigger_type: 'subscriber_joined',
     action_type: 'send_email',
   })
+  const [showAccessKey, setShowAccessKey] = useState(false)
+  const [showSecretKey, setShowSecretKey] = useState(false)
 
   useEffect(() => {
     if (workspaceId) {
@@ -102,7 +105,7 @@ export default function SettingsPage() {
       </h2>
 
       {/* Tabs */}
-      <div className="flex border-brutal border-brutal-fg overflow-hidden mb-8">
+      <div className="flex border-3 border-brutal-fg overflow-hidden mb-8">
         {['branding', 'automations'].map((tab) => (
           <button
             key={tab}
@@ -121,7 +124,7 @@ export default function SettingsPage() {
       {/* Branding Tab */}
       {activeTab === 'branding' && (
         <div className="space-y-8">
-          <div className="border-brutal border-brutal-fg bg-white p-8">
+          <div className="border-3 border-brutal-fg bg-white p-8">
             <h3 className="font-heading text-2xl uppercase tracking-wide mb-6">Workspace Branding</h3>
 
             {/* Logo URL */}
@@ -136,7 +139,7 @@ export default function SettingsPage() {
                   setBranding({ ...branding, logo_url: e.target.value })
                 }
                 placeholder="https://..."
-                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
               {branding.logo_url && (
                 <img
@@ -160,7 +163,7 @@ export default function SettingsPage() {
                   setBranding({ ...branding, sender_name: e.target.value })
                 }
                 placeholder="e.g., My Newsletter"
-                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
             </div>
 
@@ -176,7 +179,7 @@ export default function SettingsPage() {
                   setBranding({ ...branding, sender_email: e.target.value })
                 }
                 placeholder="noreply@example.com"
-                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
             </div>
 
@@ -192,7 +195,7 @@ export default function SettingsPage() {
                   setBranding({ ...branding, custom_domain: e.target.value })
                 }
                 placeholder="newsletter.yourdomain.com"
-                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
               <p className="text-xs font-bold text-brutal-muted mt-1.5 uppercase tracking-wider">
                 Configure DNS CNAME for white-label branding
@@ -212,7 +215,7 @@ export default function SettingsPage() {
                   onChange={(e) =>
                     setBranding({ ...branding, email_provider: e.target.value })
                   }
-                  className="w-full sm:w-64 px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm font-bold focus:outline-none"
+                  className="w-full sm:w-64 px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-bold focus:outline-none"
                 >
                   <option value="sendgrid">SendGrid (default)</option>
                   <option value="ses">Amazon SES ($1/10K emails)</option>
@@ -246,29 +249,49 @@ export default function SettingsPage() {
                       <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
                         AWS Access Key ID
                       </label>
-                      <input
-                        type="text"
-                        value={branding.ses_access_key || ''}
-                        onChange={(e) =>
-                          setBranding({ ...branding, ses_access_key: e.target.value })
-                        }
-                        placeholder="AKIA..."
-                        className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
-                      />
+                      <div className="flex gap-2">
+                        <input
+                          type={showAccessKey ? 'text' : 'password'}
+                          value={branding.ses_access_key || ''}
+                          onChange={(e) =>
+                            setBranding({ ...branding, ses_access_key: e.target.value })
+                          }
+                          placeholder="AKIA..."
+                          className="flex-1 px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowAccessKey(!showAccessKey)}
+                          className="px-3 border-3 border-brutal-fg bg-white hover:bg-brutal-yellow transition"
+                          aria-label={showAccessKey ? 'Hide key' : 'Show key'}
+                        >
+                          {showAccessKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
                     </div>
                     <div>
                       <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
                         AWS Secret Access Key
                       </label>
-                      <input
-                        type="password"
-                        value={branding.ses_secret_key || ''}
-                        onChange={(e) =>
-                          setBranding({ ...branding, ses_secret_key: e.target.value })
-                        }
-                        placeholder="••••••••"
-                        className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
-                      />
+                      <div className="flex gap-2">
+                        <input
+                          type={showSecretKey ? 'text' : 'password'}
+                          value={branding.ses_secret_key || ''}
+                          onChange={(e) =>
+                            setBranding({ ...branding, ses_secret_key: e.target.value })
+                          }
+                          placeholder="••••••••"
+                          className="flex-1 px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowSecretKey(!showSecretKey)}
+                          className="px-3 border-3 border-brutal-fg bg-white hover:bg-brutal-yellow transition"
+                          aria-label={showSecretKey ? 'Hide key' : 'Show key'}
+                        >
+                          {showSecretKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -282,7 +305,7 @@ export default function SettingsPage() {
                         onChange={(e) =>
                           setBranding({ ...branding, ses_region: e.target.value })
                         }
-                        className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm font-bold focus:outline-none"
+                        className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-bold focus:outline-none"
                       >
                         <option value="us-east-1">US East (N. Virginia)</option>
                         <option value="us-west-2">US West (Oregon)</option>
@@ -303,7 +326,7 @@ export default function SettingsPage() {
                           setBranding({ ...branding, ses_from_email: e.target.value })
                         }
                         placeholder="noreply@yourdomain.com"
-                        className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                        className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
                       />
                       <p className="text-xs font-bold text-brutal-muted mt-1">
                         Must be verified in AWS SES console
@@ -334,7 +357,7 @@ export default function SettingsPage() {
                           },
                         })
                       }
-                      className="w-12 h-10 border-brutal border-brutal-fg cursor-pointer"
+                      className="w-12 h-10 border-3 border-brutal-fg cursor-pointer"
                     />
                     <input
                       type="text"
@@ -348,7 +371,7 @@ export default function SettingsPage() {
                           },
                         })
                       }
-                      className="flex-1 px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg font-mono text-sm focus:outline-none focus:bg-brutal-yellow/10"
+                      className="flex-1 px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg font-mono text-sm focus:outline-none focus:bg-brutal-yellow/10"
                     />
                   </div>
                 </div>
@@ -358,7 +381,7 @@ export default function SettingsPage() {
             <button
               onClick={saveBranding}
               disabled={loading}
-              className="px-6 py-3 border-brutal border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
+              className="px-6 py-3 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
             >
               {loading ? 'Saving...' : 'Save Branding'}
             </button>
@@ -373,7 +396,7 @@ export default function SettingsPage() {
             <h3 className="font-heading text-2xl uppercase tracking-wide">Workflow Automations</h3>
             <button
               onClick={() => setShowNewAutomation(!showNewAutomation)}
-              className="px-4 py-2 border-brutal border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
+              className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
             >
               + New Automation
             </button>
@@ -381,7 +404,7 @@ export default function SettingsPage() {
 
           {/* New Automation Form */}
           {showNewAutomation && (
-            <div className="border-brutal border-brutal-fg bg-white p-8 mb-8">
+            <div className="border-3 border-brutal-fg bg-white p-8 mb-8">
               <h4 className="font-heading text-xl uppercase tracking-wide mb-6">Create New Automation</h4>
               <div className="space-y-5">
                 <div>
@@ -395,7 +418,7 @@ export default function SettingsPage() {
                       setNewAutomation({ ...newAutomation, name: e.target.value })
                     }
                     placeholder="e.g., Welcome Email"
-                    className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                    className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
                   />
                 </div>
 
@@ -412,7 +435,7 @@ export default function SettingsPage() {
                           trigger_type: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm font-bold focus:outline-none"
+                      className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-bold focus:outline-none"
                     >
                       <option value="subscriber_joined">Subscriber Joined</option>
                       <option value="lead_magnet_claimed">Lead Magnet Claimed</option>
@@ -433,7 +456,7 @@ export default function SettingsPage() {
                           action_type: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm font-bold focus:outline-none"
+                      className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-bold focus:outline-none"
                     >
                       <option value="send_email">Send Email</option>
                       <option value="add_to_list">Add to List</option>
@@ -446,13 +469,13 @@ export default function SettingsPage() {
                   <button
                     onClick={createAutomation}
                     disabled={loading}
-                    className="px-5 py-2.5 border-brutal border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
+                    className="px-5 py-2.5 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
                   >
                     {loading ? 'Creating...' : 'Create Automation'}
                   </button>
                   <button
                     onClick={() => setShowNewAutomation(false)}
-                    className="px-5 py-2.5 border-brutal border-brutal-fg bg-white text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
+                    className="px-5 py-2.5 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
                   >
                     Cancel
                   </button>
@@ -464,14 +487,14 @@ export default function SettingsPage() {
           {/* Automations List */}
           <div className="space-y-4">
             {automations.length === 0 ? (
-              <div className="border-brutal border-brutal-fg bg-white p-8 text-center">
+              <div className="border-3 border-brutal-fg bg-white p-8 text-center">
                 <p className="font-bold text-brutal-muted uppercase tracking-wider text-sm">No automations yet. Create one to get started!</p>
               </div>
             ) : (
               automations.map((auto) => (
                 <div
                   key={auto.id}
-                  className="border-brutal border-brutal-fg bg-white p-5"
+                  className="border-3 border-brutal-fg bg-white p-5"
                 >
                   <div className="flex items-start justify-between">
                     <div>

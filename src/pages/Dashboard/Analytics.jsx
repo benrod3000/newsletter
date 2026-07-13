@@ -82,7 +82,7 @@ export default function AnalyticsPage() {
           action={
             <button
               onClick={loadOverview}
-              className="px-4 py-2 border-brutal border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80"
+              className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80"
             >
               Retry
             </button>
@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
             />
           )}
 
-          <div className="border-brutal border-brutal-fg overflow-x-auto bg-white">
+          <div className="border-3 border-brutal-fg overflow-x-auto bg-white">
             <div className="px-4 py-3 border-b-3 border-brutal-fg bg-brutal-bg">
               <h3 className="font-heading text-lg uppercase tracking-wide">Top Performing Campaigns</h3>
             </div>
