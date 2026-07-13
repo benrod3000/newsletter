@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LayoutDashboard, Mail, Users, Layers, BarChart3, Settings, Globe } from 'lucide-react'
+import { useCommandAction } from './CommandActionContext'
 
 const COMMANDS = [
   { group: 'Navigate', items: [
@@ -27,6 +28,7 @@ export default function CommandPalette({ onAction }) {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef(null)
   const navigateTo = useNavigate()
+  const { dispatch } = useCommandAction()
 
   const filtered = useMemo(() => {
     if (!query.trim()) return COMMANDS
@@ -73,8 +75,12 @@ export default function CommandPalette({ onAction }) {
     setOpen(false)
     if (item.action?.startsWith('/')) {
       navigateTo(item.action)
-    } else if (onAction) {
-      onAction(item.action, item.id)
+    } else if (item.action) {
+      dispatch(item.action)
+      // Navigate to the appropriate page based on action
+      if (item.action === 'create-campaign') navigateTo('/dashboard/campaigns')
+      else if (item.action === 'add-subscriber') navigateTo('/dashboard/subscribers')
+      else if (item.action === 'create-list') navigateTo('/dashboard/lists')
     }
   }
 

@@ -70,6 +70,8 @@ export const campaignsAPI = {
     api.delete(`/api/clients/${workspaceId}/campaigns/${id}`),
   schedule: (workspaceId, id) =>
     api.patch(`/api/clients/${workspaceId}/campaigns/${id}`, { schedule_now: true }),
+  sendTest: (workspaceId, id, email) =>
+    api.post(`/api/clients/${workspaceId}/campaigns/${id}/test`, { email }),
 }
 
 // list/create existed already. remove() calls the new

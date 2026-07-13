@@ -3,6 +3,7 @@ import { useAuthStore } from '../../stores/authStore'
 import { listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
+import { useCommandAction } from '../../components/CommandActionContext'
 
 export default function ListsPage() {
   const { workspaceId } = useAuthStore()
@@ -14,6 +15,14 @@ export default function ListsPage() {
   const [newList, setNewList] = useState({ name: '', description: '', opt_in_type: 'single' })
   const [saving, setSaving] = useState(false)
   const [removingId, setRemovingId] = useState(null)
+  const { action, consume } = useCommandAction()
+
+  useEffect(() => {
+    if (!action) return
+    const id = action.id
+    consume()
+    if (id === 'create-list') setShowAddForm(true)
+  }, [action?.timestamp])
 
   useEffect(() => {
     if (workspaceId) loadLists()

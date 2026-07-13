@@ -4,6 +4,7 @@ import { subscribersAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
 import SubscriberDetailPanel from '../../components/SubscriberDetailPanel'
+import { useCommandAction } from '../../components/CommandActionContext'
 
 // Matches the real `subscribers` table: there's no generic "status" string —
 // just a `confirmed` boolean. Unsubscribing hard-deletes the row entirely
@@ -33,6 +34,17 @@ export default function SubscribersPage() {
   const [saving, setSaving] = useState(false)
   const [removingId, setRemovingId] = useState(null)
   const [selectedSubscriber, setSelectedSubscriber] = useState(null)
+  const { action, consume } = useCommandAction()
+
+  // Listen for command palette actions
+  useEffect(() => {
+    if (!action) return
+    const id = action.id
+    consume()
+    if (id === 'add-subscriber') setShowAddForm(true)
+    else if (id === 'export-csv') exportCsv()
+    else if (id === 'import-csv') setShowImport(true)
+  }, [action?.timestamp])
 
   // CSV import
   const [showImport, setShowImport] = useState(false)

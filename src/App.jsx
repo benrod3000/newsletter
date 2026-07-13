@@ -7,7 +7,9 @@ import { ToastProvider } from './components/Toast'
 
 gsap.registerPlugin(ScrollTrigger)
 import CommandPalette from './components/CommandPalette'
+import KeyboardShortcuts from './components/KeyboardShortcuts'
 import ErrorBoundary from './components/ErrorBoundary'
+import { CommandActionProvider } from './components/CommandActionContext'
 import './App.css'
 
 // Pages
@@ -161,8 +163,10 @@ function App() {
   return (
     <ToastProvider>
       <BrowserRouter>
+        <CommandActionProvider>
         <ErrorBoundary>
         <CommandPalette />
+        <KeyboardShortcuts />
         <Routes>
           {/* Public Routes */}
           <Route
@@ -244,6 +248,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         </ErrorBoundary>
+        </CommandActionProvider>
       </BrowserRouter>
     </ToastProvider>
   )

@@ -4,6 +4,7 @@ import { campaignsAPI, listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
 import EmailEditor from '../../components/EmailEditor'
+import { useCommandAction } from '../../components/CommandActionContext'
 
 const STATUS_STYLES = {
   draft: 'bg-brutal-surface text-brutal-fg border-2 border-brutal-fg',
@@ -37,6 +38,17 @@ export default function CampaignsPage() {
   const [editAudience, setEditAudience] = useState('confirmed')
   const [autosaving, setAutosaving] = useState(false)
   const autosaveTimer = useRef(null)
+  const [testEmailId, setTestEmailId] = useState(null)
+  const [testEmail, setTestEmail] = useState('')
+  const [testSending, setTestSending] = useState(false)
+  const { action, consume } = useCommandAction()
+
+  useEffect(() => {
+    if (!action) return
+    const id = action.id
+    consume()
+    if (id === 'create-campaign') setShowAddForm(true)
+  }, [action?.timestamp])
 
   useEffect(() => {
     if (workspaceId) { loadCampaigns(); loadLists() }
@@ -79,6 +91,19 @@ export default function CampaignsPage() {
     } catch (err) {
       toast.addToast(err?.response?.data?.error || 'Failed to schedule', 'error')
     } finally { setBusyId(null) }
+  }
+
+  async function handleSendTest() {
+    if (!testEmail.trim() || !testEmailId) return
+    setTestSending(true)
+    try {
+      await campaignsAPI.sendTest(workspaceId, testEmailId, testEmail.trim())
+      toast.addToast(`Test sent to ${testEmail.trim()}`, 'success')
+      setTestEmailId(null)
+      setTestEmail('')
+    } catch (err) {
+      toast.addToast(err?.response?.data?.error || 'Failed to send test', 'error')
+    } finally { setTestSending(false) }
   }
 
   async function deleteCampaign(id) {
@@ -306,6 +331,7 @@ export default function CampaignsPage() {
                     ) : (
                       <>
                         <button onClick={() => openEditor(c)} className="flex-1 py-1.5 border-2 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-yellow transition">Edit</button>
+                        <button onClick={() => { setTestEmailId(c.id); setTestEmail('') }} className="px-2 py-1.5 border-2 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-green hover:text-white transition" title="Send test">🧪</button>
                         <button onClick={() => sendNow(c.id)} disabled={isBusy} className="flex-1 py-1.5 border-2 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80 disabled:opacity-50">{isBusy ? 'Scheduling...' : 'Send'}</button>
                         <button onClick={() => setConfirmDeleteId(c.id)} disabled={isBusy} className="px-3 py-1.5 border-2 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-red hover:text-white transition">Delete</button>
                       </>
@@ -357,6 +383,33 @@ export default function CampaignsPage() {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Test email modal */}
+      {testEmailId && (
+        <div className="border-3 border-brutal-fg bg-brutal-yellow p-5 space-y-3 animate-fade-up">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider">Send test email</span>
+            <button onClick={() => { setTestEmailId(null); setTestEmail('') }} className="px-2 py-0.5 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-xs hover:opacity-80">×</button>
+          </div>
+          <div className="flex gap-3">
+            <input
+              type="email"
+              value={testEmail}
+              onChange={(e) => setTestEmail(e.target.value)}
+              placeholder="test@example.com"
+              className="flex-1 px-4 py-2.5 bg-white border-3 border-brutal-fg text-sm focus:outline-none placeholder:text-brutal-muted"
+              onKeyDown={(e) => e.key === 'Enter' && handleSendTest()}
+            />
+            <button
+              onClick={handleSendTest}
+              disabled={testSending || !testEmail.trim()}
+              className="px-5 py-2.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
+            >
+              {testSending ? 'Sending...' : 'Send Test'}
+            </button>
+          </div>
         </div>
       )}
     </div>
