@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authAPI } from '../lib/api'
 
@@ -109,6 +109,8 @@ export default function LoginPage() {
 
         <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider text-center">
           <a href="/" className="hover:text-brutal-fg transition">← Back to home</a>
+          {' · '}
+          <Link to="/signup" className="hover:text-brutal-fg hover:underline transition">Create account</Link>
           {' · '}Minimal system. No marketing gloss.
         </p>
       </div>

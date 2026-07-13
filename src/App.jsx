@@ -21,6 +21,7 @@ import AnalyticsPage from './pages/Dashboard/Analytics'
 import SettingsPage from './pages/Dashboard/Settings'
 import WidgetsPage from './pages/Dashboard/Widgets'
 import WidgetFormPage from './pages/WidgetForm'
+import SignupPage from './pages/SignupPage'
 import DemoPage from './pages/Demo'
 
 // =============================================
@@ -128,6 +129,7 @@ function PublicLayout({ children }) {
           <Link to="/" className="font-heading text-xl uppercase tracking-wider leading-none hover:text-brutal-green transition-colors">Veloce</Link>
           <div className="flex items-center gap-4">
             <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors">Login</Link>
+            <Link to="/signup" className="px-3 py-1.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">Sign Up</Link>
             <Link to="/demo" className="px-3 py-1.5 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">Demo</Link>
           </div>
         </div>
@@ -173,6 +175,15 @@ function App() {
             element={
               <PublicLayout>
                 <LoginPage />
+              </PublicLayout>
+            }
+          />
+
+          <Route
+            path="/signup"
+            element={
+              <PublicLayout>
+                <SignupPage />
               </PublicLayout>
             }
           />

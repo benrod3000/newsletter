@@ -25,6 +25,8 @@ api.interceptors.request.use((config) => {
 export const authAPI = {
   login: (email, password, workspaceId) =>
     api.post('/api/auth/token', { email, password, workspaceId }),
+  signup: (email, password, workspaceName) =>
+    api.post('/api/auth/signup', { email, password, workspace_name: workspaceName }),
   verify: () => api.get('/api/auth/verify'),
 }
 
