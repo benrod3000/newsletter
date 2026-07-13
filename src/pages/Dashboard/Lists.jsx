@@ -53,7 +53,8 @@ export default function ListsPage() {
       await loadLists()
       toast.addToast('List created', 'success')
     } catch (err) {
-      toast.addToast(err?.response?.data?.error || 'Failed to create list', 'error')
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to create list', 'error')
     } finally { setSaving(false) }
   }
 
@@ -65,7 +66,8 @@ export default function ListsPage() {
       setLists((prev) => prev.filter((l) => l.id !== id))
       toast.addToast('List deleted', 'success')
     } catch (err) {
-      toast.addToast(err?.response?.data?.error || 'Failed to delete list', 'error')
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to delete list', 'error')
     } finally { setRemovingId(null) }
   }
 

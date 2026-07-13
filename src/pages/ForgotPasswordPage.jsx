@@ -20,7 +20,8 @@ export default function ForgotPasswordPage() {
       setSent(true)
       if (data.reset_url) setResetLink(data.reset_url)
     } catch (err) {
-      setError(err?.response?.data?.error || 'Something went wrong.')
+      const apiErr = err?.response?.data?.error
+      setError(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Something went wrong.')
     } finally {
       setLoading(false)
     }

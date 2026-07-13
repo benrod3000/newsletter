@@ -40,7 +40,8 @@ export default function WidgetFormPage() {
       await axios.post(`${API_URL}/api/public/forms/${slug}/submit`, { email: email.trim() })
       setSubmitted(true)
     } catch (err) {
-      setError(err?.response?.data?.error || 'Something went wrong. Try again.')
+      const apiErr = err?.response?.data?.error
+      setError(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Something went wrong. Try again.')
     } finally {
       setSubmitting(false)
     }

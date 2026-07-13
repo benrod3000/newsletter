@@ -21,7 +21,8 @@ export default function ResetPasswordPage() {
       await axios.post(`${API_URL}/api/auth/reset-password`, { token, password })
       setDone(true)
     } catch (err) {
-      setError(err?.response?.data?.error || 'Reset failed. The link may have expired.')
+      const apiErr = err?.response?.data?.error
+      setError(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Reset failed. The link may have expired.')
     } finally { setLoading(false) }
   }
 

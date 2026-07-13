@@ -25,7 +25,8 @@ export default function LoginPage() {
       setAuth(token, wId, userEmail, role)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Try again.')
+      const apiErr = err.response?.data?.error
+      setError(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Login failed. Try again.')
     } finally {
       setLoading(false)
     }

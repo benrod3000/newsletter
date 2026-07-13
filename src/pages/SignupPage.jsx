@@ -28,7 +28,8 @@ export default function SignupPage() {
       setAuth(data.token, data.workspaceId, data.email, data.role)
       navigate('/dashboard')
     } catch (err) {
-      setError(err?.response?.data?.error || 'Signup failed. Try again.')
+      const apiErr = err?.response?.data?.error
+      setError(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Signup failed. Try again.')
     } finally {
       setLoading(false)
     }

@@ -97,7 +97,8 @@ export default function SubscribersPage() {
       await loadSubscribers(statusFilter)
       toast.addToast('Subscriber added', 'success')
     } catch (err) {
-      toast.addToast(err?.response?.data?.error || 'Failed to add', 'error')
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to add', 'error')
     } finally { setSaving(false) }
   }
 
@@ -111,7 +112,8 @@ export default function SubscribersPage() {
       setSelectedSubscriber(null)
       toast.addToast('Subscriber removed', 'success')
     } catch (err) {
-      toast.addToast(err?.response?.data?.error || 'Failed to remove', 'error')
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to remove', 'error')
     } finally {
       setRemovingId(null)
     }
@@ -143,7 +145,8 @@ export default function SubscribersPage() {
       setTotal((prev) => Math.max(0, prev - selectedIds.size))
       toast.addToast(`Deleted ${selectedIds.size} subscriber(s)`, 'success')
     } catch (err) {
-      toast.addToast(err?.response?.data?.error || 'Bulk delete failed', 'error')
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Bulk delete failed', 'error')
     } finally {
       setBulkRemoving(false)
     }
@@ -175,7 +178,8 @@ export default function SubscribersPage() {
       setImportCsvText('')
       toast.addToast(`Imported ${data.processed} subscriber(s)`, 'success')
     } catch (err) {
-      toast.addToast(err?.response?.data?.error || 'Import failed', 'error')
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Import failed', 'error')
     } finally {
       setImporting(false)
     }

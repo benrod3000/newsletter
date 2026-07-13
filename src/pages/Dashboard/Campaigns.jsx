@@ -78,7 +78,8 @@ export default function CampaignsPage() {
       await loadCampaigns()
       toast.addToast('Draft created successfully', 'success')
     } catch (err) {
-      toast.addToast(err?.response?.data?.error || 'Failed to create campaign', 'error')
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to create campaign', 'error')
     } finally { setSaving(false) }
   }
 
@@ -89,7 +90,8 @@ export default function CampaignsPage() {
       await loadCampaigns()
       toast.addToast('Campaign scheduled for delivery', 'success')
     } catch (err) {
-      toast.addToast(err?.response?.data?.error || 'Failed to schedule', 'error')
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to schedule', 'error')
     } finally { setBusyId(null) }
   }
 
@@ -102,7 +104,8 @@ export default function CampaignsPage() {
       setTestEmailId(null)
       setTestEmail('')
     } catch (err) {
-      toast.addToast(err?.response?.data?.error || 'Failed to send test', 'error')
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to send test', 'error')
     } finally { setTestSending(false) }
   }
 
@@ -113,7 +116,8 @@ export default function CampaignsPage() {
       setCampaigns((prev) => prev.filter((c) => c.id !== id))
       toast.addToast('Draft deleted', 'success')
     } catch (err) {
-      toast.addToast(err?.response?.data?.error || 'Failed to delete', 'error')
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to delete', 'error')
     } finally {
       setBusyId(null)
       setConfirmDeleteId(null)

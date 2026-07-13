@@ -120,7 +120,8 @@ export default function WidgetsPage() {
       resetForm()
       await loadWidgets()
     } catch (err) {
-      toast.addToast(err?.response?.data?.error || 'Failed to save widget', 'error')
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to save widget', 'error')
     } finally { setSaving(false) }
   }
 
@@ -131,7 +132,8 @@ export default function WidgetsPage() {
       setWidgets(prev => prev.filter(w => w.id !== id))
       toast.addToast('Widget deleted', 'success')
     } catch (err) {
-      toast.addToast(err?.response?.data?.error || 'Failed to delete', 'error')
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to delete', 'error')
     } finally { setRemovingId(null) }
   }
 
