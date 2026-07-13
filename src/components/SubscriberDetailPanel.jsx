@@ -1,8 +1,47 @@
+import { useState, useEffect } from 'react'
+
 export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, onToggleList }) {
   if (!subscriber) return null
 
   const name = [subscriber.first_name, subscriber.last_name].filter(Boolean).join(' ')
   const location = [subscriber.city, subscriber.region, subscriber.country].filter(Boolean).join(', ')
+
+  // Notes & tags state
+  const [notes, setNotes] = useState([])
+  const [tags, setTags] = useState([])
+  const [newNote, setNewNote] = useState('')
+  const [newTag, setNewTag] = useState('')
+  const workspaceId = subscriber.client_id
+
+  useEffect(() => {
+    if (!subscriber?.id || !workspaceId) return
+    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+    fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/notes`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json()).then(d => { setNotes(d.notes || []); setTags(d.tags || []) }).catch(() => {})
+  }, [subscriber?.id, workspaceId])
+
+  async function addNote() {
+    if (!newNote.trim()) return
+    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+    const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/notes`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ note: newNote })
+    })
+    const data = await res.json()
+    if (data.note) { setNotes(prev => [data.note, ...prev]); setNewNote('') }
+  }
+
+  async function addTag() {
+    if (!newTag.trim()) return
+    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+    await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/notes`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ tag: newTag.trim().toLowerCase() })
+    })
+    setTags(prev => [...prev, newTag.trim().toLowerCase()])
+    setNewTag('')
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
@@ -49,6 +88,34 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
           <Section title="Consent">
             <Row label="Email Marketing" value={subscriber.consent_email_marketing ? 'Yes' : 'No'} />
             <Row label="Analytics" value={subscriber.consent_analytics_tracking ? 'Yes' : 'No'} />
+
+          {/* Tags */}
+          <Section title="Tags">
+            <div className="flex flex-wrap gap-1.5">
+              {tags.map(t => (
+                <span key={t} className="px-2 py-0.5 border-2 border-brutal-fg bg-brutal-yellow text-[10px] font-bold uppercase">{t}</span>
+              ))}
+              <input value={newTag} onChange={e => setNewTag(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addTag()}
+                placeholder="+ tag" className="w-24 px-2 py-0.5 border-2 border-brutal-fg text-[10px] focus:outline-none" />
+            </div>
+          </Section>
+
+          {/* Notes */}
+          <Section title="Notes">
+            <div className="flex gap-2 mb-2">
+              <input value={newNote} onChange={e => setNewNote(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addNote()}
+                placeholder="Add a note..." className="flex-1 px-3 py-1.5 border-2 border-brutal-fg text-xs focus:outline-none" />
+              <button onClick={addNote} className="px-3 py-1.5 border-2 border-brutal-fg bg-brutal-yellow text-xs font-bold uppercase hover:shadow-brutal transition">Add</button>
+            </div>
+            {notes.map(n => (
+              <div key={n.id} className="border-l-3 border-brutal-fg pl-3 py-1 mb-1">
+                <p className="text-xs">{n.note}</p>
+                <p className="text-[9px] text-brutal-muted mt-0.5">{new Date(n.created_at).toLocaleDateString()}</p>
+              </div>
+            ))}
+          </Section>
             {subscriber.suppressed && <Row label="Suppressed" value={subscriber.suppressed_reason || 'Yes'} />}
           </Section>
         </div>
