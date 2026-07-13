@@ -60,7 +60,7 @@ export default function CampaignsPage() {
     }
     setSaving(true)
     try {
-      await campaignsAPI.create(workspaceId, { name: newCampaign.name, subject: newCampaign.subject, audience: newCampaign.audience })
+      await campaignsAPI.create(workspaceId, { title: newCampaign.name, subject: newCampaign.subject, audience: newCampaign.audience })
       setNewCampaign({ name: '', subject: '', audience: 'confirmed' })
       setShowAddForm(false)
       await loadCampaigns()
