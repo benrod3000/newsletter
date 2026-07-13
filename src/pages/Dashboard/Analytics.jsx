@@ -81,14 +81,7 @@ export default function AnalyticsPage() {
         <EmptyState
           title="Couldn't load analytics"
           description={error}
-          action={
-            <button
-              onClick={loadOverview}
-              className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80"
-            >
-              Retry
-            </button>
-          }
+          action={{ label: 'Retry', onClick: loadOverview }}
         />
       ) : (
         <div className="space-y-8">

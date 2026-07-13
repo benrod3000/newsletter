@@ -21,7 +21,7 @@ const AUDIENCE_OPTIONS = [
 ]
 
 export default function CampaignsPage() {
-  const { workspaceId } = useAuthStore()
+  const { workspaceId, email } = useAuthStore()
   const toast = useToast()
   const [campaigns, setCampaigns] = useState([])
   const [lists, setLists] = useState([])
@@ -370,9 +370,9 @@ export default function CampaignsPage() {
       )}
 
       {loading ? (<LoadingState label="Loading campaign workspace" />) : error ? (
-        <EmptyState title="Failed to sync campaigns" description={error} action={<button onClick={loadCampaigns} className="px-4 py-2 border-3 border-brutal-fg bg-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition">Retry Connection</button>} />
+        <EmptyState title="Failed to sync campaigns" description={error} action={{ label: 'Retry Connection', onClick: loadCampaigns }} />
       ) : campaigns.length === 0 ? (
-        <EmptyState title="No campaigns found" description="You haven't initialized any email broadcasts yet." action={<button onClick={() => setShowAddForm(true)} className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition">+ Create First Campaign</button>} />
+        <EmptyState title="No campaigns found" description="You haven't initialized any email broadcasts yet." action={{ label: '+ Create First Campaign', onClick: () => setShowAddForm(true) }} />
       ) : viewMode === 'cards' ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {campaigns.map((c) => {

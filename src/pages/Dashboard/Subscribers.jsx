@@ -454,14 +454,7 @@ export default function SubscribersPage() {
         <EmptyState
           title="Couldn't load subscribers"
           description={error}
-          action={
-            <button
-              onClick={() => loadSubscribers(statusFilter)}
-              className={btnSecondary}
-            >
-              Retry
-            </button>
-          }
+          action={{ label: 'Retry', onClick: () => loadSubscribers(statusFilter) }}
         />
       ) : filtered.length === 0 ? (
         <EmptyState
@@ -472,11 +465,7 @@ export default function SubscribersPage() {
               : 'Nothing in the loaded results matches that filter.'
           }
           variant="subscribers"
-          action={
-            subscribers.length === 0 ? (
-              <button onClick={() => setShowAddForm(true)} className={btnPrimary}>+ Add Subscriber</button>
-            ) : undefined
-          }
+          action={subscribers.length === 0 ? { label: '+ Add Subscriber', onClick: () => setShowAddForm(true) } : undefined}
         />
       ) : (
         <div className="border-3 border-brutal-fg overflow-x-auto bg-white">

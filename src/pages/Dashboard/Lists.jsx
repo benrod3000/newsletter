@@ -144,23 +144,14 @@ export default function ListsPage() {
         <EmptyState
           title="Couldn't load lists"
           description={error}
-          action={
-            <button
-              onClick={loadLists}
-              className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80"
-            >
-              Retry
-            </button>
-          }
+          action={{ label: 'Retry', onClick: loadLists }}
         />
       ) : lists.length === 0 ? (
         <EmptyState
           title="No lists yet"
           description="Create a list to start segmenting your audience."
           variant="lists"
-          action={
-            <button onClick={() => setShowAddForm(true)} className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition">+ New List</button>
-          }
+          action={{ label: '+ New List', onClick: () => setShowAddForm(true) }}
         />
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

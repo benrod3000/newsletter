@@ -9,8 +9,7 @@ const MERGE_TAGS = [
   { tag: '{{first_name}}', label: 'First Name' },
   { tag: '{{last_name}}', label: 'Last Name' },
   { tag: '{{email}}', label: 'Email' },
-  { tag: '{{unsubscribe}}', label: 'Unsubscribe Link' },
-  { tag: '{{preferences}}', label: 'Preferences Link' },
+  { tag: '{{unsubscribe_url}}', label: 'Unsubscribe Link' },
 ]
 
 const ToolbarButton = ({ active, onClick, children, title }) => (
