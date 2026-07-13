@@ -31,6 +31,8 @@ const ToolbarButton = ({ active, onClick, children, title }) => (
 export default function EmailEditor({ content, onChange, onSave, saving }) {
   const [showTags, setShowTags] = useState(false)
   const [previewMode, setPreviewMode] = useState(null) // null=edit, 'mobile'
+  const [htmlMode, setHtmlMode] = useState(false)
+  const [htmlValue, setHtmlValue] = useState('')
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle' | 'unsaved' | 'saving' | 'saved'
   const saveTimer = useRef(null)
 
@@ -80,6 +82,20 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
       editor.chain().focus().setImage({ src: url }).run()
     }
   }, [editor])
+
+  const toggleHtmlMode = useCallback(() => {
+    if (!editor) return
+    if (!htmlMode) {
+      // Entering HTML mode — capture current content, exit preview
+      setHtmlValue(editor.getHTML())
+      setPreviewMode(null)
+    } else {
+      // Exiting HTML mode — apply HTML back to editor
+      editor.commands.setContent(htmlValue)
+      onChange?.(htmlValue)
+    }
+    setHtmlMode(!htmlMode)
+  }, [editor, htmlMode, htmlValue, onChange])
 
   if (!editor) return null
 
@@ -155,6 +171,15 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
         <span className="flex-1" />
         <button
           type="button"
+          onClick={toggleHtmlMode}
+          className={`px-3 py-1 border-3 font-bold text-[10px] uppercase tracking-wider transition ${
+            htmlMode ? 'border-brutal-fg bg-brutal-yellow text-brutal-fg' : 'border-transparent text-brutal-fg/50 hover:text-brutal-fg hover:border-brutal-fg'
+          }`}
+        >
+          {'<>'} HTML
+        </button>
+        <button
+          type="button"
           onClick={() => setPreviewMode(previewMode ? null : 'mobile')}
           className={`px-3 py-1 border-3 font-bold text-[10px] uppercase tracking-wider transition ${
             previewMode ? 'border-brutal-fg bg-brutal-yellow text-brutal-fg' : 'border-transparent text-brutal-fg/50 hover:text-brutal-fg hover:border-brutal-fg'
@@ -173,9 +198,23 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
       </div>
 
       {/* Editor / Preview */}
-      <div className={previewMode === 'mobile' ? 'max-w-[375px] mx-auto border-x-3 border-brutal-fg' : ''}>
-        <EditorContent editor={editor} />
-      </div>
+      {htmlMode ? (
+        <div className="p-4 space-y-3">
+          <p className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider">
+            Paste or edit raw HTML — switch back to visual mode when done
+          </p>
+          <textarea
+            value={htmlValue}
+            onChange={e => setHtmlValue(e.target.value)}
+            className="w-full min-h-[300px] px-4 py-3 bg-brutal-bg border-3 border-brutal-fg font-mono text-sm leading-relaxed focus:outline-none focus:bg-brutal-yellow/10 resize-y"
+            spellCheck={false}
+          />
+        </div>
+      ) : (
+        <div className={previewMode === 'mobile' ? 'max-w-[375px] mx-auto border-x-3 border-brutal-fg' : ''}>
+          <EditorContent editor={editor} />
+        </div>
+      )}
     </div>
   )
 }

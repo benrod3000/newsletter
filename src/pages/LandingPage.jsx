@@ -30,15 +30,15 @@ export default function LandingPage() {
           <Badge variant="yellow">Control Layer</Badge>
 
           <h1 className="text-display">
-            The control layer for
-            <span className="block text-brutal-muted">newsletters that matter.</span>
+            Know <span className="text-brutal-green">who's nearby</span>.
+            <span className="block text-brutal-muted">Send to the right people.</span>
           </h1>
 
           <div className="h-2 w-24 bg-brutal-yellow border-2 border-brutal-fg" />
 
           <p className="text-lg sm:text-xl text-brutal-fg/60 leading-relaxed max-w-xl">
-            Create campaigns, understand your audience, and automate your workflow
-            without the noise of traditional marketing platforms.
+            Collect leads with embeddable forms. Target campaigns by radius around any ZIP code.
+            Automate the rest — no code, no monthly fees.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
@@ -50,30 +50,30 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Product Preview */}
+          {/* Geo-targeting preview */}
           <div className="border-3 border-brutal-fg bg-white shadow-brutal overflow-hidden">
             <div className="border-b-3 border-brutal-fg bg-brutal-fg text-white px-5 py-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider opacity-60">Veloce</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider">Campaign Overview</span>
-              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider">📍 Radius filter</span>
               <span className="h-2 w-2 bg-brutal-green" />
             </div>
-            <div className="p-5 sm:p-6 space-y-5">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-bold uppercase tracking-wider">Summer Launch</p>
-                  <Badge variant="green">Active</Badge>
-                </div>
-                <div className="h-3 bg-brutal-surface border border-brutal-fg">
-                  <div className="h-full bg-brutal-yellow border-r border-brutal-fg" style={{ width: '72%' }} />
-                </div>
+            <div className="p-6 flex flex-col sm:flex-row items-center gap-6">
+              {/* Radar */}
+              <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
+                <div className="absolute inset-0 rounded-full border border-brutal-fg/15" />
+                <div className="absolute inset-[15%] rounded-full border border-dashed border-brutal-fg/20" />
+                <div className="absolute inset-[35%] rounded-full border border-dashed border-brutal-fg/25" />
+                <div className="absolute inset-[55%] rounded-full border border-dashed border-brutal-fg/30" />
+                <div className="absolute inset-0 rounded-full border-3 border-brutal-green/40 animate-radar-1" />
+                <div className="absolute inset-0 rounded-full border-3 border-brutal-green/30 animate-radar-2" />
+                <div className="absolute inset-0 rounded-full border-3 border-brutal-green/20 animate-radar-3" />
+                <div className="relative z-10 w-4 h-4 bg-brutal-green rounded-full border-2 border-brutal-fg" />
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 flex-1">
                 {[
-                  { value: '48%', label: 'Open Rate' },
-                  { value: '12,492', label: 'Subscribers' },
-                  { value: '$8,420', label: 'Revenue' },
+                  { value: 'Austin, TX', label: 'Center' },
+                  { value: '347', label: 'Within 10 mi' },
+                  { value: '1,892', label: 'Total leads' },
                 ].map((m) => (
                   <div key={m.label} className="text-center">
                     <p className="text-lg sm:text-xl font-heading uppercase leading-none text-brutal-green">{m.value}</p>
@@ -98,90 +98,57 @@ export default function LandingPage() {
         </div>
       </Section>
 
-      {/* ======== WHY VELOCE ======== */}
+      {/* ======== HOW IT WORKS ======== */}
       <Section className="border-t-3 border-brutal-fg bg-stripes">
         <div className="space-y-10">
           <div className="space-y-3 max-w-xl">
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/40">Why Veloce</p>
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/40">How it works</p>
             <h2 className="text-4xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
-              Finally understand <span className="text-brutal-green">your audience</span>
+              Three steps to <span className="text-brutal-green">smarter sends</span>
             </h2>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-5">
             {[
-              { icon: '▲', title: 'Campaigns', body: 'Create and send newsletters without the bloat. Plain text or rich HTML — your call.' },
-              { icon: '●', title: 'Audience', body: 'Import, segment, and understand who reads. Location, behavior, and consent built in.' },
-              { icon: '⚡', title: 'Health Scores', body: 'Every subscriber gets a real-time health score. Know who\'s engaged, at risk, or cold — updated daily.' },
+              { step: '01', title: 'Embed a widget', body: 'Drop a form on your site. Collects emails + location automatically. Takes 30 seconds.', icon: '📋' },
+              { step: '02', title: 'Target by radius', body: 'Pick a ZIP code, set a radius. See exactly who\'s nearby. Send campaigns that reach the right people.', icon: '📍' },
+              { step: '03', title: 'Set it and forget it', body: 'Toggle on automations. Confirmation reminders, list cleaning, smart tagging — they run daily.', icon: '🤖' },
             ].map((r) => (
-              <div key={r.title} className="reason-card border-3 border-brutal-fg bg-white p-6 hover:shadow-brutal transition">
-                <p className="text-xl mb-4 text-brutal-fg/20">{r.icon}</p>
+              <div key={r.step} className="reason-card border-3 border-brutal-fg bg-white p-6 hover:shadow-brutal transition">
+                <p className="text-3xl font-heading text-brutal-fg/10 mb-3 leading-none">{r.step}</p>
+                <p className="text-xl mb-2">{r.icon}</p>
                 <h3 className="font-heading text-xl uppercase tracking-wide mb-2">{r.title}</h3>
                 <p className="text-xs leading-relaxed text-brutal-muted">{r.body}</p>
               </div>
             ))}
           </div>
-        </div>
-      </Section>
-
-      {/* ======== AUTOMATIONS PREVIEW ======== */}
-      <Section className="border-t-3 border-brutal-fg bg-stripes">
-        <div className="space-y-10">
-          <div className="space-y-3 max-w-xl">
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/40">Automations</p>
-            <h2 className="text-4xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
-              Set it, forget it, <span className="text-brutal-green">watch it work</span>
-            </h2>
-            <p className="text-sm text-brutal-muted leading-relaxed max-w-lg">
-              Toggle on pre-built automations. No config, no code, no cron jobs to manage. They run daily and keep your list healthy.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-5">
-            {[
-              { icon: '📬', title: 'Confirm & Remind', desc: 'Auto-follows up on unconfirmed subscribers. Cleans up after 7 days.' },
-              { icon: '🧹', title: 'Auto-Clean', desc: 'Removes cold subscribers at 90 days. Keeps your sender reputation strong.' },
-              { icon: '🏷️', title: 'Smart Tags', desc: 'Labels engaged, clicker, slipping, mobile. Builds segments automatically.' },
-            ].map((a) => (
-              <div key={a.title} className="reason-card border-3 border-brutal-fg bg-white p-6 hover:shadow-brutal transition">
-                <p className="text-xl mb-4">{a.icon}</p>
-                <h3 className="font-heading text-lg uppercase tracking-wide mb-2">{a.title}</h3>
-                <p className="text-xs leading-relaxed text-brutal-muted">{a.desc}</p>
-              </div>
-            ))}
-          </div>
 
           <Link to="/demo" className="inline-block px-6 py-3 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
-            See all automations in the demo →
+            Try it in the demo →
           </Link>
         </div>
       </Section>
 
-      {/* ======== ARCHITECTURE ======== */}
+      {/* ======== WHY VELOCE ======== */}
       <Section>
-        <div className="max-w-2xl space-y-6">
-          <div className="space-y-3">
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/40">Architecture</p>
+        <div className="space-y-10">
+          <div className="space-y-3 max-w-xl">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/40">Why Veloce</p>
             <h2 className="text-4xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
-              Multi-tenant by <span className="text-brutal-green">design</span>
+              Built different <span className="text-brutal-green">on purpose</span>
             </h2>
-            <p className="text-sm text-brutal-muted leading-relaxed max-w-lg">
-              Every workspace is isolated. Bring your own AWS SES keys. No per-contact pricing. No platform lock-in.
-            </p>
           </div>
 
-          <div className="border-3 border-brutal-fg bg-white p-6 space-y-3">
+          <div className="grid sm:grid-cols-3 gap-5">
             {[
-              { label: 'Workspace isolation', detail: 'Each client gets their own data boundary' },
-              { label: 'BYO email provider', detail: 'Plugs into SendGrid or your own AWS SES account' },
-              { label: 'No platform fees', detail: 'You pay AWS directly. We don\'t take a cut.' },
-            ].map((a, i) => (
-              <div key={i} className="flex items-start gap-3 py-2 border-b-2 border-brutal-fg/10 last:border-0">
-                <span className="text-brutal-green font-bold mt-0.5">✓</span>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider">{a.label}</p>
-                  <p className="text-[10px] text-brutal-muted">{a.detail}</p>
-                </div>
+              { icon: '📍', title: 'Geo-targeted', body: 'The only newsletter platform with built-in radius targeting. Embed a form, collect location, send to people nearby.' },
+              { icon: '🤖', title: 'Auto-pilot', body: 'Confirm & Remind, Auto-Clean, Smart Tags, Welcome Drips. Toggle on and they run daily. No config needed.' },
+              { icon: '🔑', title: 'You own the keys', body: 'Bring your own AWS SES account. Pay Amazon directly — $1 per 10K emails. We never take a cut.' },
+            ].map((r) => (
+              <div key={r.title} className="reason-card border-3 border-brutal-fg bg-white p-6 hover:shadow-brutal transition">
+                <p className="text-xl mb-4">{r.icon}</p>
+                <h3 className="font-heading text-xl uppercase tracking-wide mb-2">{r.title}</h3>
+                <p className="text-xs leading-relaxed text-brutal-muted">{r.body}</p>
               </div>
             ))}
           </div>

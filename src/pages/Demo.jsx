@@ -106,6 +106,32 @@ export default function DemoPage() {
                   ))}
                 </div>
 
+                <Panel title="📍 Geo-Targeting — Radius Filter" accent="bg-brutal-green text-white">
+                  <div className="p-5 flex flex-col sm:flex-row items-center gap-5">
+                    <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
+                      <div className="absolute inset-0 rounded-full border border-brutal-fg/15" />
+                      <div className="absolute inset-[15%] rounded-full border border-dashed border-brutal-fg/20" />
+                      <div className="absolute inset-[35%] rounded-full border border-dashed border-brutal-fg/25" />
+                      <div className="absolute inset-[55%] rounded-full border border-dashed border-brutal-fg/30" />
+                      <div className="absolute inset-0 rounded-full border-3 border-brutal-green/40 animate-radar-1" />
+                      <div className="absolute inset-0 rounded-full border-3 border-brutal-green/30 animate-radar-2" />
+                      <div className="absolute inset-0 rounded-full border-3 border-brutal-green/20 animate-radar-3" />
+                      <div className="relative z-10 w-3.5 h-3.5 bg-brutal-green rounded-full border-2 border-brutal-fg" />
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <p className="text-xs font-bold uppercase tracking-wider mb-1">Target subscribers by radius</p>
+                      <p className="text-[10px] text-brutal-muted uppercase leading-relaxed">
+                        Enter any ZIP code — see subscribers within 5, 10, 25 miles. Send geo-targeted campaigns to people near your business.
+                      </p>
+                      <div className="flex gap-2 mt-3 justify-center sm:justify-start">
+                        {[5, 10, 25].map(mi => (
+                          <span key={mi} className="px-2 py-0.5 border-2 border-brutal-fg text-[10px] font-bold bg-brutal-yellow">{mi} mi</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Panel>
+
                 <Panel title="Recent Campaigns">
                   <div className="divide-y-2 divide-brutal-fg/10">
                     {mockCampaigns.map((c) => (
