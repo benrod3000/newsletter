@@ -37,6 +37,8 @@ export default function DashboardHome() {
         if (!cancelled) setError('Could not load workspace metrics')
       } finally {
         if (!cancelled) setLoading(false)
+      }
+    }
 
     async function loadActivity() {
       setActivityLoading(true)
@@ -45,8 +47,6 @@ export default function DashboardHome() {
         if (!cancelled) setActivities(data.activity || [])
       } catch {}
       finally { if (!cancelled) setActivityLoading(false) }
-    }
-      }
     }
 
     loadOverview()
