@@ -69,9 +69,16 @@ export default function WidgetFormPage() {
     )
   }
 
+  const sizeClasses = {
+    small: 'max-w-xs',
+    medium: 'max-w-md',
+    large: 'max-w-lg',
+  }
+  const sizeCls = sizeClasses[widget.size] || 'max-w-md'
+
   return (
     <div className="min-h-screen bg-brutal-bg flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
+      <div className={`w-full ${sizeCls}`}>
         <div className="border-3 border-brutal-fg bg-white shadow-brutal">
           {/* Header */}
           <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-6 py-4">

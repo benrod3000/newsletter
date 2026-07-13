@@ -335,7 +335,7 @@ export default function CampaignsPage() {
                     ) : (
                       <>
                         <button onClick={() => openEditor(c)} className="flex-1 py-1.5 border-2 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-yellow transition">Edit</button>
-                        <button onClick={() => { setTestEmailId(c.id); setTestEmail('') }} className="px-2 py-1.5 border-2 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-green hover:text-white transition" title="Send test">🧪</button>
+                        <button onClick={() => { setTestEmailId(c.id); setTestEmail(email || '') }} className="px-2 py-1.5 border-2 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-green hover:text-white transition" title="Send test">🧪</button>
                         <button onClick={() => sendNow(c.id)} disabled={isBusy} className="flex-1 py-1.5 border-2 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80 disabled:opacity-50">{isBusy ? 'Scheduling...' : 'Send'}</button>
                         <button onClick={() => setConfirmDeleteId(c.id)} disabled={isBusy} className="px-3 py-1.5 border-2 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-red hover:text-white transition">Delete</button>
                       </>

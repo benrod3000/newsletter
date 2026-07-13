@@ -10,6 +10,7 @@ const DEFAULT_FORM = {
   name: '',
   slug: '',
   list_id: '',
+  size: 'medium',
   headline: 'Get the Free Download',
   description: 'Enter your email and we\'ll send you the download link.',
   download_url: '',
@@ -76,6 +77,7 @@ export default function WidgetsPage() {
       name: w.name || '',
       slug: w.slug || '',
       list_id: w.list_id || '',
+      size: w.size || 'medium',
       headline: w.headline || 'Get the Free Download',
       description: w.description || '',
       download_url: w.download_url || '',
@@ -138,7 +140,9 @@ export default function WidgetsPage() {
   }
 
   function copyEmbed(slug) {
-    const code = `<iframe src="${EMBED_BASE}/${slug}"\n  width="100%" height="420"\n  frameborder="0"\n  style="border:3px solid #0a0a0a">\n</iframe>`
+    const heights = { small: 280, medium: 420, large: 600 }
+    const h = heights[form.size] || 420
+    const code = `<iframe src="${EMBED_BASE}/${slug}"\n  width="100%" height="${h}"\n  frameborder="0"\n  style="border:3px solid #0a0a0a">\n</iframe>`
     navigator.clipboard.writeText(code)
     setCopiedId(slug)
     toast.addToast('Embed code copied!', 'success')
@@ -259,6 +263,26 @@ export default function WidgetsPage() {
                   placeholder="https://example.com/my-guide.pdf"
                 />
                 {errors.download_url && <p className="text-xs font-bold text-brutal-red mt-1">{errors.download_url}</p>}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Widget Size</label>
+              <div className="flex border-3 border-brutal-fg overflow-hidden">
+                {[
+                  { value: 'small', label: 'Small', desc: 'Compact inline' },
+                  { value: 'medium', label: 'Medium', desc: 'Standard card' },
+                  { value: 'large', label: 'Large', desc: 'Full hero' },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => updateField('size', opt.value)}
+                    className={`flex-1 px-3 py-2 text-xs font-bold uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ${form.size === opt.value ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             </div>
 
