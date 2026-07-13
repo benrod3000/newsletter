@@ -106,7 +106,7 @@ export default function DemoPage() {
                   ))}
                 </div>
 
-                <Panel title="📍 Geo-Targeting — Radius Filter" accent="bg-brutal-green text-white">
+                <Panel title="📍 Radius Filter" accent="bg-brutal-green text-white">
                   <div className="p-5 flex flex-col sm:flex-row items-center gap-5">
                     <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
                       <div className="absolute inset-0 rounded-full border border-brutal-fg/15" />
@@ -121,7 +121,7 @@ export default function DemoPage() {
                     <div className="text-center sm:text-left">
                       <p className="text-xs font-bold uppercase tracking-wider mb-1">Target subscribers by radius</p>
                       <p className="text-[10px] text-brutal-muted uppercase leading-relaxed">
-                        Enter any ZIP code — see subscribers within 5, 10, 25 miles. Send geo-targeted campaigns to people near your business.
+                        Enter any ZIP code. See subscribers within 5, 10, or 25 miles. Send geo-targeted campaigns to people near your business.
                       </p>
                       <div className="flex gap-2 mt-3 justify-center sm:justify-start">
                         {[5, 10, 25].map(mi => (
@@ -292,7 +292,7 @@ export default function DemoPage() {
                     },
                     {
                       icon: '📊', title: 'Weekly List Health Report',
-                      desc: 'Every Monday at 8am — summary of list health with actionable tips.',
+                      desc: 'Every Monday at 8am. Summary of list health with actionable tips.',
                       detail: 'Ready to activate · next report in 4 days', active: false,
                     },
                     {
@@ -312,7 +312,7 @@ export default function DemoPage() {
                       <p className="text-[10px] font-bold text-brutal-fg/60 uppercase tracking-wider mt-2">{auto.detail}</p>
                       <div className="mt-auto pt-3 border-t border-brutal-fg/20">
                         <span className={`text-xs font-bold uppercase tracking-wider ${auto.active ? 'text-brutal-green' : 'text-brutal-muted'}`}>
-                          {auto.disabled ? '⏳ Coming Soon' : auto.active ? '✅ Active — running daily' : '⏸ Paused — toggle to activate'}
+                          {auto.disabled ? '⏳ Coming Soon' : auto.active ? '✅ Active, runs daily' : '⏸ Paused, toggle to activate'}
                         </span>
                       </div>
                     </div>

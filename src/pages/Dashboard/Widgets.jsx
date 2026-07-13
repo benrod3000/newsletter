@@ -117,7 +117,7 @@ export default function WidgetsPage() {
         toast.addToast('Widget updated', 'success')
       } else {
         await widgetsAPI.create(workspaceId, form)
-        toast.addToast('Widget created — grab your embed code!', 'success')
+        toast.addToast('Widget created. Grab your embed code!', 'success')
       }
       setStep(0)
       resetForm()

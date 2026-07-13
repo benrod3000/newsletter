@@ -456,7 +456,7 @@ export default function SettingsPage() {
                 <p className="text-[10px] font-bold text-brutal-fg/60 uppercase tracking-wider mb-3">{auto.status}</p>
                 <div className="mt-auto pt-3 border-t border-brutal-fg/20">
                   <span className={`text-xs font-bold uppercase tracking-wider ${auto.disabled ? 'text-brutal-muted' : 'text-brutal-green'}`}>
-                    {auto.disabled ? '⏳ Coming Soon' : '✅ Active — running daily'}
+                    {auto.disabled ? '⏳ Coming Soon' : '✅ Active, runs daily'}
                   </span>
                 </div>
               </div>

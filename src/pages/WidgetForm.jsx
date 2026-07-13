@@ -164,7 +164,7 @@ export default function WidgetFormPage() {
                       {geoLoading ? '📍 Locating...' : geoCoords ? '📍 Location shared' : '📍 Use my location'}
                     </button>
                     <p className="text-[9px] text-brutal-muted font-bold uppercase tracking-wider mt-1 text-center">
-                      {geoCoords ? 'Content will be personalized near you' : 'Optional — personalize content near you'}
+                      {geoCoords ? 'Content will be personalized near you' : 'Optional: personalize content near you'}
                     </p>
                   </div>
 

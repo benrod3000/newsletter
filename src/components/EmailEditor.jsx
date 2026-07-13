@@ -201,7 +201,7 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
       {htmlMode ? (
         <div className="p-4 space-y-3">
           <p className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider">
-            Paste or edit raw HTML — switch back to visual mode when done
+            Paste or edit raw HTML. Switch back to visual mode when done.
           </p>
           <textarea
             value={htmlValue}

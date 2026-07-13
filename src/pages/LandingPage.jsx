@@ -38,7 +38,7 @@ export default function LandingPage() {
 
           <p className="text-lg sm:text-xl text-brutal-fg/60 leading-relaxed max-w-xl">
             Collect leads with embeddable forms. Target campaigns by radius around any ZIP code.
-            Automate the rest — no code, no monthly fees.
+            Automate the rest. No code, no monthly fees.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
@@ -112,7 +112,7 @@ export default function LandingPage() {
             {[
               { step: '01', title: 'Embed a widget', body: 'Drop a form on your site. Collects emails + location automatically. Takes 30 seconds.', icon: '📋' },
               { step: '02', title: 'Target by radius', body: 'Pick a ZIP code, set a radius. See exactly who\'s nearby. Send campaigns that reach the right people.', icon: '📍' },
-              { step: '03', title: 'Set it and forget it', body: 'Toggle on automations. Confirmation reminders, list cleaning, smart tagging — they run daily.', icon: '🤖' },
+              { step: '03', title: 'Set it and forget it', body: 'Toggle on automations. Confirmation reminders, list cleaning, smart tagging. They run daily.', icon: '🤖' },
             ].map((r) => (
               <div key={r.step} className="reason-card border-3 border-brutal-fg bg-white p-6 hover:shadow-brutal transition">
                 <p className="text-3xl font-heading text-brutal-fg/10 mb-3 leading-none">{r.step}</p>
@@ -126,6 +126,84 @@ export default function LandingPage() {
           <Link to="/demo" className="inline-block px-6 py-3 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
             Try it in the demo →
           </Link>
+        </div>
+      </Section>
+
+      {/* ======== SEE IT IN ACTION ======== */}
+      <Section>
+        <div className="space-y-10">
+          <div className="space-y-3 max-w-xl">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/40">See it in action</p>
+            <h2 className="text-4xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
+              Real features. <span className="text-brutal-green">No fluff.</span>
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-6">
+            {/* Health Score Badges */}
+            <div className="border-3 border-brutal-fg bg-white overflow-hidden">
+              <div className="border-b-3 border-brutal-fg bg-brutal-fg text-white px-4 py-2.5">
+                <p className="text-[10px] font-bold uppercase tracking-wider">Health Scores</p>
+              </div>
+              <div className="p-5 space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold px-2.5 py-1.5 border-2 border-brutal-fg bg-brutal-green text-white">🟢 Active</span>
+                  <span className="text-xs font-bold text-brutal-muted">Opened in last 30 days</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold px-2.5 py-1.5 border-2 border-brutal-fg bg-brutal-yellow text-brutal-fg">🟡 At Risk</span>
+                  <span className="text-xs font-bold text-brutal-muted">30-60 days no engagement</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold px-2.5 py-1.5 border-2 border-brutal-fg bg-brutal-red text-white">🔴 Cold</span>
+                  <span className="text-xs font-bold text-brutal-muted">60+ days inactive</span>
+                </div>
+                <p className="text-[10px] font-bold text-brutal-fg/60 uppercase tracking-wider pt-2 border-t border-brutal-fg/20">Recalculated daily · 1,234 active</p>
+              </div>
+            </div>
+
+            {/* Automation Toggle Cards */}
+            <div className="border-3 border-brutal-fg bg-white overflow-hidden">
+              <div className="border-b-3 border-brutal-fg bg-brutal-fg text-white px-4 py-2.5">
+                <p className="text-[10px] font-bold uppercase tracking-wider">Pre-Built Automations</p>
+              </div>
+              <div className="p-5 space-y-3">
+                {[
+                  { icon: '📬', label: 'Confirm & Remind', badge: '✅ Active' },
+                  { icon: '🧹', label: 'Auto-Clean Cold', badge: '✅ Active' },
+                  { icon: '🏷️', label: 'Smart Auto-Tagging', badge: '✅ Active' },
+                  { icon: '👋', label: 'Welcome Drip', badge: '⏸ Paused' },
+                ].map((a) => (
+                  <div key={a.label} className="flex items-center justify-between py-2 border-b-2 border-brutal-fg/10 last:border-0">
+                    <span className="text-xs font-bold">{a.icon} {a.label}</span>
+                    <span className="text-[10px] font-bold text-brutal-green uppercase tracking-wider">{a.badge}</span>
+                  </div>
+                ))}
+                <p className="text-[10px] font-bold text-brutal-fg/60 uppercase tracking-wider pt-2 border-t border-brutal-fg/20">Toggle on. They run daily.</p>
+              </div>
+            </div>
+
+            {/* Geo Radar */}
+            <div className="border-3 border-brutal-fg bg-white overflow-hidden">
+              <div className="border-b-3 border-brutal-fg bg-brutal-fg text-white px-4 py-2.5">
+                <p className="text-[10px] font-bold uppercase tracking-wider">Geo-Radius Targeting</p>
+              </div>
+              <div className="p-5 flex flex-col items-center gap-4">
+                <div className="relative w-24 h-24 flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full border border-brutal-fg/15" />
+                  <div className="absolute inset-[15%] rounded-full border border-dashed border-brutal-fg/20" />
+                  <div className="absolute inset-[35%] rounded-full border border-dashed border-brutal-fg/25" />
+                  <div className="absolute inset-[55%] rounded-full border border-dashed border-brutal-fg/30" />
+                  <div className="absolute inset-0 rounded-full border-3 border-brutal-green/40 animate-radar-1" />
+                  <div className="absolute inset-0 rounded-full border-3 border-brutal-green/30 animate-radar-2" />
+                  <div className="absolute inset-0 rounded-full border-3 border-brutal-green/20 animate-radar-3" />
+                  <div className="relative z-10 w-3.5 h-3.5 bg-brutal-green rounded-full border-2 border-brutal-fg" />
+                </div>
+                <p className="text-xs font-bold text-center">347 subscribers within 10 mi of Austin, TX</p>
+                <p className="text-[10px] font-bold text-brutal-fg/60 uppercase tracking-wider">Send campaigns to people nearby</p>
+              </div>
+            </div>
+          </div>
         </div>
       </Section>
 
@@ -143,7 +221,7 @@ export default function LandingPage() {
             {[
               { icon: '📍', title: 'Geo-targeted', body: 'The only newsletter platform with built-in radius targeting. Embed a form, collect location, send to people nearby.' },
               { icon: '🤖', title: 'Auto-pilot', body: 'Confirm & Remind, Auto-Clean, Smart Tags, Welcome Drips. Toggle on and they run daily. No config needed.' },
-              { icon: '🔑', title: 'You own the keys', body: 'Bring your own AWS SES account. Pay Amazon directly — $1 per 10K emails. We never take a cut.' },
+              { icon: '🔑', title: 'You own the keys', body: 'Bring your own AWS SES account. Pay Amazon directly at $1 per 10K emails. We never take a cut.' },
             ].map((r) => (
               <div key={r.title} className="reason-card border-3 border-brutal-fg bg-white p-6 hover:shadow-brutal transition">
                 <p className="text-xl mb-4">{r.icon}</p>
