@@ -14,7 +14,16 @@ const STATUS_FILTERS = [
   { value: '', label: 'All' },
   { value: 'confirmed', label: 'Confirmed' },
   { value: 'pending', label: 'Pending' },
+  { value: 'active', label: '🟢 Active' },
+  { value: 'at_risk', label: '🟡 At Risk' },
+  { value: 'cold', label: '🔴 Cold' },
 ]
+
+const HEALTH_STYLES = {
+  active: 'bg-brutal-green text-white',
+  at_risk: 'bg-brutal-yellow text-brutal-fg',
+  cold: 'bg-brutal-red text-white',
+}
 
 const btn = 'px-4 py-2 border-3 border-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition'
 const btnPrimary = `${btn} bg-brutal-yellow text-brutal-fg`
@@ -66,7 +75,13 @@ export default function SubscribersPage() {
     setLoading(true)
     setError(null)
     try {
-      const { data } = await subscribersAPI.list(workspaceId, status ? { status } : undefined)
+      const params = {}
+      if (status === 'active' || status === 'at_risk' || status === 'cold') {
+        params.status = status
+      } else if (status) {
+        params.status = status
+      }
+      const { data } = await subscribersAPI.list(workspaceId, Object.keys(params).length ? params : undefined)
       setSubscribers(data.subscribers || [])
       setTotal(data.total ?? data.subscribers?.length ?? 0)
     } catch (err) {
@@ -454,15 +469,22 @@ export default function SubscribersPage() {
                     <td className="p-3 font-bold" title={s.email}>{s.email}</td>
                     <td className="p-3 text-brutal-muted hidden sm:table-cell" title={name || undefined}>{name || '—'}</td>
                     <td className="p-3 hidden sm:table-cell" onClick={(e) => e.stopPropagation()}>
-                      <span
-                        className={`text-xs font-bold px-2 py-1 border border-brutal-fg ${
-                          s.confirmed
-                            ? 'bg-brutal-green text-white'
-                            : 'bg-brutal-yellow text-brutal-fg'
-                        }`}
-                      >
-                        {s.confirmed ? 'confirmed' : 'pending'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-xs font-bold px-2 py-1 border border-brutal-fg ${
+                            s.confirmed
+                              ? 'bg-brutal-green text-white'
+                              : 'bg-brutal-yellow text-brutal-fg'
+                          }`}
+                        >
+                          {s.confirmed ? 'confirmed' : 'pending'}
+                        </span>
+                        {s.health_score && HEALTH_STYLES[s.health_score] && (
+                          <span className={`text-xs font-bold px-2 py-1 border border-brutal-fg ${HEALTH_STYLES[s.health_score]}`}>
+                            {s.health_score === 'active' ? '🟢' : s.health_score === 'at_risk' ? '🟡' : '🔴'}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="p-3 text-brutal-muted text-xs hidden md:table-cell">
                       {s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}
