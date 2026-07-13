@@ -32,11 +32,11 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-brutal-bg text-brutal-fg flex items-center justify-center px-6">
-      <div className="w-full max-w-md space-y-10">
+    <main className="min-h-[80vh] flex items-center justify-center">
+      <div className="w-full max-w-sm space-y-10">
         <div className="space-y-4">
           <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/50">
-            Veloce
+            Welcome back
           </p>
 
           <h1 className="text-4xl sm:text-5xl font-heading tracking-tight leading-[0.9] uppercase">
@@ -53,57 +53,63 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="text-xs font-bold uppercase border-brutal border-brutal-fg bg-brutal-yellow p-3 text-brutal-fg">
+            <div className="text-xs font-bold uppercase border-3 border-brutal-fg bg-brutal-yellow p-3 text-brutal-fg">
               {error}
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-brutal-fg/60">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-white border-brutal border-brutal-fg px-4 py-2.5 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-white border-3 border-brutal-fg px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-brutal-fg/60">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white border-brutal border-brutal-fg px-4 py-2.5 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
-              placeholder="••••••••"
-              required
-            />
-          </div>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-white border-3 border-brutal-fg px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
+                placeholder="••••••••"
+                required
+              />
+            </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-brutal-fg/60">Workspace ID</label>
-            <input
-              type="text"
-              value={workspaceId}
-              onChange={(e) => setWorkspaceId(e.target.value)}
-              className="w-full bg-white border-brutal border-brutal-fg px-4 py-2.5 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
-              placeholder="optional"
-            />
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Workspace ID</label>
+              <input
+                type="text"
+                value={workspaceId}
+                onChange={(e) => setWorkspaceId(e.target.value)}
+                className="w-full bg-white border-3 border-brutal-fg px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
+                placeholder="Leave blank for default"
+              />
+              <p className="text-xs font-bold text-brutal-muted mt-1.5 uppercase tracking-wider">
+                Provided by your account manager
+              </p>
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full border-brutal border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold py-3 text-sm uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
+            className="w-full border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold py-3 text-sm uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 active:shadow-none disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none transition"
           >
             {loading ? 'Authenticating...' : 'Login'}
           </button>
         </form>
 
-        <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">
-          Minimal system interface. No marketing gloss.
+        <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider text-center">
+          <a href="/" className="hover:text-brutal-fg transition">← Back to home</a>
+          {' · '}Minimal system. No marketing gloss.
         </p>
       </div>
     </main>

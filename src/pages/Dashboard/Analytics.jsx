@@ -5,7 +5,7 @@ import { EmptyState, LoadingState } from '../../components/ux'
 
 function StatCard({ label, value }) {
   return (
-    <div className="border-brutal border-brutal-fg bg-white p-5">
+    <div className="border-3 border-brutal-fg bg-white p-5 border-t-[6px] border-t-brutal-yellow hover:shadow-brutal transition">
       <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">{label}</p>
       <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">{value}</p>
     </div>
@@ -16,13 +16,13 @@ function StatCard({ label, value }) {
 function GrowthChart({ points }) {
   const max = Math.max(...points.map((p) => p.count), 1)
   return (
-    <div className="border-brutal border-brutal-fg bg-white p-6">
+    <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
       <h3 className="font-heading text-xl uppercase tracking-wide mb-6">Subscriber Growth</h3>
       <div className="flex items-end gap-2 h-40">
         {points.map((p, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
             <div
-              className="w-full bg-brutal-yellow border border-brutal-fg hover:opacity-80 transition"
+              className="w-full bg-brutal-yellow border-2 border-brutal-fg hover:bg-brutal-yellow-dark transition"
               style={{ height: `${Math.max((p.count / max) * 100, 2)}%` }}
               title={`${p.count} on ${p.date}`}
             />
@@ -69,7 +69,9 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-8">
-      <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">Analytics</h2>
+      <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">
+        <span className="text-brutal-green">Analyt</span>ics
+      </h2>
 
       {loading ? (
         <LoadingState label="Loading analytics" />

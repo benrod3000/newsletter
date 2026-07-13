@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { subscribersAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
+import { useToast } from '../../components/Toast'
+import SubscriberDetailPanel from '../../components/SubscriberDetailPanel'
 
 // Matches the real `subscribers` table: there's no generic "status" string —
 // just a `confirmed` boolean. Unsubscribing hard-deletes the row entirely
@@ -13,12 +15,13 @@ const STATUS_FILTERS = [
   { value: 'pending', label: 'Pending' },
 ]
 
-const btn = 'px-4 py-2 border-brutal border-brutal-fg font-bold text-xs uppercase tracking-wider'
-const btnPrimary = `${btn} bg-brutal-yellow text-brutal-fg hover:opacity-80`
-const btnSecondary = `${btn} bg-white text-brutal-fg hover:opacity-80`
+const btn = 'px-4 py-2 border-3 border-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition'
+const btnPrimary = `${btn} bg-brutal-yellow text-brutal-fg`
+const btnSecondary = `${btn} bg-white text-brutal-fg`
 
 export default function SubscribersPage() {
   const { workspaceId } = useAuthStore()
+  const toast = useToast()
   const [subscribers, setSubscribers] = useState([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -29,6 +32,7 @@ export default function SubscribersPage() {
   const [newSubscriber, setNewSubscriber] = useState({ email: '', first_name: '', last_name: '' })
   const [saving, setSaving] = useState(false)
   const [removingId, setRemovingId] = useState(null)
+  const [selectedSubscriber, setSelectedSubscriber] = useState(null)
 
   // CSV import
   const [showImport, setShowImport] = useState(false)
@@ -72,36 +76,30 @@ export default function SubscribersPage() {
   }, [subscribers, search])
 
   async function addSubscriber() {
-    if (!newSubscriber.email.trim()) {
-      alert('Please enter an email address')
-      return
-    }
+    if (!newSubscriber.email.trim()) { toast.addToast('Please enter an email', 'warning'); return }
     setSaving(true)
     try {
       await subscribersAPI.create(workspaceId, newSubscriber)
       setNewSubscriber({ email: '', first_name: '', last_name: '' })
       setShowAddForm(false)
       await loadSubscribers(statusFilter)
+      toast.addToast('Subscriber added', 'success')
     } catch (err) {
-      console.error('Failed to add subscriber:', err)
-      const message = err?.response?.data?.error || 'Failed to add subscriber'
-      alert(message)
-    } finally {
-      setSaving(false)
-    }
+      toast.addToast(err?.response?.data?.error || 'Failed to add', 'error')
+    } finally { setSaving(false) }
   }
 
   async function removeSubscriber(id) {
-    if (!confirm('Remove this subscriber? This cannot be undone.')) return
+    if (!confirm('Remove this subscriber?')) return
     setRemovingId(id)
     try {
       await subscribersAPI.remove(workspaceId, id)
       setSubscribers((prev) => prev.filter((s) => s.id !== id))
       setTotal((prev) => Math.max(0, prev - 1))
+      setSelectedSubscriber(null)
+      toast.addToast('Subscriber removed', 'success')
     } catch (err) {
-      console.error('Failed to remove subscriber:', err)
-      const message = err?.response?.data?.error || 'Failed to remove subscriber'
-      alert(message)
+      toast.addToast(err?.response?.data?.error || 'Failed to remove', 'error')
     } finally {
       setRemovingId(null)
     }
@@ -131,11 +129,9 @@ export default function SubscribersPage() {
       await subscribersAPI.bulkRemove(workspaceId, Array.from(selectedIds))
       setSubscribers((prev) => prev.filter((s) => !selectedIds.has(s.id)))
       setTotal((prev) => Math.max(0, prev - selectedIds.size))
-      setSelectedIds(new Set())
+      toast.addToast(`Deleted ${selectedIds.size} subscriber(s)`, 'success')
     } catch (err) {
-      console.error('Bulk delete failed:', err)
-      const message = err?.response?.data?.error || 'Bulk delete failed'
-      alert(message)
+      toast.addToast(err?.response?.data?.error || 'Bulk delete failed', 'error')
     } finally {
       setBulkRemoving(false)
     }
@@ -151,28 +147,23 @@ export default function SubscribersPage() {
       a.download = `subscribers-${workspaceId.slice(0, 8)}.csv`
       a.click()
       window.URL.revokeObjectURL(url)
+      toast.addToast('Exported CSV', 'success')
     } catch (err) {
-      console.error('Export failed:', err)
-      alert('Failed to export subscribers')
+      toast.addToast('Failed to export', 'error')
     }
   }
 
   async function importSubscribers() {
-    if (!importCsvText.trim()) {
-      alert('Paste CSV data first')
-      return
-    }
+    if (!importCsvText.trim()) { toast.addToast('Paste CSV data first', 'warning'); return }
     setImporting(true)
     setImportResult(null)
     try {
       const { data } = await subscribersAPI.importCsv(workspaceId, importCsvText, importConfirmed)
       setImportResult(data)
       setImportCsvText('')
-      await loadSubscribers(statusFilter)
+      toast.addToast(`Imported ${data.processed} subscriber(s)`, 'success')
     } catch (err) {
-      console.error('Import failed:', err)
-      const message = err?.response?.data?.error || 'Import failed'
-      alert(message)
+      toast.addToast(err?.response?.data?.error || 'Import failed', 'error')
     } finally {
       setImporting(false)
     }
@@ -435,8 +426,8 @@ export default function SubscribersPage() {
               {filtered.map((s) => {
                 const name = [s.first_name, s.last_name].filter(Boolean).join(' ')
                 return (
-                  <tr key={s.id} className="border-t border-brutal-fg">
-                    <td className="p-3">
+                  <tr key={s.id} className="border-t border-brutal-fg hover:bg-brutal-yellow/10 cursor-pointer transition" onClick={() => setSelectedSubscriber(s)}>
+                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={selectedIds.has(s.id)}
@@ -446,7 +437,7 @@ export default function SubscribersPage() {
                     </td>
                     <td className="p-3 font-bold">{s.email}</td>
                     <td className="p-3 text-brutal-muted">{name || '—'}</td>
-                    <td className="p-3">
+                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
                       <span
                         className={`text-xs font-bold px-2 py-1 border border-brutal-fg ${
                           s.confirmed
@@ -460,11 +451,11 @@ export default function SubscribersPage() {
                     <td className="p-3 text-brutal-muted text-xs">
                       {s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}
                     </td>
-                    <td className="p-3 text-right">
+                    <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => removeSubscriber(s.id)}
                         disabled={removingId === s.id}
-                        className="text-xs font-bold text-brutal-fg/50 uppercase tracking-wider hover:text-brutal-fg disabled:opacity-50"
+                        className="text-xs font-bold text-brutal-red uppercase tracking-wider hover:opacity-70 disabled:opacity-50"
                       >
                         {removingId === s.id ? 'Removing...' : 'Remove'}
                       </button>
@@ -476,6 +467,12 @@ export default function SubscribersPage() {
           </table>
         </div>
       )}
+
+      <SubscriberDetailPanel
+        subscriber={selectedSubscriber}
+        onClose={() => setSelectedSubscriber(null)}
+        onRemove={removeSubscriber}
+      />
     </div>
   )
 }

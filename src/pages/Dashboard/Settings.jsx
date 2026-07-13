@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { brandingAPI, automationsAPI } from '../../lib/api'
+import { useToast } from '../../components/Toast'
 
 export default function SettingsPage() {
   const { workspaceId } = useAuthStore()
+  const toast = useToast()
   const [activeTab, setActiveTab] = useState('branding')
   const [loading, setLoading] = useState(false)
   const [branding, setBranding] = useState({
@@ -56,10 +58,10 @@ export default function SettingsPage() {
     try {
       const { data } = await brandingAPI.update(workspaceId, branding)
       setBranding(data)
-      alert('Branding updated successfully!')
+      toast.addToast('Branding updated successfully!', 'success')
     } catch (error) {
       console.error('Failed to update branding:', error)
-      alert('Failed to update branding')
+      toast.addToast('Failed to update branding', 'error')
     } finally {
       setLoading(false)
     }
@@ -67,7 +69,7 @@ export default function SettingsPage() {
 
   async function createAutomation() {
     if (!newAutomation.name.trim()) {
-      alert('Please enter automation name')
+      toast.addToast('Please enter automation name', 'warning')
       return
     }
     setLoading(true)
@@ -84,10 +86,10 @@ export default function SettingsPage() {
       })
       setShowNewAutomation(false)
       await loadAutomations()
-      alert('Automation created successfully!')
+      toast.addToast('Automation created successfully!', 'success')
     } catch (error) {
       console.error('Failed to create automation:', error)
-      alert('Failed to create automation')
+      toast.addToast('Failed to create automation', 'error')
     } finally {
       setLoading(false)
     }
@@ -95,7 +97,9 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h2 className="text-4xl font-heading uppercase tracking-tight leading-none mb-8">Settings</h2>
+      <h2 className="text-4xl font-heading uppercase tracking-tight leading-none mb-8">
+        <span className="text-brutal-green">Sett</span>ings
+      </h2>
 
       {/* Tabs */}
       <div className="flex border-brutal border-brutal-fg overflow-hidden mb-8">

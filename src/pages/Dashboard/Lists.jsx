@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
+import { useToast } from '../../components/Toast'
 
 export default function ListsPage() {
   const { workspaceId } = useAuthStore()
+  const toast = useToast()
   const [lists, setLists] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -33,23 +35,17 @@ export default function ListsPage() {
   }
 
   async function createList() {
-    if (!newList.name.trim()) {
-      alert('Please enter a list name')
-      return
-    }
+    if (!newList.name.trim()) { toast.addToast('Please enter a list name', 'warning'); return }
     setSaving(true)
     try {
       await listsAPI.create(workspaceId, newList)
       setNewList({ name: '', description: '', opt_in_type: 'single' })
       setShowAddForm(false)
       await loadLists()
+      toast.addToast('List created', 'success')
     } catch (err) {
-      console.error('Failed to create list:', err)
-      const message = err?.response?.data?.error || 'Failed to create list'
-      alert(message)
-    } finally {
-      setSaving(false)
-    }
+      toast.addToast(err?.response?.data?.error || 'Failed to create list', 'error')
+    } finally { setSaving(false) }
   }
 
   async function removeList(id) {
@@ -58,22 +54,21 @@ export default function ListsPage() {
     try {
       await listsAPI.remove(workspaceId, id)
       setLists((prev) => prev.filter((l) => l.id !== id))
+      toast.addToast('List deleted', 'success')
     } catch (err) {
-      console.error('Failed to delete list:', err)
-      const message = err?.response?.data?.error || 'Failed to delete list'
-      alert(message)
-    } finally {
-      setRemovingId(null)
-    }
+      toast.addToast(err?.response?.data?.error || 'Failed to delete list', 'error')
+    } finally { setRemovingId(null) }
   }
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">Subscriber Lists</h2>
+        <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">
+          <span className="text-brutal-green">Subscriber</span> Lists
+        </h2>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="px-4 py-2 border-brutal border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
+          className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal transition"
         >
           + New List
         </button>

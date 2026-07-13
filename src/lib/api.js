@@ -104,4 +104,16 @@ export const automationsAPI = {
     api.post(`/api/clients/${workspaceId}/automations`, data),
 }
 
+// Embeddable signup form widgets ("email for media")
+export const widgetsAPI = {
+  list: (workspaceId) =>
+    api.get(`/api/clients/${workspaceId}/widgets`),
+  create: (workspaceId, data) =>
+    api.post(`/api/clients/${workspaceId}/widgets`, data),
+  update: (workspaceId, id, data) =>
+    api.patch(`/api/clients/${workspaceId}/widgets/${id}`, data),
+  remove: (workspaceId, id) =>
+    api.delete(`/api/clients/${workspaceId}/widgets/${id}`),
+}
+
 export default api
