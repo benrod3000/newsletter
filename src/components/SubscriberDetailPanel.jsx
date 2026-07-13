@@ -11,6 +11,9 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
   const [tags, setTags] = useState([])
   const [newNote, setNewNote] = useState('')
   const [newTag, setNewTag] = useState('')
+  const [editingName, setEditingName] = useState(false)
+  const [editFirst, setEditFirst] = useState(subscriber.first_name || '')
+  const [editLast, setEditLast] = useState(subscriber.last_name || '')
   const workspaceId = subscriber.client_id
 
   useEffect(() => {
@@ -43,6 +46,17 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
     setNewTag('')
   }
 
+  async function saveName() {
+    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+    await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ first_name: editFirst, last_name: editLast })
+    })
+    subscriber.first_name = editFirst
+    subscriber.last_name = editLast
+    setEditingName(false)
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
       <div className="absolute inset-0 bg-brutal-fg/30" />
@@ -56,7 +70,27 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
             <div className="flex-1">
               <p className="text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1">Subscriber</p>
               <h2 className="font-heading text-2xl uppercase tracking-wide leading-none break-all">{subscriber.email}</h2>
-              {name && <p className="text-sm font-bold mt-1">{name}</p>}
+              {name && !editingName && (
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold mt-1">{name}</p>
+                  <button onClick={() => { setEditingName(true); setEditFirst(subscriber.first_name || ''); setEditLast(subscriber.last_name || '') }} className="text-[10px] font-bold text-brutal-muted hover:text-brutal-fg uppercase tracking-wider">Edit</button>
+                </div>
+              )}
+              {editingName && (
+                <div className="mt-2 space-y-2">
+                  <div className="flex gap-2">
+                    <input value={editFirst} onChange={e => setEditFirst(e.target.value)} placeholder="First name" className="flex-1 px-3 py-1.5 bg-white border-2 border-brutal-fg text-xs focus:outline-none" />
+                    <input value={editLast} onChange={e => setEditLast(e.target.value)} placeholder="Last name" className="flex-1 px-3 py-1.5 bg-white border-2 border-brutal-fg text-xs focus:outline-none" />
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={saveName} className="px-3 py-1 border-2 border-brutal-fg bg-brutal-yellow text-brutal-fg text-[10px] font-bold uppercase tracking-wider">Save</button>
+                    <button onClick={() => setEditingName(false)} className="px-3 py-1 border-2 border-brutal-fg bg-white text-brutal-fg text-[10px] font-bold uppercase tracking-wider">Cancel</button>
+                  </div>
+                </div>
+              )}
+              {!name && !editingName && (
+                <button onClick={() => { setEditingName(true); setEditFirst(''); setEditLast('') }} className="text-xs font-bold text-brutal-muted hover:text-brutal-fg mt-1 uppercase tracking-wider">+ Add name</button>
+              )}
             </div>
             <button onClick={onClose} className="px-2 py-1 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-lg leading-none hover:opacity-80">×</button>
           </div>
