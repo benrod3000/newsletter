@@ -1,59 +1,62 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* =============================================
-   Veloce Brutalist Design System v2
-   Refined with better spacing, focus, and motion
-   ============================================= */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@theme {
+  --color-brutal-bg: #f5f5f0;
+  --color-brutal-fg: #0a0a0a;
+  --color-brutal-yellow: #f5e642;
+  --color-brutal-yellow-dark: #d4c82e;
+  --color-brutal-green: #2f7f5f;
+  --color-brutal-green-light: #4a9e7a;
+  --color-brutal-green-neon: #00e060;
+  --color-brutal-red: #e03131;
+  --color-brutal-red-light: #f04a4a;
+  --color-brutal-muted: #a8a49a;
+  --color-brutal-surface: #e8e8e0;
+  --color-brutal-surface-dark: #d4d0c8;
+  --color-brutal-border: #0a0a0a;
+  --font-family-heading: "Bebas Neue", Impact, "Arial Black", sans-serif;
+  --font-family-sans: Inter, "Helvetica Neue", Arial, sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, monospace;
+  --shadow-brutal: 4px 4px 0px #0a0a0a;
+  --border-width-3: 3px;
 }
 
-body {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 18px;
-  line-height: 1.5;
-  color: #0a0a0a;
-  background: #f5f5f0;
-  -webkit-font-smoothing: antialiased;
-}
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-#root {
-  min-height: 100vh;
-}
+  body {
+    font-family: var(--font-family-sans);
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--color-brutal-fg);
+    background: var(--color-brutal-bg);
+    -webkit-font-smoothing: antialiased;
+  }
 
-/* Brutalist base: no rounded corners anywhere */
-input, select, textarea, button {
-  border-radius: 0 !important;
-}
+  #root {
+    min-height: 100vh;
+  }
 
-/* =============================================
-   Focus & Selection
-   ============================================= */
+  /* Brutalist: no rounded corners */
+  input, select, textarea, button {
+    border-radius: 0 !important;
+  }
 
-::selection {
-  background: #f5e642;
-  color: #0a0a0a;
-}
+  ::selection {
+    background: var(--color-brutal-yellow);
+    color: var(--color-brutal-fg);
+  }
 
-*:focus-visible {
-  outline: 3px solid #0a0a0a;
-  outline-offset: 2px;
-}
-
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 3px solid #0a0a0a;
-  outline-offset: 2px;
+  *:focus-visible {
+    outline: 3px solid var(--color-brutal-fg);
+    outline-offset: 2px;
+  }
 }
 
 /* =============================================
