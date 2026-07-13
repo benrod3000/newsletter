@@ -6,6 +6,8 @@ import { useToast } from '../../components/Toast'
 import SubscriberDetailPanel from '../../components/SubscriberDetailPanel'
 import { useCommandAction } from '../../components/CommandActionContext'
 import { relativeTime } from '../../lib/time'
+import GeoFilter from '../../components/GeoFilter'
+import { formatDistance } from '../../lib/geo'
 
 // Matches the real `subscribers` table: there's no generic "status" string —
 // just a `confirmed` boolean. Unsubscribing hard-deletes the row entirely
@@ -69,6 +71,10 @@ export default function SubscribersPage() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
 
+  // Geo-radius filter
+  const [geoFilter, setGeoFilter] = useState(null)
+  const [geoLoading, setGeoLoading] = useState(false)
+
   useEffect(() => {
     if (workspaceId) loadSubscribers(statusFilter)
     document.title = 'Subscribers — Veloce'
@@ -87,6 +93,11 @@ export default function SubscribersPage() {
       }
       if (dateFrom) params.joined_after = dateFrom
       if (dateTo) params.joined_before = dateTo
+      if (geoFilter) {
+        params.near_lat = geoFilter.lat
+        params.near_lng = geoFilter.lng
+        params.radius = geoFilter.radius
+      }
       const { data } = await subscribersAPI.list(workspaceId, Object.keys(params).length ? params : undefined)
       setSubscribers(data.subscribers || [])
       setTotal(data.total ?? data.subscribers?.length ?? 0)
@@ -334,6 +345,22 @@ export default function SubscribersPage() {
         )}
       </div>
 
+      {/* Geo-radius filter */}
+      <GeoFilter
+        onChange={async (geo) => {
+          setGeoFilter(geo)
+          setGeoLoading(true)
+          await loadSubscribers(statusFilter)
+          setGeoLoading(false)
+        }}
+        onClear={() => {
+          setGeoFilter(null)
+          loadSubscribers(statusFilter)
+        }}
+        loading={geoLoading}
+        active={!!geoFilter}
+      />
+
       {/* Bulk action bar */}
       {selectedIds.size > 0 && (
         <div className="sticky top-[57px] z-30 border-3 border-brutal-fg bg-brutal-yellow p-4 flex items-center gap-4 flex-wrap">
@@ -468,6 +495,7 @@ export default function SubscribersPage() {
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell">Name</th>
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell">Status</th>
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden md:table-cell">Joined</th>
+                {geoFilter && <th className="text-right p-3 font-bold text-xs uppercase tracking-wider">Distance</th>}
                 <th className="text-right p-3"></th>
               </tr>
             </thead>
@@ -507,6 +535,13 @@ export default function SubscribersPage() {
                     <td className="p-3 text-brutal-muted text-xs hidden md:table-cell" title={s.created_at ? new Date(s.created_at).toLocaleDateString() : undefined}>
                       {relativeTime(s.created_at)}
                     </td>
+                    {geoFilter && (
+                      <td className="p-3 text-right">
+                        <span className="text-xs font-bold text-brutal-green animate-bounce-in" title={`${s.distance} miles`}>
+                          🏠 {formatDistance(s.distance)}
+                        </span>
+                      </td>
+                    )}
                     <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => removeSubscriber(s.id)}

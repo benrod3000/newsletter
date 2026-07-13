@@ -4,6 +4,7 @@ import { campaignsAPI, listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
 import EmailEditor from '../../components/EmailEditor'
+import GeoFilter from '../../components/GeoFilter'
 import { useCommandAction } from '../../components/CommandActionContext'
 
 const STATUS_STYLES = {
@@ -16,6 +17,7 @@ const AUDIENCE_OPTIONS = [
   { value: 'confirmed', label: 'Confirmed Subscribers' },
   { value: 'all', label: 'All Subscribers' },
   { value: 'pending', label: 'Pending Verification' },
+  { value: 'geo', label: '📍 Geo-Targeted' },
 ]
 
 export default function CampaignsPage() {
@@ -36,6 +38,7 @@ export default function CampaignsPage() {
   const [editContent, setEditContent] = useState('')
   const [editSubject, setEditSubject] = useState('')
   const [editAudience, setEditAudience] = useState('confirmed')
+  const [geoAudience, setGeoAudience] = useState(null)
   const [autosaving, setAutosaving] = useState(false)
   const autosaveTimer = useRef(null)
   const [testEmailId, setTestEmailId] = useState(null)
@@ -322,6 +325,15 @@ export default function CampaignsPage() {
                   {AUDIENCE_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
                   {lists.length > 0 && (<optgroup label="Custom Lists">{lists.map((l) => (<option key={`list:${l.id}`} value={`list:${l.id}`}>{l.name}</option>))}</optgroup>)}
                 </select>
+                {editAudience === 'geo' && (
+                  <div className="mt-3">
+                    <GeoFilter
+                      onChange={(geo) => setGeoAudience(geo)}
+                      onClear={() => setGeoAudience(null)}
+                      active={!!geoAudience}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

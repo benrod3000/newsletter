@@ -34,6 +34,30 @@ export default {
       boxShadow: {
         brutal: '4px 4px 0px #0a0a0a',
       },
+      animation: {
+        'radar-1': 'radarPulse 3s ease-out infinite',
+        'radar-2': 'radarPulse 3s ease-out 0.75s infinite',
+        'radar-3': 'radarPulse 3s ease-out 1.5s infinite',
+        'bounce-in': 'bounceIn 400ms ease-out',
+        'fade-in': 'fadeIn 200ms ease-out',
+      },
+      keyframes: {
+        radarPulse: {
+          '0%': { transform: 'scale(0.15)', opacity: '0.7', borderWidth: '3px' },
+          '60%': { opacity: '0.15', borderWidth: '1px' },
+          '100%': { transform: 'scale(1)', opacity: '0', borderWidth: '1px' },
+        },
+        bounceIn: {
+          '0%': { transform: 'scale(0.3)', opacity: '0' },
+          '50%': { transform: 'scale(1.05)' },
+          '70%': { transform: 'scale(0.95)' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(4px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
     },
   },
   plugins: [],

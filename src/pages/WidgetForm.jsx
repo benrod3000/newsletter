@@ -9,6 +9,9 @@ export default function WidgetFormPage() {
   const { slug } = useParams()
   const [widget, setWidget] = useState(null)
   const [email, setEmail] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [geoCoords, setGeoCoords] = useState(null)
+  const [geoLoading, setGeoLoading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -28,6 +31,19 @@ export default function WidgetFormPage() {
 
   useEffect(() => { loadWidget() }, [loadWidget])
 
+  function requestGeolocation() {
+    if (!navigator.geolocation) return;
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGeoCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+        setGeoLoading(false);
+      },
+      () => setGeoLoading(false),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 300000 }
+    );
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
@@ -37,7 +53,13 @@ export default function WidgetFormPage() {
     }
     setSubmitting(true)
     try {
-      await axios.post(`${API_URL}/api/public/forms/${slug}/submit`, { email: email.trim() })
+      const payload = { email: email.trim() };
+      if (firstName.trim()) payload.first_name = firstName.trim();
+      if (geoCoords) {
+        payload.browser_latitude = geoCoords.latitude;
+        payload.browser_longitude = geoCoords.longitude;
+      }
+      await axios.post(`${API_URL}/api/public/forms/${slug}/submit`, payload)
       setSubmitted(true)
     } catch (err) {
       const apiErr = err?.response?.data?.error
@@ -118,6 +140,34 @@ export default function WidgetFormPage() {
                     />
                   </div>
 
+                  <div>
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={e => setFirstName(e.target.value)}
+                      placeholder="First name (optional)"
+                      className="w-full px-4 py-3 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
+                    />
+                  </div>
+
+                  <div>
+                    <button
+                      type="button"
+                      onClick={requestGeolocation}
+                      disabled={geoLoading || !!geoCoords}
+                      className={`w-full border-3 text-xs font-bold uppercase tracking-wider py-2.5 transition ${
+                        geoCoords
+                          ? 'border-brutal-green bg-brutal-green text-white'
+                          : 'border-brutal-fg bg-white text-brutal-fg hover:bg-brutal-yellow/20'
+                      } disabled:opacity-50`}
+                    >
+                      {geoLoading ? '📍 Locating...' : geoCoords ? '📍 Location shared' : '📍 Use my location'}
+                    </button>
+                    <p className="text-[9px] text-brutal-muted font-bold uppercase tracking-wider mt-1 text-center">
+                      {geoCoords ? 'Content will be personalized near you' : 'Optional — personalize content near you'}
+                    </p>
+                  </div>
+
                   {error && (
                     <p className="text-[10px] font-bold text-brutal-red uppercase tracking-wider">{error}</p>
                   )}
@@ -137,7 +187,7 @@ export default function WidgetFormPage() {
           {/* Footer */}
           <div className="border-t-3 border-brutal-fg px-6 py-3">
             <p className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider text-center">
-              No spam. Unsubscribe anytime.
+              No spam. Unsubscribe anytime. &nbsp;·&nbsp; 📍 Location data may be collected for personalization.
             </p>
           </div>
         </div>

@@ -449,6 +449,9 @@ export default function WidgetsPage() {
                         <p className="text-xs text-brutal-muted uppercase tracking-wider">
                           List: {listName(w.list_id)} · Submissions: {w.submission_count || 0}
                         </p>
+                        <p className="text-[10px] font-bold text-brutal-green uppercase tracking-wider mt-1">
+                          📍 Location data collected for geo-targeting
+                        </p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <button
@@ -513,6 +516,9 @@ export default function WidgetsPage() {
                       </pre>
                       <p className="text-[10px] font-bold text-brutal-muted uppercase">
                         Paste this anywhere on your site. The form auto-resizes.
+                      </p>
+                      <p className="text-[10px] font-bold text-brutal-green uppercase">
+                        📍 This widget collects location data so you can target campaigns by radius.
                       </p>
                     </div>
                   )}
