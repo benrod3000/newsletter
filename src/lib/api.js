@@ -99,6 +99,8 @@ export const brandingAPI = {
 export const analyticsAPI = {
   overview: (workspaceId, params) =>
     api.get(`/api/clients/${workspaceId}/analytics`, { params }),
+  activity: (workspaceId) =>
+    api.get(`/api/clients/${workspaceId}/activity`),
 }
 
 export const automationsAPI = {

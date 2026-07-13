@@ -8,12 +8,15 @@ import MetricCard from '../../components/ui/MetricCard'
 import Panel from '../../components/ui/Panel'
 import Badge from '../../components/ui/Badge'
 import { Mail, Upload, Zap, Globe } from 'lucide-react'
+import { relativeTime } from '../../lib/time'
 
 export default function DashboardHome() {
   const { email, workspaceId } = useAuthStore()
   const ref = useRef(null)
   const [stats, setStats] = useState(null)
+  const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
+  const [activityLoading, setActivityLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useReveal(ref, { stagger: 0.1, y: 20 })
@@ -34,10 +37,20 @@ export default function DashboardHome() {
         if (!cancelled) setError('Could not load workspace metrics')
       } finally {
         if (!cancelled) setLoading(false)
+
+    async function loadActivity() {
+      setActivityLoading(true)
+      try {
+        const { data } = await analyticsAPI.activity(workspaceId)
+        if (!cancelled) setActivities(data.activity || [])
+      } catch {}
+      finally { if (!cancelled) setActivityLoading(false) }
+    }
       }
     }
 
     loadOverview()
+    loadActivity()
     return () => { cancelled = true }
   }, [workspaceId])
 
@@ -127,24 +140,26 @@ export default function DashboardHome() {
 
       {/* Recent Activity */}
       <Panel title="Recent Activity">
-        <div className="space-y-3">
-          {[
-            { event: 'Campaign sent', detail: 'Summer Launch', time: '2 hours ago' },
-            { event: 'Subscriber imported', detail: '124 new contacts', time: '5 hours ago' },
-            { event: 'Automation triggered', detail: 'Welcome sequence', time: '1 day ago' },
-          ].map((a, i) => (
-            <div key={i} className="flex items-center justify-between py-2 border-b-2 border-brutal-fg/10 last:border-0">
-              <div className="flex items-center gap-3">
-                <div className="h-2 w-2 bg-brutal-green shrink-0" />
-                <div>
-                  <p className="text-xs font-bold">{a.event}</p>
-                  <p className="text-[10px] text-brutal-muted uppercase tracking-wider">{a.detail}</p>
+        {activityLoading ? (
+          <LoadingState label="Loading activity" />
+        ) : activities.length === 0 ? (
+          <div className="text-center py-6">
+            <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">No recent activity yet</p>
+            <p className="text-[10px] text-brutal-muted mt-1">Create your first campaign or add a subscriber</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {activities.map((a, i) => (
+              <div key={i} className="flex items-center justify-between py-2 border-b-2 border-brutal-fg/10 last:border-0">
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 bg-brutal-green shrink-0" />
+                  <p className="text-xs font-bold">{a.description}</p>
                 </div>
+                <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">{relativeTime(a.timestamp)}</p>
               </div>
-              <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">{a.time}</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </Panel>
     </div>
   )
