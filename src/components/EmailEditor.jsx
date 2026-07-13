@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useRef, useEffect } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
@@ -31,6 +31,8 @@ const ToolbarButton = ({ active, onClick, children, title }) => (
 export default function EmailEditor({ content, onChange, onSave, saving }) {
   const [showTags, setShowTags] = useState(false)
   const [previewMode, setPreviewMode] = useState(null) // null=edit, 'mobile'
+  const [saveStatus, setSaveStatus] = useState('idle') // 'idle' | 'unsaved' | 'saving' | 'saved'
+  const saveTimer = useRef(null)
 
   const editor = useEditor({
     extensions: [
@@ -47,6 +49,12 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
     },
     onUpdate: ({ editor }) => {
       onChange?.(editor.getHTML())
+      setSaveStatus('unsaved')
+      if (saveTimer.current) clearTimeout(saveTimer.current)
+      saveTimer.current = setTimeout(() => {
+        setSaveStatus('saving')
+        onSave?.()
+      }, 1500)
     },
     autofocus: false,
   })
@@ -75,6 +83,19 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
 
   if (!editor) return null
 
+  // Sync save status with parent saving state
+  useEffect(() => {
+    if (!saving && saveStatus === 'saving') setSaveStatus('saved')
+    if (saving) setSaveStatus('saving')
+  }, [saving])
+
+  const statusBadge = {
+    idle: null,
+    unsaved: { text: 'Unsaved', cls: 'bg-brutal-red text-white' },
+    saving: { text: 'Saving...', cls: 'bg-brutal-yellow text-brutal-fg' },
+    saved: { text: 'Saved ✓', cls: 'bg-brutal-green text-white' },
+  }[saveStatus]
+
   return (
     <div className="border-3 border-brutal-fg bg-white">
       {/* Toolbar */}
@@ -87,6 +108,15 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
         <ToolbarButton active={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Numbered List">1. List</ToolbarButton>
         <ToolbarButton active={editor.isActive('link')} onClick={addLink} title="Add Link">🔗</ToolbarButton>
         <ToolbarButton active={false} onClick={addImage} title="Add Image">🖼</ToolbarButton>
+
+        <span className="flex-1" />
+
+        {/* Save status badge */}
+        {statusBadge && (
+          <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider border-2 border-brutal-fg ${statusBadge.cls}`}>
+            {statusBadge.text}
+          </span>
+        )}
 
         <span className="w-px h-5 bg-brutal-fg/20 mx-1" />
 

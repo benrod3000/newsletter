@@ -41,17 +41,18 @@ export default function AnalyticsPage() {
   const [overview, setOverview] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [days, setDays] = useState(14)
 
   useEffect(() => {
     if (workspaceId) loadOverview()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workspaceId])
+  }, [workspaceId, days])
 
   async function loadOverview() {
     setLoading(true)
     setError(null)
     try {
-      const { data } = await analyticsAPI.overview(workspaceId)
+      const { data } = await analyticsAPI.overview(workspaceId, { days })
       setOverview(data)
     } catch (err) {
       console.error('Failed to load analytics:', err)
@@ -95,6 +96,26 @@ export default function AnalyticsPage() {
             <StatCard label="Campaigns Sent" value={fmt(overview?.campaigns_sent)} />
             <StatCard label="Avg Open Rate" value={fmtPct(overview?.avg_open_rate)} />
             <StatCard label="Avg Click Rate" value={fmtPct(overview?.avg_click_rate)} />
+          </div>
+
+          {/* Date range toggle */}
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Range:</span>
+            <div className="flex border-3 border-brutal-fg overflow-hidden">
+              {[7, 14, 30, 90].map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDays(d)}
+                  className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ${
+                    days === d
+                      ? 'bg-brutal-yellow text-brutal-fg'
+                      : 'bg-white text-brutal-muted hover:text-brutal-fg'
+                  }`}
+                >
+                  {d}d
+                </button>
+              ))}
+            </div>
           </div>
 
           {growth.length > 0 ? (
