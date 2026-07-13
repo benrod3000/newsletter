@@ -5,6 +5,7 @@ import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
 import SubscriberDetailPanel from '../../components/SubscriberDetailPanel'
 import { useCommandAction } from '../../components/CommandActionContext'
+import { relativeTime } from '../../lib/time'
 
 // Matches the real `subscribers` table: there's no generic "status" string —
 // just a `confirmed` boolean. Unsubscribing hard-deletes the row entirely
@@ -68,6 +69,7 @@ export default function SubscribersPage() {
 
   useEffect(() => {
     if (workspaceId) loadSubscribers(statusFilter)
+    document.title = 'Subscribers — Veloce'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId, statusFilter])
 
@@ -492,8 +494,8 @@ export default function SubscribersPage() {
                         )}
                       </div>
                     </td>
-                    <td className="p-3 text-brutal-muted text-xs hidden md:table-cell">
-                      {s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}
+                    <td className="p-3 text-brutal-muted text-xs hidden md:table-cell" title={s.created_at ? new Date(s.created_at).toLocaleDateString() : undefined}>
+                      {relativeTime(s.created_at)}
                     </td>
                     <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
