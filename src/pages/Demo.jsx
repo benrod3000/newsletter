@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Mail, Users, BarChart3, Globe } from 'lucide-react'
+import { Mail, Users, BarChart3, Globe, Zap } from 'lucide-react'
 
 function Panel({ children, className = '', title, accent }) {
   return (
@@ -36,6 +36,7 @@ const navItems = [
   { id: 'campaigns', label: 'Campaigns', icon: Mail },
   { id: 'subscribers', label: 'Subscribers', icon: Users },
   { id: 'analytics', label: 'Analytics', icon: Globe },
+  { id: 'automations', label: 'Automations', icon: Zap },
 ]
 
 export default function DemoPage() {
@@ -56,7 +57,7 @@ export default function DemoPage() {
           See <span className="text-brutal-green">Veloce</span> in action
         </h1>
         <p className="text-sm text-brutal-muted max-w-lg">
-          Realistic preview of a workspace with 12,453 subscribers, 4 campaigns, and live analytics.
+          Realistic preview of a workspace with 12,453 subscribers, 4 campaigns, 6 automations, and live analytics.
         </p>
       </div>
 
@@ -232,6 +233,65 @@ export default function DemoPage() {
                     ))}
                   </div>
                 </Panel>
+              </div>
+            )}
+
+            {/* ===== AUTOMATIONS ===== */}
+            {activeTab === 'automations' && (
+              <div className="space-y-5">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Pre-built · Toggle on, they just work</p>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {[
+                    {
+                      icon: '📬', title: 'Confirm & Remind',
+                      desc: 'Reminds unconfirmed subscribers after 48 hours. Removes them after 7 days.',
+                      detail: 'Runs daily at 6am · 3 subscribers in queue', active: true,
+                    },
+                    {
+                      icon: '🧹', title: 'Auto-Clean Cold Subs',
+                      desc: 'Moves 60+ day cold subscribers to a Cold Leads list. Removes at 90 days.',
+                      detail: 'Runs daily at 2am · 47 cold subscribers', active: true,
+                    },
+                    {
+                      icon: '🏷️', title: 'Smart Auto-Tagging',
+                      desc: 'Labels subscribers as engaged, clicker, slipping, mobile, weekend-reader.',
+                      detail: 'Runs daily at 4am · 2,831 tagged this week', active: true,
+                    },
+                    {
+                      icon: '👋', title: 'Welcome Drip',
+                      desc: 'Sends 3 emails over 7 days to new subscribers. Pre-written sequence.',
+                      detail: 'Ready to activate · 3× higher open rates', active: false,
+                    },
+                    {
+                      icon: '📊', title: 'Weekly List Health Report',
+                      desc: 'Every Monday at 8am — summary of list health with actionable tips.',
+                      detail: 'Ready to activate · next report in 4 days', active: false,
+                    },
+                    {
+                      icon: '🔄', title: 'Re-Engagement Rescue',
+                      desc: 'Detects quiet subscribers and sends win-back emails automatically.',
+                      detail: 'Coming soon', active: false, disabled: true,
+                    },
+                  ].map((auto) => (
+                    <div key={auto.title} className={`border-3 border-brutal-fg bg-white p-5 flex flex-col ${auto.disabled ? 'opacity-50' : 'hover:shadow-brutal transition'}`}>
+                      <div className="flex items-start gap-3 mb-2">
+                        <span className="text-2xl shrink-0">{auto.icon}</span>
+                        <div>
+                          <h4 className="font-heading text-lg uppercase tracking-wide leading-none">{auto.title}</h4>
+                          <p className="text-xs text-brutal-muted mt-1 leading-relaxed">{auto.desc}</p>
+                        </div>
+                      </div>
+                      <p className="text-[10px] font-bold text-brutal-fg/60 uppercase tracking-wider mt-2">{auto.detail}</p>
+                      <div className="mt-auto pt-3 border-t border-brutal-fg/20">
+                        <span className={`text-xs font-bold uppercase tracking-wider ${auto.active ? 'text-brutal-green' : 'text-brutal-muted'}`}>
+                          {auto.disabled ? '⏳ Coming Soon' : auto.active ? '✅ Active — running daily' : '⏸ Paused — toggle to activate'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

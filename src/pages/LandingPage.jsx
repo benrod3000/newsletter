@@ -112,7 +112,7 @@ export default function LandingPage() {
             {[
               { icon: '▲', title: 'Campaigns', body: 'Create and send newsletters without the bloat. Plain text or rich HTML — your call.' },
               { icon: '●', title: 'Audience', body: 'Import, segment, and understand who reads. Location, behavior, and consent built in.' },
-              { icon: '⚡', title: 'Automations', body: 'Triggered sequences, drip campaigns, and welcome flows that run on autopilot.' },
+              { icon: '⚡', title: 'Health Scores', body: 'Every subscriber gets a real-time health score. Know who\'s engaged, at risk, or cold — updated daily.' },
             ].map((r) => (
               <div key={r.title} className="reason-card border-3 border-brutal-fg bg-white p-6 hover:shadow-brutal transition">
                 <p className="text-xl mb-4 text-brutal-fg/20">{r.icon}</p>
@@ -121,6 +121,39 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        </div>
+      </Section>
+
+      {/* ======== AUTOMATIONS PREVIEW ======== */}
+      <Section className="border-t-3 border-brutal-fg bg-stripes">
+        <div className="space-y-10">
+          <div className="space-y-3 max-w-xl">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/40">Automations</p>
+            <h2 className="text-4xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
+              Set it, forget it, <span className="text-brutal-green">watch it work</span>
+            </h2>
+            <p className="text-sm text-brutal-muted leading-relaxed max-w-lg">
+              Toggle on pre-built automations. No config, no code, no cron jobs to manage. They run daily and keep your list healthy.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-5">
+            {[
+              { icon: '📬', title: 'Confirm & Remind', desc: 'Auto-follows up on unconfirmed subscribers. Cleans up after 7 days.' },
+              { icon: '🧹', title: 'Auto-Clean', desc: 'Removes cold subscribers at 90 days. Keeps your sender reputation strong.' },
+              { icon: '🏷️', title: 'Smart Tags', desc: 'Labels engaged, clicker, slipping, mobile. Builds segments automatically.' },
+            ].map((a) => (
+              <div key={a.title} className="reason-card border-3 border-brutal-fg bg-white p-6 hover:shadow-brutal transition">
+                <p className="text-xl mb-4">{a.icon}</p>
+                <h3 className="font-heading text-lg uppercase tracking-wide mb-2">{a.title}</h3>
+                <p className="text-xs leading-relaxed text-brutal-muted">{a.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <Link to="/demo" className="inline-block px-6 py-3 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
+            See all automations in the demo →
+          </Link>
         </div>
       </Section>
 
