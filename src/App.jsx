@@ -7,6 +7,7 @@ import { ToastProvider } from './components/Toast'
 
 gsap.registerPlugin(ScrollTrigger)
 import CommandPalette from './components/CommandPalette'
+import ErrorBoundary from './components/ErrorBoundary'
 import './App.css'
 
 // Pages
@@ -160,6 +161,7 @@ function App() {
   return (
     <ToastProvider>
       <BrowserRouter>
+        <ErrorBoundary>
         <CommandPalette />
         <Routes>
           {/* Public Routes */}
@@ -167,7 +169,7 @@ function App() {
             path="/"
             element={
               <PublicLayout>
-                <LandingPage />
+                <ErrorBoundary><LandingPage /></ErrorBoundary>
               </PublicLayout>
             }
           />
@@ -176,7 +178,7 @@ function App() {
             path="/login"
             element={
               <PublicLayout>
-                <LoginPage />
+                <ErrorBoundary><LoginPage /></ErrorBoundary>
               </PublicLayout>
             }
           />
@@ -185,7 +187,7 @@ function App() {
             path="/signup"
             element={
               <PublicLayout>
-                <SignupPage />
+                <ErrorBoundary><SignupPage /></ErrorBoundary>
               </PublicLayout>
             }
           />
@@ -194,7 +196,7 @@ function App() {
             path="/forgot-password"
             element={
               <PublicLayout>
-                <ForgotPasswordPage />
+                <ErrorBoundary><ForgotPasswordPage /></ErrorBoundary>
               </PublicLayout>
             }
           />
@@ -203,7 +205,7 @@ function App() {
             path="/reset-password"
             element={
               <PublicLayout>
-                <ResetPasswordPage />
+                <ErrorBoundary><ResetPasswordPage /></ErrorBoundary>
               </PublicLayout>
             }
           />
@@ -212,7 +214,7 @@ function App() {
             path="/demo"
             element={
               <PublicLayout>
-                <DemoPage />
+                <ErrorBoundary><DemoPage /></ErrorBoundary>
               </PublicLayout>
             }
           />
@@ -222,25 +224,26 @@ function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <DashboardLayout />
+                <ErrorBoundary><DashboardLayout /></ErrorBoundary>
               </ProtectedRoute>
             }
           >
-            <Route index element={<DashboardHome />} />
-            <Route path="subscribers" element={<SubscribersPage />} />
-            <Route path="campaigns" element={<CampaignsPage />} />
-            <Route path="lists" element={<ListsPage />} />
-            <Route path="analytics" element={<AnalyticsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="widgets" element={<WidgetsPage />} />
+            <Route index element={<ErrorBoundary><DashboardHome /></ErrorBoundary>} />
+            <Route path="subscribers" element={<ErrorBoundary><SubscribersPage /></ErrorBoundary>} />
+            <Route path="campaigns" element={<ErrorBoundary><CampaignsPage /></ErrorBoundary>} />
+            <Route path="lists" element={<ErrorBoundary><ListsPage /></ErrorBoundary>} />
+            <Route path="analytics" element={<ErrorBoundary><AnalyticsPage /></ErrorBoundary>} />
+            <Route path="settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
+            <Route path="widgets" element={<ErrorBoundary><WidgetsPage /></ErrorBoundary>} />
           </Route>
 
           {/* Public widget form — no layout wrapper */}
-          <Route path="/w/:slug" element={<WidgetFormPage />} />
+          <Route path="/w/:slug" element={<ErrorBoundary><WidgetFormPage /></ErrorBoundary>} />
 
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </ErrorBoundary>
       </BrowserRouter>
     </ToastProvider>
   )

@@ -1,6 +1,8 @@
-import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useRef } from 'react'
 
 const ToastContext = createContext(null)
+
+const MAX_VISIBLE = 3
 
 const TOAST_ICONS = {
   success: '✓',
@@ -19,30 +21,61 @@ const TOAST_STYLES = {
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
   const nextId = useRef(0)
+  const queue = useRef([])
+
+  const removeToast = useCallback((id) => {
+    setToasts((prev) => {
+      const next = prev.filter((t) => t.id !== id)
+      // Dequeue if we have room
+      if (queue.current.length > 0 && next.length < MAX_VISIBLE) {
+        const queued = queue.current.shift()
+        return [...next, queued]
+      }
+      return next
+    })
+  }, [])
 
   const addToast = useCallback((message, type = 'info', duration = 4000) => {
     const id = nextId.current++
-    setToasts((prev) => [...prev, { id, message, type }])
+    const toast = { id, message, type }
+
+    setToasts((prev) => {
+      if (prev.length >= MAX_VISIBLE) {
+        queue.current.push(toast)
+        return prev
+      }
+      return [...prev, toast]
+    })
+
     if (duration > 0) {
       setTimeout(() => {
-        setToasts((prev) => prev.filter((t) => t.id !== id))
+        removeToast(id)
       }, duration)
     }
-  }, [])
+  }, [removeToast])
 
-  const removeToast = useCallback((id) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id))
+  const dismissAll = useCallback(() => {
+    setToasts([])
+    queue.current = []
   }, [])
 
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2.5 max-w-sm pointer-events-none">
-        {toasts.map((toast, i) => (
+      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2.5 max-w-sm pointer-events-none" aria-live="polite">
+        {toasts.length >= 2 && (
+          <button
+            onClick={dismissAll}
+            className="pointer-events-auto self-end px-2 py-1 border-3 border-brutal-fg bg-brutal-fg text-white text-[9px] font-bold uppercase tracking-wider hover:bg-brutal-fg/80 transition"
+            aria-label="Dismiss all notifications"
+          >
+            Clear all
+          </button>
+        )}
+        {toasts.map((toast) => (
           <div
             key={toast.id}
             className={`pointer-events-auto flex items-stretch overflow-hidden shadow-brutal animate-scale-in ${TOAST_STYLES[toast.type] || TOAST_STYLES.info}`}
-            style={{ animationDelay: `${i * 50}ms` }}
           >
             <div className="flex items-center gap-3 px-4 py-3 flex-1 min-w-0">
               <span className="text-base shrink-0 font-bold">{TOAST_ICONS[toast.type]}</span>
