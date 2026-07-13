@@ -22,6 +22,8 @@ import SettingsPage from './pages/Dashboard/Settings'
 import WidgetsPage from './pages/Dashboard/Widgets'
 import WidgetFormPage from './pages/WidgetForm'
 import SignupPage from './pages/SignupPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import DemoPage from './pages/Demo'
 
 // =============================================
@@ -184,6 +186,24 @@ function App() {
             element={
               <PublicLayout>
                 <SignupPage />
+              </PublicLayout>
+            }
+          />
+
+          <Route
+            path="/forgot-password"
+            element={
+              <PublicLayout>
+                <ForgotPasswordPage />
+              </PublicLayout>
+            }
+          />
+
+          <Route
+            path="/reset-password"
+            element={
+              <PublicLayout>
+                <ResetPasswordPage />
               </PublicLayout>
             }
           />

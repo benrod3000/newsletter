@@ -107,6 +107,10 @@ export default function LoginPage() {
           </button>
         </form>
 
+        <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider text-center pt-1">
+          <Link to="/forgot-password" className="hover:text-brutal-fg transition">Forgot password?</Link>
+        </p>
+
         <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider text-center">
           <a href="/" className="hover:text-brutal-fg transition">← Back to home</a>
           {' · '}
