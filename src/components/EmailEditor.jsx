@@ -30,6 +30,7 @@ const ToolbarButton = ({ active, onClick, children, title }) => (
 
 export default function EmailEditor({ content, onChange, onSave, saving }) {
   const [showTags, setShowTags] = useState(false)
+  const [previewMode, setPreviewMode] = useState(null) // null=edit, 'mobile'
 
   const editor = useEditor({
     extensions: [
@@ -120,8 +121,17 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
           )}
         </div>
 
-        {/* Save button */}
+        {/* Save + Preview */}
         <span className="flex-1" />
+        <button
+          type="button"
+          onClick={() => setPreviewMode(previewMode ? null : 'mobile')}
+          className={`px-3 py-1 border-3 font-bold text-[10px] uppercase tracking-wider transition ${
+            previewMode ? 'border-brutal-fg bg-brutal-yellow text-brutal-fg' : 'border-transparent text-brutal-fg/50 hover:text-brutal-fg hover:border-brutal-fg'
+          }`}
+        >
+          {previewMode ? '✏️ Edit' : '📱 Preview'}
+        </button>
         <button
           type="button"
           onClick={onSave}
@@ -132,8 +142,10 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
         </button>
       </div>
 
-      {/* Editor content */}
-      <EditorContent editor={editor} />
+      {/* Editor / Preview */}
+      <div className={previewMode === 'mobile' ? 'max-w-[375px] mx-auto border-x-3 border-brutal-fg' : ''}>
+        <EditorContent editor={editor} />
+      </div>
     </div>
   )
 }
