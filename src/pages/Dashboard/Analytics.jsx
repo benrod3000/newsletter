@@ -45,6 +45,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     if (workspaceId) loadOverview()
+    document.title = 'Analytics — Veloce'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId, days])
 

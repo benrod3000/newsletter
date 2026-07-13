@@ -26,6 +26,7 @@ export default function ListsPage() {
 
   useEffect(() => {
     if (workspaceId) loadLists()
+    document.title = 'Lists — Veloce'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId])
 

@@ -73,6 +73,7 @@ export default function CampaignsPage() {
 
   useEffect(() => {
     if (workspaceId) { loadCampaigns(); loadLists() }
+    document.title = 'Campaigns — Veloce'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId])
 
@@ -105,6 +106,8 @@ export default function CampaignsPage() {
   }
 
   async function sendNow(id) {
+    const campaign = campaigns.find(c => c.id === id)
+    if (!confirm(`Send "${campaign?.title || campaign?.name}" to ${campaign?.sent_count || 'all'} confirmed subscribers? This cannot be undone.`)) return
     setBusyId(id)
     try {
       await campaignsAPI.schedule(workspaceId, id)
@@ -161,6 +164,9 @@ export default function CampaignsPage() {
   }
 
   function closeEditor() {
+    if (editContent && editContent !== (editCampaign?.editor_html || '')) {
+      if (!confirm('You have unsaved changes. Leave anyway?')) return
+    }
     setEditingId(null)
     setEditCampaign(null)
     setEditContent('')

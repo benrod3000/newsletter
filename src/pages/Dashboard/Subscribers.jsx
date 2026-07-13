@@ -66,6 +66,8 @@ export default function SubscribersPage() {
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [bulkRemoving, setBulkRemoving] = useState(false)
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
   useEffect(() => {
     if (workspaceId) loadSubscribers(statusFilter)
@@ -83,6 +85,8 @@ export default function SubscribersPage() {
       } else if (status) {
         params.status = status
       }
+      if (dateFrom) params.joined_after = dateFrom
+      if (dateTo) params.joined_before = dateTo
       const { data } = await subscribersAPI.list(workspaceId, Object.keys(params).length ? params : undefined)
       setSubscribers(data.subscribers || [])
       setTotal(data.total ?? data.subscribers?.length ?? 0)
@@ -310,6 +314,12 @@ export default function SubscribersPage() {
             </button>
           ))}
         </div>
+        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
+          className="px-3 py-2 bg-white border-3 border-brutal-fg text-xs font-bold focus:outline-none"
+          title="Joined after" />
+        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
+          className="px-3 py-2 bg-white border-3 border-brutal-fg text-xs font-bold focus:outline-none"
+          title="Joined before" />
         <input
           type="text"
           value={search}

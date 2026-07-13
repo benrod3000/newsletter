@@ -36,6 +36,7 @@ export default function WidgetsPage() {
 
   useEffect(() => {
     if (workspaceId) {
+    document.title = 'Widgets — Veloce'
       loadWidgets()
       loadLists()
     }

@@ -20,6 +20,7 @@ export default function DashboardHome() {
 
   useEffect(() => {
     if (!workspaceId) return
+    document.title = 'Dashboard — Veloce'
     let cancelled = false
 
     async function loadOverview() {

@@ -33,6 +33,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (workspaceId) {
+    document.title = 'Settings — Veloce'
       loadBranding()
       loadAutomations()
     }
