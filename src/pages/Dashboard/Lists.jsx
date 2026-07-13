@@ -75,7 +75,7 @@ export default function ListsPage() {
       </div>
 
       {showAddForm && (
-        <div className="border-brutal border-brutal-fg bg-white p-8 space-y-5">
+        <div className="border-3 border-brutal-fg bg-white p-8 space-y-5">
           <h4 className="font-heading text-xl uppercase tracking-wide">New List</h4>
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">List Name</label>
@@ -84,7 +84,7 @@ export default function ListsPage() {
               value={newList.name}
               onChange={(e) => setNewList({ ...newList, name: e.target.value })}
               placeholder="e.g., VIP Customers"
-              className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+              className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
             />
           </div>
           <div>
@@ -94,7 +94,7 @@ export default function ListsPage() {
               value={newList.description}
               onChange={(e) => setNewList({ ...newList, description: e.target.value })}
               placeholder="What is this list for?"
-              className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+              className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
             />
           </div>
           <div>
@@ -102,7 +102,7 @@ export default function ListsPage() {
             <select
               value={newList.opt_in_type}
               onChange={(e) => setNewList({ ...newList, opt_in_type: e.target.value })}
-              className="w-full sm:w-64 px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm font-bold focus:outline-none"
+              className="w-full sm:w-64 px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-bold focus:outline-none"
             >
               <option value="single">Single opt-in</option>
               <option value="double">Double opt-in</option>
@@ -112,13 +112,13 @@ export default function ListsPage() {
             <button
               onClick={createList}
               disabled={saving}
-              className="px-5 py-2.5 border-brutal border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
+              className="px-5 py-2.5 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
             >
               {saving ? 'Creating...' : 'Create List'}
             </button>
             <button
               onClick={() => setShowAddForm(false)}
-              className="px-5 py-2.5 border-brutal border-brutal-fg bg-white text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
+              className="px-5 py-2.5 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
             >
               Cancel
             </button>
@@ -135,7 +135,7 @@ export default function ListsPage() {
           action={
             <button
               onClick={loadLists}
-              className="px-4 py-2 border-brutal border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80"
+              className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80"
             >
               Retry
             </button>
@@ -151,7 +151,7 @@ export default function ListsPage() {
           {lists.map((l) => (
             <div
               key={l.id}
-              className="border-brutal border-brutal-fg bg-white p-5 flex flex-col justify-between"
+              className="border-3 border-brutal-fg bg-white p-5 flex flex-col justify-between"
             >
               <div>
                 <h4 className="font-heading text-lg uppercase tracking-wide">{l.name}</h4>
