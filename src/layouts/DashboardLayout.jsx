@@ -168,9 +168,8 @@ export default function DashboardLayout() {
 
         {/* Mobile sidebar drawer */}
         <aside
-          className={`fixed inset-y-0 left-0 z-50 w-64 border-r-3 border-brutal-fg bg-white flex flex-col shadow-brutal transition-transform duration-300 ease-out lg:hidden ${
-            mobileOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+          className="fixed inset-y-0 left-0 z-50 w-64 border-r-3 border-brutal-fg bg-white flex flex-col shadow-brutal lg:hidden"
+          style={{ transform: mobileOpen ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform 300ms ease-out' }}
         >
           {/* Close button for mobile drawer */}
           <div className="flex justify-end p-2 border-b-3 border-brutal-fg">
