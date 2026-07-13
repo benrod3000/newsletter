@@ -41,7 +41,7 @@ export default function LandingPage() {
             without the noise of traditional marketing platforms.
           </p>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Link to="/demo" className="px-8 py-4 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 active:shadow-none transition">
               Launch Demo →
             </Link>

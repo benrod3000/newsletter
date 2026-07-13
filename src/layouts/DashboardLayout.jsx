@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/authStore'
 import {
   LayoutDashboard, Mail, Users, Layers, BarChart3,
   Settings, Zap, ChevronLeft, ChevronRight, Search,
-  HelpCircle, LogOut, Globe
+  HelpCircle, LogOut, Globe, Menu, X
 } from 'lucide-react'
 
 const navGroups = [
@@ -45,6 +45,7 @@ const navGroups = [
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const { email, role, clearAuth } = useAuthStore()
@@ -54,14 +55,71 @@ export default function DashboardLayout() {
     navigate('/')
   }
 
+  const closeMobile = () => setMobileOpen(false)
+  const navLinkClick = () => { closeMobile() }
+
+  const sidebarContent = (
+    <>
+      <nav className="flex-1 p-3 space-y-4 overflow-y-auto">
+        {navGroups.map((group) => (
+          <div key={group.label || 'overview'} className="space-y-1">
+            {group.label && sidebarOpen && (
+              <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-[0.2em] text-brutal-muted/50">
+                {group.label}
+              </p>
+            )}
+            {group.items.map((item) => {
+              const active = location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path))
+              const Icon = item.icon
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={navLinkClick}
+                  title={!sidebarOpen ? item.label : undefined}
+                  className={`flex items-center px-3 py-2.5 text-xs font-bold uppercase tracking-wider border-3 transition-all ${
+                    active
+                      ? 'border-brutal-fg bg-brutal-yellow shadow-[2px_2px_0px_#0a0a0a]'
+                      : 'border-transparent text-brutal-fg/40 hover:text-brutal-fg hover:border-brutal-fg hover:bg-brutal-bg'
+                  }`}
+                >
+                  <Icon size={16} className="shrink-0" />
+                  {sidebarOpen && <span className="ml-3 truncate">{item.label}</span>}
+                </Link>
+              )
+            })}
+          </div>
+        ))}
+      </nav>
+
+      {sidebarOpen && (
+        <div className="border-t-3 border-brutal-fg p-4 space-y-1">
+          <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted/40">Account</p>
+          <p className="text-[10px] font-mono font-bold truncate">{email}</p>
+          <p className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider">{role || 'Admin'}</p>
+        </div>
+      )}
+    </>
+  )
+
   return (
     <div className="min-h-screen bg-brutal-bg text-brutal-fg flex flex-col font-sans">
       {/* Top Bar */}
       <header className="border-b-3 border-brutal-fg bg-white px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-4">
+          {/* Mobile hamburger — visible on screens < lg */}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="lg:hidden p-1.5 border-3 border-brutal-fg bg-brutal-bg hover:shadow-brutal active:translate-y-0.5 transition"
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+
+          {/* Desktop sidebar toggle — visible on lg+ */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1.5 border-3 border-brutal-fg bg-brutal-bg hover:shadow-brutal active:translate-y-0.5 transition"
+            className="hidden lg:flex p-1.5 border-3 border-brutal-fg bg-brutal-bg hover:shadow-brutal active:translate-y-0.5 transition"
             aria-label="Toggle sidebar"
           >
             {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
@@ -100,51 +158,40 @@ export default function DashboardLayout() {
       </header>
 
       <div className="flex flex-1 relative">
-        {/* Sidebar */}
+        {/* Mobile overlay backdrop */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-brutal-fg/30 lg:hidden"
+            onClick={closeMobile}
+          />
+        )}
+
+        {/* Mobile sidebar drawer */}
         <aside
-          className={`border-r-3 border-brutal-fg bg-white transition-all duration-300 ease-out z-30 flex flex-col ${
+          className={`fixed inset-y-0 left-0 z-50 w-64 border-r-3 border-brutal-fg bg-white flex flex-col shadow-brutal transition-transform duration-300 ease-out lg:hidden ${
+            mobileOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          {/* Close button for mobile drawer */}
+          <div className="flex justify-end p-2 border-b-3 border-brutal-fg">
+            <button
+              onClick={closeMobile}
+              className="p-1.5 border-3 border-brutal-fg bg-brutal-bg hover:bg-brutal-yellow transition"
+              aria-label="Close menu"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          {sidebarContent}
+        </aside>
+
+        {/* Desktop sidebar */}
+        <aside
+          className={`hidden lg:flex border-r-3 border-brutal-fg bg-white transition-all duration-300 ease-out z-30 flex-col ${
             sidebarOpen ? 'w-56' : 'w-16'
           } shrink-0`}
         >
-          <nav className="flex-1 p-3 space-y-4 overflow-y-auto">
-            {navGroups.map((group) => (
-              <div key={group.label || 'overview'} className="space-y-1">
-                {group.label && sidebarOpen && (
-                  <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-[0.2em] text-brutal-muted/50">
-                    {group.label}
-                  </p>
-                )}
-                {group.items.map((item) => {
-                  const active = location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path))
-                  const Icon = item.icon
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      title={!sidebarOpen ? item.label : undefined}
-                      className={`flex items-center px-3 py-2.5 text-xs font-bold uppercase tracking-wider border-3 transition-all ${
-                        active
-                          ? 'border-brutal-fg bg-brutal-yellow shadow-[2px_2px_0px_#0a0a0a]'
-                          : 'border-transparent text-brutal-fg/40 hover:text-brutal-fg hover:border-brutal-fg hover:bg-brutal-bg'
-                      }`}
-                    >
-                      <Icon size={16} className="shrink-0" />
-                      {sidebarOpen && <span className="ml-3 truncate">{item.label}</span>}
-                    </Link>
-                  )
-                })}
-              </div>
-            ))}
-          </nav>
-
-          {/* Sidebar footer */}
-          {sidebarOpen && (
-            <div className="border-t-3 border-brutal-fg p-4 space-y-1">
-              <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted/40">Account</p>
-              <p className="text-[10px] font-mono font-bold truncate">{email}</p>
-              <p className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider">{role || 'Admin'}</p>
-            </div>
-          )}
+          {sidebarContent}
         </aside>
 
         {/* Main Content */}

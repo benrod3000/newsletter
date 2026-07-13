@@ -322,10 +322,10 @@ export default function CampaignsPage() {
             <thead>
               <tr className="border-b-3 border-brutal-fg bg-brutal-surface">
                 <th className="text-left p-3 font-heading text-lg uppercase tracking-wider">Campaign</th>
-                <th className="text-left p-3 font-heading text-lg uppercase tracking-wider">Target Audience</th>
+                <th className="text-left p-3 font-heading text-lg uppercase tracking-wider hidden sm:table-cell">Audience</th>
                 <th className="text-left p-3 font-heading text-lg uppercase tracking-wider">Status</th>
-                <th className="text-right p-3 font-heading text-lg uppercase tracking-wider">Sent</th>
-                <th className="text-left p-3 font-heading text-lg uppercase tracking-wider">Last Modified</th>
+                <th className="text-right p-3 font-heading text-lg uppercase tracking-wider hidden md:table-cell">Sent</th>
+                <th className="text-left p-3 font-heading text-lg uppercase tracking-wider hidden md:table-cell">Modified</th>
                 <th className="text-right p-3"></th>
               </tr>
             </thead>
@@ -335,10 +335,10 @@ export default function CampaignsPage() {
                 return (
                   <tr key={c.id} className="border-t-2 border-brutal-fg hover:bg-brutal-yellow/10 transition">
                     <td className="p-3"><div className="font-bold text-brutal-fg">{c.title || c.name}</div><div className="text-xs font-bold text-brutal-muted mt-0.5">{c.subject}</div></td>
-                    <td className="p-3 text-xs font-bold text-brutal-fg/80 uppercase tracking-wider">{getAudienceLabel(c.audience)}</td>
+                    <td className="p-3 text-xs font-bold text-brutal-fg/80 uppercase tracking-wider hidden sm:table-cell">{getAudienceLabel(c.audience)}</td>
                     <td className="p-3"><span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${STATUS_STYLES[status]}`}>{status}</span></td>
-                    <td className="p-3 text-right font-mono font-bold">{(c.sent_count ?? 0).toLocaleString()}</td>
-                    <td className="p-3 text-brutal-muted font-mono text-xs">{c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '—'}</td>
+                    <td className="p-3 text-right font-mono font-bold hidden md:table-cell">{(c.sent_count ?? 0).toLocaleString()}</td>
+                    <td className="p-3 text-brutal-muted font-mono text-xs hidden md:table-cell">{c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '—'}</td>
                     <td className="p-3 text-right whitespace-nowrap">
                       {status === 'draft' ? (
                         <div className="flex items-center justify-end gap-2">

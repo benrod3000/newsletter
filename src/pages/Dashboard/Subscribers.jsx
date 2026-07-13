@@ -180,7 +180,7 @@ export default function SubscribersPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">Subscribers</h2>
         <div className="flex gap-3">
           <button
@@ -200,7 +200,7 @@ export default function SubscribersPage() {
 
       {/* CSV Import */}
       {showImport && (
-        <div className="border-brutal border-brutal-fg bg-white p-8 space-y-5">
+        <div className="border-3 border-brutal-fg bg-white p-8 space-y-5">
           <h4 className="font-heading text-xl uppercase tracking-wide">Import Subscribers (CSV)</h4>
           <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">
             Paste CSV or drag a .csv file. Must include an <strong>email</strong> column. Optional: first_name, last_name, phone_number, country, region, city, timezone
@@ -228,7 +228,7 @@ export default function SubscribersPage() {
             onChange={(e) => setImportCsvText(e.target.value)}
             rows={6}
             placeholder="Or paste CSV here...&#10;email,first_name,last_name&#10;jane@example.com,Jane,Doe"
-            className="w-full px-4 py-3 bg-brutal-bg border-brutal border-brutal-fg text-sm font-mono focus:outline-none resize-y placeholder:text-brutal-muted"
+            className="w-full px-4 py-3 bg-brutal-bg border-3 border-brutal-fg text-sm font-mono focus:outline-none resize-y placeholder:text-brutal-muted"
           />
           <div className="flex items-center gap-2">
             <input
@@ -262,7 +262,7 @@ export default function SubscribersPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex border-brutal border-brutal-fg overflow-hidden">
+        <div className="flex border-3 border-brutal-fg overflow-hidden">
           {STATUS_FILTERS.map((f) => (
             <button
               key={f.value}
@@ -282,7 +282,7 @@ export default function SubscribersPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Filter loaded results by email or name..."
-          className="flex-1 max-w-sm px-4 py-2.5 bg-white border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+          className="flex-1 max-w-sm px-4 py-2.5 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
         />
         {!loading && !error && (
           <span className="text-xs font-bold text-brutal-muted uppercase tracking-wider ml-auto">
@@ -293,7 +293,7 @@ export default function SubscribersPage() {
 
       {/* Bulk action bar */}
       {selectedIds.size > 0 && (
-        <div className="border-brutal border-brutal-fg bg-brutal-yellow p-4 flex items-center gap-4 flex-wrap">
+        <div className="border-3 border-brutal-fg bg-brutal-yellow p-4 flex items-center gap-4 flex-wrap">
           <span className="text-sm font-bold uppercase tracking-wider">
             {selectedIds.size} selected
           </span>
@@ -307,7 +307,7 @@ export default function SubscribersPage() {
           <button
             onClick={bulkRemove}
             disabled={bulkRemoving}
-            className="px-4 py-2 bg-white border-brutal border-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
+            className="px-4 py-2 bg-white border-3 border-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
           >
             {bulkRemoving ? 'Deleting...' : `Delete ${selectedIds.size}`}
           </button>
@@ -322,7 +322,7 @@ export default function SubscribersPage() {
 
       {/* Add form */}
       {showAddForm && (
-        <div className="border-brutal border-brutal-fg bg-white p-8 space-y-5">
+        <div className="border-3 border-brutal-fg bg-white p-8 space-y-5">
           <h4 className="font-heading text-xl uppercase tracking-wide">New Subscriber</h4>
           <div className="grid sm:grid-cols-3 gap-5">
             <div>
@@ -332,7 +332,7 @@ export default function SubscribersPage() {
                 value={newSubscriber.email}
                 onChange={(e) => setNewSubscriber({ ...newSubscriber, email: e.target.value })}
                 placeholder="subscriber@example.com"
-                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
             </div>
             <div>
@@ -342,7 +342,7 @@ export default function SubscribersPage() {
                 value={newSubscriber.first_name}
                 onChange={(e) => setNewSubscriber({ ...newSubscriber, first_name: e.target.value })}
                 placeholder="Jane"
-                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
             </div>
             <div>
@@ -352,7 +352,7 @@ export default function SubscribersPage() {
                 value={newSubscriber.last_name}
                 onChange={(e) => setNewSubscriber({ ...newSubscriber, last_name: e.target.value })}
                 placeholder="Doe"
-                className="w-full px-4 py-2.5 bg-brutal-bg border-brutal border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
               />
             </div>
           </div>
@@ -403,11 +403,11 @@ export default function SubscribersPage() {
           }
         />
       ) : (
-        <div className="border-brutal border-brutal-fg overflow-x-auto bg-white">
+        <div className="border-3 border-brutal-fg overflow-x-auto bg-white">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b-3 border-brutal-fg bg-brutal-bg">
-                <th className="w-10 p-3">
+                <th className="w-10 p-3 hidden md:table-cell">
                   <input
                     type="checkbox"
                     checked={selectedIds.size === filtered.length && filtered.length > 0}
@@ -416,9 +416,9 @@ export default function SubscribersPage() {
                   />
                 </th>
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider">Email</th>
-                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider">Name</th>
-                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider">Status</th>
-                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider">Joined</th>
+                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell">Name</th>
+                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell">Status</th>
+                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden md:table-cell">Joined</th>
                 <th className="text-right p-3"></th>
               </tr>
             </thead>
@@ -427,7 +427,7 @@ export default function SubscribersPage() {
                 const name = [s.first_name, s.last_name].filter(Boolean).join(' ')
                 return (
                   <tr key={s.id} className="border-t border-brutal-fg hover:bg-brutal-yellow/10 cursor-pointer transition" onClick={() => setSelectedSubscriber(s)}>
-                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                    <td className="p-3 hidden md:table-cell" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={selectedIds.has(s.id)}
@@ -436,8 +436,8 @@ export default function SubscribersPage() {
                       />
                     </td>
                     <td className="p-3 font-bold">{s.email}</td>
-                    <td className="p-3 text-brutal-muted">{name || '—'}</td>
-                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                    <td className="p-3 text-brutal-muted hidden sm:table-cell">{name || '—'}</td>
+                    <td className="p-3 hidden sm:table-cell" onClick={(e) => e.stopPropagation()}>
                       <span
                         className={`text-xs font-bold px-2 py-1 border border-brutal-fg ${
                           s.confirmed
@@ -448,7 +448,7 @@ export default function SubscribersPage() {
                         {s.confirmed ? 'confirmed' : 'pending'}
                       </span>
                     </td>
-                    <td className="p-3 text-brutal-muted text-xs">
+                    <td className="p-3 text-brutal-muted text-xs hidden md:table-cell">
                       {s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}
                     </td>
                     <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
