@@ -392,15 +392,86 @@ export default function SettingsPage() {
       {/* Automations Tab */}
       {activeTab === 'automations' && (
         <div className="space-y-8">
-          <div className="flex items-center justify-between">
-            <h3 className="font-heading text-2xl uppercase tracking-wide">Workflow Automations</h3>
-            <button
-              onClick={() => setShowNewAutomation(!showNewAutomation)}
-              className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
-            >
-              + New Automation
-            </button>
+          <div>
+            <h3 className="font-heading text-2xl uppercase tracking-wide mb-1">Smart Automations</h3>
+            <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">Toggle on. They just work. Toggle off anytime.</p>
           </div>
+
+          {/* Pre-built automation toggle cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {[
+              {
+                id: 'confirm-remind',
+                icon: '📬',
+                title: 'Confirm & Remind',
+                desc: 'Reminds unconfirmed subscribers after 48 hours. Removes them after 7 days.',
+                status: 'Keeps your list clean automatically.',
+              },
+              {
+                id: 'auto-clean',
+                icon: '🧹',
+                title: 'Auto-Clean Cold Subs',
+                desc: 'Moves cold subscribers (60+ days) to a Cold Leads list. Removes after 90 days.',
+                status: 'Improves deliverability by removing dead addresses.',
+              },
+              {
+                id: 'smart-tags',
+                icon: '🏷️',
+                title: 'Smart Auto-Tagging',
+                desc: 'Labels subscribers as engaged, clicker, slipping, mobile, weekend-reader.',
+                status: 'Builds segments without lifting a finger.',
+              },
+              {
+                id: 'welcome-drip',
+                icon: '👋',
+                title: 'Welcome Drip',
+                desc: 'Sends 3 emails over 7 days to new subscribers. Pre-written, ready to go.',
+                status: '3× higher open rates than regular campaigns.',
+              },
+              {
+                id: 'weekly-report',
+                icon: '📊',
+                title: 'Weekly List Health Report',
+                desc: 'Every Monday at 8am, get a summary of list health + actionable tips.',
+                status: 'Catch problems before they hurt your deliverability.',
+              },
+              {
+                id: 're-engagement',
+                icon: '🔄',
+                title: 'Re-Engagement Rescue',
+                desc: 'When subscribers go quiet, sends win-back emails to bring them back.',
+                status: 'Coming soon.',
+                disabled: true,
+              },
+            ].map((auto) => (
+              <div key={auto.id} className={`border-3 border-brutal-fg bg-white p-5 flex flex-col ${auto.disabled ? 'opacity-50' : 'hover:shadow-brutal transition'}`}>
+                <div className="flex items-start gap-3 mb-3">
+                  <span className="text-2xl shrink-0">{auto.icon}</span>
+                  <div>
+                    <h4 className="font-heading text-lg uppercase tracking-wide leading-none">{auto.title}</h4>
+                    <p className="text-xs text-brutal-muted mt-1 leading-relaxed">{auto.desc}</p>
+                  </div>
+                </div>
+                <p className="text-[10px] font-bold text-brutal-fg/60 uppercase tracking-wider mb-3">{auto.status}</p>
+                <div className="mt-auto pt-3 border-t border-brutal-fg/20">
+                  <span className={`text-xs font-bold uppercase tracking-wider ${auto.disabled ? 'text-brutal-muted' : 'text-brutal-green'}`}>
+                    {auto.disabled ? '⏳ Coming Soon' : '✅ Active — running daily'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t-3 border-brutal-fg pt-8">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-heading text-2xl uppercase tracking-wide">Custom Automations</h3>
+              <button
+                onClick={() => setShowNewAutomation(!showNewAutomation)}
+                className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
+              >
+                + New Automation
+              </button>
+            </div>
 
           {/* New Automation Form */}
           {showNewAutomation && (
