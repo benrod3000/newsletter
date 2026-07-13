@@ -313,8 +313,8 @@ export default function CampaignsPage() {
                     <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${STATUS_STYLES[status]}`}>{status}</span>
                     <span className="text-xs font-mono font-bold text-brutal-muted">{c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '—'}</span>
                   </div>
-                  <h3 className="font-heading text-2xl uppercase tracking-wide text-brutal-fg truncate">{c.title || c.name}</h3>
-                  <p className="text-xs font-bold text-brutal-fg/70 line-clamp-2">{c.subject}</p>
+                  <h3 className="font-heading text-2xl uppercase tracking-wide text-brutal-fg truncate" title={c.title || c.name}>{c.title || c.name}</h3>
+                  <p className="text-xs font-bold text-brutal-fg/70 line-clamp-2" title={c.subject}>{c.subject}</p>
                 </div>
                 <div className="border-t-2 border-brutal-fg pt-3 space-y-2">
                   <div className="flex justify-between text-xs font-bold uppercase tracking-wider"><span className="text-brutal-muted">Audience:</span><span className="text-brutal-fg">{getAudienceLabel(c.audience)}</span></div>

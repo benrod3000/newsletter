@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import axios from 'axios'
+import LoadingState from '../components/ux/LoadingState'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
@@ -48,7 +49,7 @@ export default function WidgetFormPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-brutal-bg flex items-center justify-center">
-        <p className="font-mono text-xs text-brutal-muted uppercase tracking-widest animate-pulse">Loading...</p>
+        <LoadingState label="Loading widget" />
       </div>
     )
   }

@@ -67,6 +67,11 @@ a, button {
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Global disabled state — cursor feedback everywhere */
+button:disabled, input:disabled, select:disabled, textarea:disabled, [disabled] {
+  cursor: not-allowed;
+}
+
 /* Hover lift — cards that rise on hover */
 .hover-lift {
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),

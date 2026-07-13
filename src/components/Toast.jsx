@@ -86,7 +86,7 @@ export function ToastProvider({ children }) {
             <button
               onClick={() => removeToast(toast.id)}
               className="px-3 text-lg leading-none opacity-50 hover:opacity-100 font-bold shrink-0 hover:bg-brutal-fg/10 transition-colors"
-              aria-label="Dismiss"
+              aria-label={`Dismiss: ${toast.message}`}
             >
               ×
             </button>

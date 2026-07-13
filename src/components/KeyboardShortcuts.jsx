@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 
+const isMac = typeof navigator !== 'undefined' && navigator.platform?.toUpperCase().includes('MAC')
+const cmd = isMac ? '⌘' : 'Ctrl'
+
 const SHORTCUTS = [
   {
     group: 'Global',
     items: [
-      { keys: ['⌘', 'K'], label: 'Command palette' },
+      { keys: [cmd, 'K'], label: 'Command palette' },
       { keys: ['?'], label: 'Show this panel' },
       { keys: ['Esc'], label: 'Close panels / modals' },
     ],

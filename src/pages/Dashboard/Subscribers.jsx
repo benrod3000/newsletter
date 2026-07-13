@@ -447,8 +447,8 @@ export default function SubscribersPage() {
                         className="w-4 h-4 accent-brutal-fg cursor-pointer"
                       />
                     </td>
-                    <td className="p-3 font-bold">{s.email}</td>
-                    <td className="p-3 text-brutal-muted hidden sm:table-cell">{name || '—'}</td>
+                    <td className="p-3 font-bold" title={s.email}>{s.email}</td>
+                    <td className="p-3 text-brutal-muted hidden sm:table-cell" title={name || undefined}>{name || '—'}</td>
                     <td className="p-3 hidden sm:table-cell" onClick={(e) => e.stopPropagation()}>
                       <span
                         className={`text-xs font-bold px-2 py-1 border border-brutal-fg ${

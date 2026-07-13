@@ -132,7 +132,7 @@ export default function DashboardLayout() {
           {/* Workspace switcher */}
           <div className="hidden md:flex items-center gap-2 ml-2 px-3 py-1 border-2 border-brutal-fg bg-brutal-bg cursor-pointer hover:bg-brutal-yellow transition-colors">
             <Globe size={12} className="text-brutal-muted" />
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider truncate max-w-[120px]">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider truncate max-w-[120px]" title={email}>
               {email?.split('@')[0] || 'Workspace'}
             </span>
           </div>
