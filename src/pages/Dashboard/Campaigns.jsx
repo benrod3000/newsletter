@@ -41,7 +41,28 @@ export default function CampaignsPage() {
   const [testEmailId, setTestEmailId] = useState(null)
   const [testEmail, setTestEmail] = useState('')
   const [testSending, setTestSending] = useState(false)
+  const [showSubjectSuggestions, setShowSubjectSuggestions] = useState(false)
   const { action, consume } = useCommandAction()
+
+  function generateSubjects() {
+    if (!editCampaign?.name) return []
+    const name = editCampaign.name
+    // Extract first heading-like line from editor content
+    const headingMatch = editContent.match(/<h[123][^>]*>(.*?)<\/h[123]>/i)
+    const firstHeading = headingMatch ? headingMatch[1].replace(/<[^>]+>/g, '').trim() : null
+    // Find most frequent meaningful word
+    const words = editContent.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(w => w.length > 4)
+    const freq = {}
+    words.forEach(w => { freq[w] = (freq[w] || 0) + 1 })
+    const topWord = Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] || name
+
+    return [
+      firstHeading ? `${firstHeading}` : `${name} — Latest Update`,
+      `Everything you need to know about ${topWord}`,
+      `Is your ${name.toLowerCase()} working for you?`,
+      `3 ways to improve your ${topWord}`,
+    ]
+  }
 
   useEffect(() => {
     if (!action) return
@@ -249,13 +270,41 @@ export default function CampaignsPage() {
             <div className="grid sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2">
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">Subject Line</label>
-                <input
-                  type="text"
-                  value={editSubject}
-                  onChange={(e) => setEditSubject(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-bold focus:outline-none focus:bg-brutal-yellow/20"
-                  placeholder="Your email subject..."
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={editSubject}
+                    onChange={(e) => setEditSubject(e.target.value)}
+                    className="flex-1 px-4 py-2.5 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                    placeholder="Summer Sale Starts Now ☀️"
+                  />
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowSubjectSuggestions(!showSubjectSuggestions)}
+                      className="px-3 py-2.5 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition whitespace-nowrap"
+                    >
+                      Suggest
+                    </button>
+                    {showSubjectSuggestions && (
+                      <div className="absolute right-0 top-full mt-1 w-72 border-3 border-brutal-fg bg-white shadow-brutal z-20">
+                        <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-3 py-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Subject Ideas</span>
+                        </div>
+                        {generateSubjects().map((s, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => { setEditSubject(s); setShowSubjectSuggestions(false) }}
+                            className="w-full text-left px-3 py-2 text-xs font-bold border-b border-brutal-fg/20 last:border-0 hover:bg-brutal-yellow/20 transition"
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">Audience</label>
