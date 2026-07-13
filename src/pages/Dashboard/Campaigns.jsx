@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { campaignsAPI, listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
+import EmailEditor from '../../components/EmailEditor'
 
 const STATUS_STYLES = {
   draft: 'bg-brutal-surface text-brutal-fg border-2 border-brutal-fg',
@@ -29,6 +30,13 @@ export default function CampaignsPage() {
   const [busyId, setBusyId] = useState(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [viewMode, setViewMode] = useState('table')
+  const [editingId, setEditingId] = useState(null)
+  const [editCampaign, setEditCampaign] = useState(null)
+  const [editContent, setEditContent] = useState('')
+  const [editSubject, setEditSubject] = useState('')
+  const [editAudience, setEditAudience] = useState('confirmed')
+  const [autosaving, setAutosaving] = useState(false)
+  const autosaveTimer = useRef(null)
 
   useEffect(() => {
     if (workspaceId) { loadCampaigns(); loadLists() }
@@ -93,6 +101,58 @@ export default function CampaignsPage() {
     return match ? match.label : a
   }
 
+  // ---- Edit draft flow ----
+  function openEditor(c) {
+    setEditingId(c.id)
+    setEditCampaign(c)
+    setEditContent(c.editor_html || '')
+    setEditSubject(c.subject || '')
+    setEditAudience(c.audience || 'confirmed')
+  }
+
+  function closeEditor() {
+    setEditingId(null)
+    setEditCampaign(null)
+    setEditContent('')
+    setEditSubject('')
+    setEditAudience('confirmed')
+  }
+
+  // Autosave with debounce
+  const autosave = useCallback((html) => {
+    if (!editingId || !workspaceId) return
+    setEditContent(html)
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current)
+    autosaveTimer.current = setTimeout(async () => {
+      setAutosaving(true)
+      try {
+        await campaignsAPI.update(workspaceId, editingId, { editor_html: html })
+      } catch (err) {
+        console.error('Autosave failed:', err)
+      } finally {
+        setAutosaving(false)
+      }
+    }, 1500)
+  }, [editingId, workspaceId])
+
+  async function saveDraft() {
+    if (!editingId || !workspaceId) return
+    setAutosaving(true)
+    try {
+      await campaignsAPI.update(workspaceId, editingId, {
+        editor_html: editContent,
+        subject: editSubject,
+        audience: editAudience,
+      })
+      toast.addToast('Draft saved', 'success')
+      await loadCampaigns()
+    } catch (err) {
+      toast.addToast('Failed to save draft', 'error')
+    } finally {
+      setAutosaving(false)
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between flex-wrap gap-4 border-b-3 border-brutal-fg pb-4">
@@ -142,6 +202,77 @@ export default function CampaignsPage() {
         </div>
       )}
 
+      {/* ======== EDIT DRAFT PANEL ======== */}
+      {editingId && editCampaign && (
+        <div className="border-3 border-brutal-fg bg-white shadow-brutal animate-fade-up">
+          <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-5 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="font-heading text-xl uppercase tracking-wide">Edit Draft</span>
+              <span className="text-[10px] font-mono font-bold bg-brutal-fg text-brutal-yellow px-2 py-0.5">{editCampaign.name}</span>
+            </div>
+            <button onClick={closeEditor} className="px-3 py-1 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition">
+              Close
+            </button>
+          </div>
+
+          <div className="p-5 sm:p-6 space-y-5">
+            {/* Subject + Audience row */}
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="sm:col-span-2">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">Subject Line</label>
+                <input
+                  type="text"
+                  value={editSubject}
+                  onChange={(e) => setEditSubject(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-bold focus:outline-none focus:bg-brutal-yellow/20"
+                  placeholder="Your email subject..."
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">Audience</label>
+                <select
+                  value={editAudience}
+                  onChange={(e) => setEditAudience(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-bold focus:outline-none"
+                >
+                  {AUDIENCE_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                  {lists.length > 0 && (<optgroup label="Custom Lists">{lists.map((l) => (<option key={`list:${l.id}`} value={`list:${l.id}`}>{l.name}</option>))}</optgroup>)}
+                </select>
+              </div>
+            </div>
+
+            {/* TipTap Editor */}
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">Email Content</label>
+              <EmailEditor
+                content={editContent}
+                onChange={autosave}
+                onSave={saveDraft}
+                saving={autosaving}
+              />
+            </div>
+
+            {/* Bottom actions */}
+            <div className="flex items-center justify-between pt-2 border-t-3 border-brutal-fg">
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${autosaving ? 'text-brutal-yellow' : 'text-brutal-green'}`}>
+                  {autosaving ? '● Saving...' : '● Saved'}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => sendNow(editingId)}
+                  disabled={autosaving}
+                  className="px-5 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 disabled:opacity-50 transition"
+                >
+                  Send Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {loading ? (<LoadingState label="Loading campaign workspace" />) : error ? (
         <EmptyState title="Failed to sync campaigns" description={error} action={<button onClick={loadCampaigns} className="px-4 py-2 border-3 border-brutal-fg bg-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition">Retry Connection</button>} />
       ) : campaigns.length === 0 ? (
@@ -174,7 +305,8 @@ export default function CampaignsPage() {
                       </div>
                     ) : (
                       <>
-                        <button onClick={() => sendNow(c.id)} disabled={isBusy} className="flex-1 py-1.5 border-2 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80 disabled:opacity-50">{isBusy ? 'Scheduling...' : 'Send Now'}</button>
+                        <button onClick={() => openEditor(c)} className="flex-1 py-1.5 border-2 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-yellow transition">Edit</button>
+                        <button onClick={() => sendNow(c.id)} disabled={isBusy} className="flex-1 py-1.5 border-2 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80 disabled:opacity-50">{isBusy ? 'Scheduling...' : 'Send'}</button>
                         <button onClick={() => setConfirmDeleteId(c.id)} disabled={isBusy} className="px-3 py-1.5 border-2 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-red hover:text-white transition">Delete</button>
                       </>
                     )}
@@ -208,14 +340,16 @@ export default function CampaignsPage() {
                     <td className="p-3 text-right font-mono font-bold">{(c.sent_count ?? 0).toLocaleString()}</td>
                     <td className="p-3 text-brutal-muted font-mono text-xs">{c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '—'}</td>
                     <td className="p-3 text-right whitespace-nowrap">
-                      {status === 'draft' && (
+                      {status === 'draft' ? (
                         <div className="flex items-center justify-end gap-2">
                           {isConfirmingDelete ? (
                             <><button onClick={() => deleteCampaign(c.id)} disabled={isBusy} className="px-2 py-1 bg-brutal-red text-white border-2 border-brutal-fg text-[10px] font-bold uppercase tracking-wider hover:opacity-90">Delete</button><button onClick={() => setConfirmDeleteId(null)} className="px-2 py-1 bg-white border-2 border-brutal-fg text-[10px] font-bold uppercase tracking-wider">Cancel</button></>
                           ) : (
-                            <><button onClick={() => sendNow(c.id)} disabled={isBusy} className="px-3 py-1 border-2 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition disabled:opacity-50">{isBusy ? 'Sending...' : 'Send Now'}</button><button onClick={() => setConfirmDeleteId(c.id)} disabled={isBusy} className="px-2 py-1 border-2 border-transparent text-xs font-bold text-brutal-fg/50 uppercase tracking-wider hover:text-brutal-red hover:border-brutal-fg transition">Delete</button></>
+                            <><button onClick={() => openEditor(c)} className="px-3 py-1 border-2 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-yellow transition">Edit</button><button onClick={() => sendNow(c.id)} disabled={isBusy} className="px-3 py-1 border-2 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition disabled:opacity-50">{isBusy ? 'Sending...' : 'Send Now'}</button><button onClick={() => setConfirmDeleteId(c.id)} disabled={isBusy} className="px-2 py-1 border-2 border-transparent text-xs font-bold text-brutal-fg/50 uppercase tracking-wider hover:text-brutal-red hover:border-brutal-fg transition">Delete</button></>
                           )}
                         </div>
+                      ) : (
+                        <span className="text-xs text-brutal-muted font-bold uppercase tracking-wider">—</span>
                       )}
                     </td>
                   </tr>
