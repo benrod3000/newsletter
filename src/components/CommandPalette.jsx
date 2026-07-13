@@ -57,8 +57,13 @@ export default function CommandPalette({ onAction }) {
         setOpen(false)
       }
     }
+    const togglePalette = () => { setOpen((prev) => !prev); setQuery(''); setSelectedIndex(0) }
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    window.addEventListener('toggle-command-palette', togglePalette)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('toggle-command-palette', togglePalette)
+    }
   }, [open])
 
   useEffect(() => {

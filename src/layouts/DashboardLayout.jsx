@@ -139,11 +139,17 @@ export default function DashboardLayout() {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <button className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors">
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('toggle-command-palette'))}
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors"
+          >
             <Search size={14} />
             <span className="hidden lg:inline">Search</span>
           </button>
-          <button className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors">
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('toggle-keyboard-shortcuts'))}
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors"
+          >
             <HelpCircle size={14} />
             <span className="hidden lg:inline">Help</span>
           </button>

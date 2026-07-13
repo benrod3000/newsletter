@@ -57,8 +57,13 @@ export default function KeyboardShortcuts() {
         setOpen(false)
       }
     }
+    const toggleHelp = () => setOpen((prev) => !prev)
     window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
+    window.addEventListener('toggle-keyboard-shortcuts', toggleHelp)
+    return () => {
+      window.removeEventListener('keydown', handler)
+      window.removeEventListener('toggle-keyboard-shortcuts', toggleHelp)
+    }
   }, [open])
 
   if (!open) return null

@@ -62,6 +62,88 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     }, 600)
   }, [])
 
+  // Load Leaflet map when a ZIP is resolved
+  const mapInitialized = useRef(false)
+
+  useEffect(() => {
+    if (!resolved || !open) return
+
+    const mapId = `map-${zip}`
+    const mapEl = document.getElementById(mapId)
+    if (!mapEl) return
+
+    // Load Leaflet CSS if not already loaded
+    const loadCss = () => {
+      return new Promise((resolve) => {
+        if (document.getElementById('leaflet-css')) { resolve(); return }
+        const link = document.createElement('link')
+        link.id = 'leaflet-css'
+        link.rel = 'stylesheet'
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+        link.onload = resolve
+        document.head.appendChild(link)
+      })
+    }
+
+    // Load Leaflet JS and init map
+    const initMap = async () => {
+      await loadCss()
+
+      if (typeof L === 'undefined') {
+        const script = document.createElement('script')
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+        await new Promise((resolve) => { script.onload = resolve; document.body.appendChild(script) })
+      }
+
+      // Remove old map if exists
+      const existing = document.querySelector(`#${CSS.escape(mapId)} .leaflet-container`)
+      if (existing && window._subscriberMap) {
+        window._subscriberMap.remove()
+      }
+
+      const map = L.map(mapId, {
+        center: [resolved.lat, resolved.lng],
+        zoom: 11,
+        zoomControl: true,
+        attributionControl: false,
+      })
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+      }).addTo(map)
+
+      // Radius circle — brutalist style
+      L.circle([resolved.lat, resolved.lng], {
+        radius: radius * 1609.34,
+        color: '#2f7f5f',
+        weight: 3,
+        fillOpacity: 0,
+        dashArray: '6, 8',
+      }).addTo(map)
+
+      // Center marker
+      L.circleMarker([resolved.lat, resolved.lng], {
+        radius: 7,
+        color: '#0a0a0a',
+        fillColor: '#f5e642',
+        fillOpacity: 1,
+        weight: 3,
+      }).addTo(map)
+
+      window._subscriberMap = map
+      setTimeout(() => map.invalidateSize(), 100)
+    }
+
+    initMap()
+
+    return () => {
+      if (window._subscriberMap) {
+        window._subscriberMap.remove()
+        window._subscriberMap = null
+      }
+    }
+  }, [resolved, radius, open])
+
   function applyFilter() {
     if (!resolved) return
     setApplied(true)
@@ -139,6 +221,17 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
               </p>
             )}
           </div>
+
+          {/* Live map */}
+          {resolved && (
+            <div className="border-3 border-brutal-fg overflow-hidden">
+              <div className="border-b-3 border-brutal-fg bg-brutal-fg text-white px-3 py-1.5 flex items-center justify-between">
+                <p className="text-[10px] font-bold uppercase tracking-wider">📍 Map</p>
+                <span className="text-[9px] font-bold text-brutal-fg/60">{resolved.city}, {resolved.state}</span>
+              </div>
+              <div id={`map-${zip}`} style={{ height: '220px', background: '#e8e8e0' }} />
+            </div>
+          )}
 
           {/* Radar display */}
           <div className="flex justify-center">
