@@ -156,6 +156,10 @@ export default function ListsPage() {
         <EmptyState
           title="No lists yet"
           description="Create a list to start segmenting your audience."
+          variant="lists"
+          action={
+            <button onClick={() => setShowAddForm(true)} className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition">+ New List</button>
+          }
         />
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

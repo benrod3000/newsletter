@@ -74,10 +74,10 @@ export default function DashboardHome() {
         <LoadingState label="Loading metrics" />
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard label="Subscribers" value={fmt(stats?.total_subscribers)} trend="4.8%" trendUp />
-          <MetricCard label="Campaigns Sent" value={fmt(stats?.campaigns_sent)} />
-          <MetricCard label="Open Rate" value={pct(stats?.avg_open_rate)} />
-          <MetricCard label="Click Rate" value={pct(stats?.avg_click_rate)} />
+          <Link to="/dashboard/subscribers" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Subscribers" value={fmt(stats?.total_subscribers)} change="↑ 4.8%" /></Link>
+          <Link to="/dashboard/campaigns" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Campaigns Sent" value={fmt(stats?.campaigns_sent)} /></Link>
+          <Link to="/dashboard/analytics" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Avg Open Rate" value={pct(stats?.avg_open_rate)} /></Link>
+          <Link to="/dashboard/analytics" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Avg Click Rate" value={pct(stats?.avg_click_rate)} /></Link>
         </div>
       )}
 

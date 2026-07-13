@@ -324,7 +324,7 @@ export default function SubscribersPage() {
 
       {/* Bulk action bar */}
       {selectedIds.size > 0 && (
-        <div className="border-3 border-brutal-fg bg-brutal-yellow p-4 flex items-center gap-4 flex-wrap">
+        <div className="sticky top-[57px] z-30 border-3 border-brutal-fg bg-brutal-yellow p-4 flex items-center gap-4 flex-wrap">
           <span className="text-sm font-bold uppercase tracking-wider">
             {selectedIds.size} selected
           </span>
@@ -431,6 +431,12 @@ export default function SubscribersPage() {
             subscribers.length === 0
               ? 'Add your first subscriber to get started.'
               : 'Nothing in the loaded results matches that filter.'
+          }
+          variant="subscribers"
+          action={
+            subscribers.length === 0 ? (
+              <button onClick={() => setShowAddForm(true)} className={btnPrimary}>+ Add Subscriber</button>
+            ) : undefined
           }
         />
       ) : (
