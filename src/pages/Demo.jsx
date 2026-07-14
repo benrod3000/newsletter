@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, Users, BarChart3, Globe, Zap } from 'lucide-react'
+import gsap from 'gsap'
 
 function Panel({ children, className = '', title, accent }) {
   return (
@@ -49,6 +50,22 @@ export default function DemoPage() {
   const avgClickRate = ((totalClicked / totalSent) * 100).toFixed(1)
   const ctorRate = ((totalClicked / totalOpened) * 100).toFixed(1)
 
+  // GSAP animations on tab switch
+  const contentRef = useRef(null)
+
+  useEffect(() => {
+    if (!contentRef.current) return
+    const ctx = gsap.context(() => {
+      // Stagger rows/tables
+      gsap.fromTo('.demo-stagger', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, stagger: 0.05, ease: 'power2.out' })
+      // Bounce badges
+      gsap.fromTo('.demo-bounce', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'back.out(1.7)' })
+      // Slide cards
+      gsap.fromTo('.demo-slide', { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'power2.out' })
+    }, contentRef)
+    return () => ctx.revert()
+  }, [activeTab])
+
   return (
     <div className="space-y-8">
       <div className="space-y-4">
@@ -88,7 +105,7 @@ export default function DemoPage() {
             </nav>
           </aside>
 
-          <div className="flex-1 p-5 sm:p-6">
+          <div ref={contentRef} className="flex-1 p-5 sm:p-6">
             {/* ===== DASHBOARD ===== */}
             {activeTab === 'dashboard' && (
               <div className="space-y-6">
@@ -99,7 +116,7 @@ export default function DemoPage() {
                     { label: 'Open Rate', value: `${avgOpenRate}%` },
                     { label: 'Click Rate', value: `${avgClickRate}%` },
                   ].map((m) => (
-                    <div key={m.label} className="border-3 border-brutal-fg bg-brutal-bg p-4">
+                    <div key={m.label} className="demo-bounce border-3 border-brutal-fg bg-brutal-bg p-4">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">{m.label}</p>
                       <p className="text-2xl font-heading uppercase leading-none text-brutal-green">{m.value}</p>
                     </div>
@@ -135,7 +152,7 @@ export default function DemoPage() {
                 <Panel title="Recent Campaigns">
                   <div className="divide-y-2 divide-brutal-fg/10">
                     {mockCampaigns.map((c) => (
-                      <div key={c.id} className="px-4 py-3 flex items-center justify-between">
+                      <div key={c.id} className="demo-stagger px-4 py-3 flex items-center justify-between">
                         <div>
                           <p className="text-sm font-bold">{c.name}</p>
                           <p className="text-[10px] text-brutal-muted uppercase">{c.subject}</p>
@@ -157,7 +174,7 @@ export default function DemoPage() {
                 <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">4 Campaigns</p>
                 <div className="grid sm:grid-cols-2 gap-4">
                   {mockCampaigns.map((c) => (
-                    <div key={c.id} className="border-3 border-brutal-fg p-4 hover:shadow-brutal transition">
+                    <div key={c.id} className="demo-slide border-3 border-brutal-fg p-4 hover:shadow-brutal transition">
                       <div className="flex items-center justify-between mb-2">
                         <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider border-2 ${c.status === 'sent' ? 'bg-brutal-green text-white border-brutal-fg' : 'bg-brutal-yellow border-brutal-fg'}`}>{c.status}</span>
                         <span className="text-[10px] text-brutal-muted font-bold">{c.sent.toLocaleString()} sent</span>
@@ -194,7 +211,7 @@ export default function DemoPage() {
                     </thead>
                     <tbody>
                       {mockSubscribers.map((s, i) => (
-                        <tr key={i} className="border-t border-brutal-fg/10 hover:bg-brutal-yellow/5">
+                        <tr key={i} className="demo-stagger border-t border-brutal-fg/10 hover:bg-brutal-yellow/5">
                           <td className="p-2.5 font-mono font-bold truncate max-w-[180px]">{s.email}</td>
                           <td className="p-2.5 text-brutal-muted hidden sm:table-cell">{s.location}</td>
                           <td className="p-2.5 text-brutal-muted hidden md:table-cell">{s.joined}</td>
@@ -301,7 +318,7 @@ export default function DemoPage() {
                       detail: 'Coming soon', active: false, disabled: true,
                     },
                   ].map((auto) => (
-                    <div key={auto.title} className={`border-3 border-brutal-fg bg-white p-5 flex flex-col ${auto.disabled ? 'opacity-50' : 'hover:shadow-brutal transition'}`}>
+                    <div key={auto.title} className={`demo-slide border-3 border-brutal-fg bg-white p-5 flex flex-col ${auto.disabled ? 'opacity-50' : 'hover:shadow-brutal transition'}`}>
                       <div className="flex items-start gap-3 mb-2">
                         <span className="text-2xl shrink-0">{auto.icon}</span>
                         <div>
