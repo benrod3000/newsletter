@@ -5,20 +5,22 @@ import { useCommandAction } from './CommandActionContext'
 
 const COMMANDS = [
   { group: 'Navigate', items: [
-    { id: 'dashboard', label: 'Overview', shortcut: 'g d', action: '/dashboard', icon: LayoutDashboard },
-    { id: 'campaigns', label: 'Campaigns', shortcut: 'g c', action: '/dashboard/campaigns', icon: Mail },
-    { id: 'subscribers', label: 'Subscribers', shortcut: 'g s', action: '/dashboard/subscribers', icon: Users },
-    { id: 'lists', label: 'Segments', shortcut: 'g l', action: '/dashboard/lists', icon: Layers },
-    { id: 'analytics', label: 'Analytics', shortcut: 'g a', action: '/dashboard/analytics', icon: BarChart3 },
-    { id: 'widgets', label: 'Widgets', shortcut: 'g w', action: '/dashboard/widgets', icon: Globe },
-    { id: 'settings', label: 'Settings', shortcut: 'g e', action: '/dashboard/settings', icon: Settings },
+    { id: 'dashboard', label: 'Dashboard', description: 'Your home base. See subscriber counts and recent activity.', keywords: ['home', 'overview', 'stats', 'numbers'], shortcut: 'g d', action: '/dashboard', icon: LayoutDashboard },
+    { id: 'campaigns', label: 'Campaigns', description: 'Create and send newsletters to your audience.', keywords: ['send', 'email', 'newsletter', 'write', 'broadcast', 'message'], shortcut: 'g c', action: '/dashboard/campaigns', icon: Mail },
+    { id: 'subscribers', label: 'Subscribers', description: 'View and manage your audience. See who opened and clicked.', keywords: ['people', 'who', 'list', 'audience', 'where are', 'import', 'add person', 'email list', 'contacts'], shortcut: 'g s', action: '/dashboard/subscribers', icon: Users },
+    { id: 'lists', label: 'Segments', description: 'Group subscribers into lists for targeted sends.', keywords: ['group', 'segment', 'filter', 'organize'], shortcut: 'g l', action: '/dashboard/lists', icon: Layers },
+    { id: 'analytics', label: 'Analytics', description: 'Track opens, clicks, and subscriber growth over time.', keywords: ['stats', 'open rate', 'click rate', 'growth', 'chart', 'see who opened', 'report'], shortcut: 'g a', action: '/dashboard/analytics', icon: BarChart3 },
+    { id: 'widgets', label: 'Widgets', description: 'Embed a signup form on your website to collect subscribers.', keywords: ['form', 'website', 'sign up', 'lead magnet', 'embed', 'collect', 'form on website'], shortcut: 'g w', action: '/dashboard/widgets', icon: Globe },
+    { id: 'settings', label: 'Settings', description: 'Manage your account, automations, and email provider.', keywords: ['account', 'password', 'automation', 'branding', 'change', 'configure'], shortcut: 'g e', action: '/dashboard/settings', icon: Settings },
   ]},
   { group: 'Actions', items: [
-    { id: 'new-campaign', label: 'New Campaign', shortcut: 'n c', action: 'create-campaign' },
-    { id: 'add-subscriber', label: 'Add Subscriber', shortcut: 'n s', action: 'add-subscriber' },
-    { id: 'new-list', label: 'New List', shortcut: 'n l', action: 'create-list' },
-    { id: 'export', label: 'Export CSV', shortcut: 'e', action: 'export-csv' },
-    { id: 'import', label: 'Import CSV', shortcut: 'i', action: 'import-csv' },
+    { id: 'new-campaign', label: 'New Campaign', description: 'Start writing a new email to send.', keywords: ['create campaign', 'write email', 'draft'], shortcut: 'n c', action: 'create-campaign' },
+    { id: 'add-subscriber', label: 'Add Subscriber', description: 'Manually add someone to your mailing list.', keywords: ['new person', 'add email', 'add contact'], shortcut: 'n s', action: 'add-subscriber' },
+    { id: 'new-list', label: 'New List', description: 'Create a segment to organize your subscribers.', keywords: ['new segment', 'create group'], shortcut: 'n l', action: 'create-list' },
+    { id: 'export', label: 'Export CSV', description: 'Download your subscribers as a spreadsheet.', keywords: ['download', 'save', 'spreadsheet', 'excel'], shortcut: 'e', action: 'export-csv' },
+    { id: 'import', label: 'Import CSV', description: 'Upload subscribers from a spreadsheet file.', keywords: ['upload', 'from file', 'spreadsheet', 'excel', 'bulk add'], shortcut: 'i', action: 'import-csv' },
+    { id: 'radius-filter', label: 'Radius Filter', description: 'Find subscribers near a ZIP code.', keywords: ['location', 'nearby', 'zip code', 'map', 'distance', 'near me'], action: 'navigate-subscribers' },
+    { id: 'automations', label: 'Automations', description: 'Set up auto-tagging, confirm reminders, and more.', keywords: ['auto', 'automatic', 'tag', 'clean', 'remind', 'schedule'], action: '/dashboard/settings' },
   ]},
 ]
 
@@ -38,6 +40,8 @@ export default function CommandPalette({ onAction }) {
       items: group.items.filter(
         (item) =>
           item.label.toLowerCase().includes(q) ||
+          item.description?.toLowerCase().includes(q) ||
+          item.keywords?.some(k => k.toLowerCase().includes(q)) ||
           item.shortcut?.toLowerCase().includes(q)
       ),
     })).filter((g) => g.items.length > 0)
@@ -135,20 +139,18 @@ export default function CommandPalette({ onAction }) {
                     key={item.id}
                     onClick={() => execute(item)}
                     onMouseEnter={() => setSelectedIndex(itemIndex)}
-                    className={`w-full text-left px-3 py-2 flex items-center justify-between text-sm transition ${
+                    className={`w-full text-left px-3 py-2 transition ${
                       isSelected
                         ? 'bg-brutal-yellow text-brutal-fg'
                         : 'text-brutal-fg hover:bg-brutal-surface'
                     }`}
                   >
-                    <span className="font-bold flex items-center gap-2">
+                    <span className="font-bold text-sm flex items-center gap-2">
                       {item.icon && <item.icon size={15} />}
                       {item.label}
                     </span>
-                    {item.shortcut && (
-                      <span className="text-xs font-bold text-brutal-muted uppercase tracking-wider">
-                        {item.shortcut}
-                      </span>
+                    {item.description && (
+                      <span className="block text-[10px] text-brutal-muted mt-0.5 ml-7">{item.description}</span>
                     )}
                   </button>
                 )

@@ -8,6 +8,7 @@ import { ToastProvider } from './components/Toast'
 gsap.registerPlugin(ScrollTrigger)
 import CommandPalette from './components/CommandPalette'
 import KeyboardShortcuts from './components/KeyboardShortcuts'
+import HelpPanel from './components/HelpPanel'
 import ErrorBoundary from './components/ErrorBoundary'
 import { CommandActionProvider } from './components/CommandActionContext'
 import './App.css'
@@ -167,6 +168,7 @@ function App() {
         <ErrorBoundary>
         <CommandPalette />
         <KeyboardShortcuts />
+        <HelpPanel />
         <Routes>
           {/* Public Routes */}
           <Route

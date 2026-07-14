@@ -147,7 +147,7 @@ export default function DashboardLayout() {
             <span className="hidden lg:inline">Search</span>
           </button>
           <button
-            onClick={() => window.dispatchEvent(new CustomEvent('toggle-keyboard-shortcuts'))}
+            onClick={() => window.dispatchEvent(new CustomEvent('toggle-help-panel'))}
             className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors"
           >
             <HelpCircle size={14} />
