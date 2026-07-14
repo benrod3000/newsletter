@@ -113,6 +113,7 @@ export default function CampaignsPage() {
     if (!confirm(`Send "${campaign?.title || campaign?.name}" to ${campaign?.sent_count || 'all'} confirmed subscribers? This cannot be undone.`)) return
     setBusyId(id)
     try {
+      toast.addToast('Scheduling campaign for delivery...', 'info')
       await campaignsAPI.schedule(workspaceId, id)
       await loadCampaigns()
       toast.addToast('Campaign scheduled for delivery', 'success')

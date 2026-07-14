@@ -52,7 +52,22 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     resolveTimer.current = setTimeout(async () => {
       setResolving(true)
       try {
+        // Check localStorage cache first (24h TTL)
+        const cacheKey = `geo-zip-${clean}`
+        const cached = localStorage.getItem(cacheKey)
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          if (Date.now() - parsed.ts < 86400000) {
+            setResolved(parsed.data)
+            setResolving(false)
+            return
+          }
+        }
+
         const result = await resolveZip(clean)
+        if (result) {
+          localStorage.setItem(cacheKey, JSON.stringify({ data: result, ts: Date.now() }))
+        }
         setResolved(result)
       } catch {
         setResolved(null)
@@ -96,7 +111,8 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       }
 
       // Remove old map if exists
-      const existing = document.querySelector(`#${CSS.escape(mapId)} .leaflet-container`)
+      const safeId = mapId.replace(/"/g, '\\"');
+      const existing = document.querySelector(`[id="${safeId}"] .leaflet-container`);
       if (existing && window._subscriberMap) {
         window._subscriberMap.remove()
       }
@@ -131,7 +147,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       }).addTo(map)
 
       window._subscriberMap = map
-      setTimeout(() => map.invalidateSize(), 100)
+      setTimeout(() => { map.invalidateSize(); map.invalidateSize() }, 350)
     }
 
     initMap()

@@ -37,9 +37,16 @@ export function ToastProvider({ children }) {
 
   const addToast = useCallback((message, type = 'info', duration = 4000) => {
     const id = nextId.current++
-    const toast = { id, message, type }
 
     setToasts((prev) => {
+      // Group identical toasts — increment counter on the last match
+      const last = prev[prev.length - 1]
+      if (last && last.message === message && last.type === type) {
+        const count = (last.count || 1) + 1
+        return [...prev.slice(0, -1), { ...last, count, id: last.id }]
+      }
+
+      const toast: any = { id, message, type, count: 1 }
       if (prev.length >= MAX_VISIBLE) {
         queue.current.push(toast)
         return prev
@@ -80,7 +87,7 @@ export function ToastProvider({ children }) {
             <div className="flex items-center gap-3 px-4 py-3 flex-1 min-w-0">
               <span className="text-base shrink-0 font-bold">{TOAST_ICONS[toast.type]}</span>
               <span className="flex-1 text-xs font-bold uppercase tracking-wider leading-tight truncate">
-                {toast.message}
+                {toast.message}{toast.count > 1 ? ` (×${toast.count})` : ''}
               </span>
             </div>
             <button
