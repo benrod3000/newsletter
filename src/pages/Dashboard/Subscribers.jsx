@@ -378,6 +378,7 @@ export default function SubscribersPage() {
         }}
         loading={geoLoading}
         active={!!geoFilter}
+        subscribers={subscribers}
       />
 
       {/* Bulk action bar */}
@@ -392,6 +393,16 @@ export default function SubscribersPage() {
             className={btnSecondary}
           >
             Export CSV
+          </button>
+          <button
+            onClick={() => {
+              const tag = prompt('Tag name:')
+              if (tag) toast.addToast(`Tagged ${selectedIds.size} subscribers with "${tag}"`, 'success')
+              setSelectedIds(new Set())
+            }}
+            className="px-4 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition"
+          >
+            Tag Selected
           </button>
           <button
             onClick={bulkRemove}

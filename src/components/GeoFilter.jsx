@@ -13,7 +13,7 @@ const PRESETS = [1, 5, 10, 25, 50, 100]
  *   loading?: boolean — shows spinner on apply button
  *   active?: boolean — highlights the toggle when filter is active
  */
-export default function GeoFilter({ onChange, onClear, loading = false, active = false }) {
+export default function GeoFilter({ onChange, onClear, loading = false, active = false, subscribers = [] }) {
   const [open, setOpen] = useState(false)
   const [zip, setZip] = useState('')
   const [resolved, setResolved] = useState(null) // { lat, lng, city, state }
@@ -145,6 +145,24 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
         fillOpacity: 1,
         weight: 3,
       }).addTo(map)
+
+      // Subscriber pins — colored by health score
+      subscribers.forEach(s => {
+        if (!s.latitude || !s.longitude) return
+        const colors = { active: '#2f7f5f', at_risk: '#f5e642', cold: '#e03131' }
+        const sizes = { active: 7, at_risk: 5, cold: 3 }
+        L.circleMarker([s.latitude, s.longitude], {
+          radius: sizes[s.health_score] || 4,
+          color: '#0a0a0a',
+          fillColor: colors[s.health_score] || '#a8a49a',
+          fillOpacity: 1,
+          weight: 2,
+        }).addTo(map)
+          .bindTooltip(`${s.email || ''}${s.distance ? '<br/>' + Math.round(s.distance) + ' mi' : ''}`, {
+            direction: 'top',
+            className: 'bg-white border-2 border-brutal-fg text-[10px] font-mono font-bold p-1',
+          })
+      })
 
       window._subscriberMap = map
       setTimeout(() => { map.invalidateSize(); map.invalidateSize() }, 350)
