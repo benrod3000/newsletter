@@ -256,17 +256,6 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
             )}
           </div>
 
-          {/* Live map */}
-          {resolved && (
-            <div className="border-3 border-brutal-fg overflow-hidden">
-              <div className="border-b-3 border-brutal-fg bg-brutal-fg text-white px-3 py-1.5 flex items-center justify-between">
-                <p className="text-[10px] font-bold uppercase tracking-wider">📍 Map</p>
-                <span className="text-[9px] font-bold text-brutal-fg/60">{resolved.city}, {resolved.state}</span>
-              </div>
-              <div id={`map-${zip}`} style={{ height: '220px', background: '#e8e8e0' }} />
-            </div>
-          )}
-
           {/* Radar display */}
           <div className="flex justify-center">
             <div className="relative w-28 h-28 flex items-center justify-center">
@@ -344,6 +333,18 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
           </div>
         </div>
       </div>
+
+      {/* Map — rendered outside the animated panel for stable height */}
+      {resolved && (
+        <div className="border-t-3 border-brutal-fg overflow-hidden">
+          <div className="bg-brutal-fg text-white px-3 py-1.5 flex items-center justify-between">
+            <p className="text-[10px] font-bold uppercase tracking-wider">📍 Map</p>
+            <span className="text-[9px] font-bold text-brutal-fg/60">{resolved.city}, {resolved.state}</span>
+          </div>
+          <div id={`map-${zip}`} style={{ height: '240px', width: '100%', background: '#e8e8e0' }} />
+        </div>
+      )}
+
     </div>
   )
 }

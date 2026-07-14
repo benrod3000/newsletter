@@ -113,19 +113,32 @@ export default function LandingPage() {
               </Link>
             </div>
             <div className="flex-1 w-full max-w-sm pillar-card">
-              <div className="border-3 border-brutal-fg bg-white shadow-brutal">
+              <form onSubmit={async (e) => {
+                e.preventDefault()
+                const email = e.target.email.value.trim()
+                if (!email) return
+                try {
+                  await fetch('https://newsletter-core.vercel.app/api/subscribe', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, client_slug: 'demo' })
+                  })
+                  e.target.email.value = ''
+                  e.target.querySelector('button').textContent = '✓ Sent!'
+                  setTimeout(() => { e.target.querySelector('button').textContent = 'Send Me the Link' }, 3000)
+                } catch {}
+              }} className="border-3 border-brutal-fg bg-white shadow-brutal">
                 <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-4 py-3">
                   <p className="font-heading text-lg sm:text-xl uppercase">Get the Free Download</p>
                 </div>
                 <div className="p-4 space-y-3">
                   <p className="text-xs">Enter your email and we'll send you the download link.</p>
-                  <input disabled placeholder="you@example.com" className="w-full px-3 py-2 border-3 border-brutal-fg bg-brutal-bg text-sm" />
-                  <button disabled className="w-full border-3 border-brutal-fg bg-brutal-fg text-white font-bold py-2 text-xs uppercase">Send Me the Link</button>
+                  <input name="email" type="email" required placeholder="you@example.com" className="w-full px-3 py-2 border-3 border-brutal-fg bg-white text-sm focus:outline-none focus:bg-brutal-yellow/10" />
+                  <button type="submit" className="w-full border-3 border-brutal-fg bg-brutal-fg text-white font-bold py-2 text-xs uppercase hover:bg-brutal-green transition">Send Me the Link</button>
                 </div>
                 <div className="border-t-3 border-brutal-fg px-4 py-2">
                   <p className="text-[10px] font-bold text-brutal-muted uppercase text-center">No spam. Unsubscribe anytime.</p>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>
