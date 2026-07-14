@@ -98,6 +98,26 @@ export function useScrollReveal(selector, options = {}) {
 }
 
 /**
+ * Terminal-style reveal for mono "precision layer" annotations.
+ * Slides in from left with a blinking cursor on scroll trigger.
+ */
+export function useTerminalReveal(selector, options = {}) {
+  const { start = 'top 88%', stagger = 0.06 } = options
+  useLayoutEffect(() => {
+    const elements = document.querySelectorAll(selector)
+    if (!elements.length) return
+    const ctx = gsap.context(() => {
+      gsap.fromTo(elements, { opacity: 0, x: -8 }, { opacity: 1, x: 0, duration: 0.4, stagger, ease: 'power2.out',
+        scrollTrigger: { trigger: elements[0], start, toggleActions: 'play none none none' } })
+      gsap.utils.toArray('.term-cursor').forEach(el => {
+        gsap.to(el, { opacity: 0, duration: 0.5, repeat: -1, yoyo: true, ease: 'power1.inOut' })
+      })
+    })
+    return () => ctx.revert()
+  }, [selector, start, stagger])
+}
+
+/**
  * Page-level entrance animation — staggers children with fade-up.
  */
 export function PageTransition({ children, className = '' }) {

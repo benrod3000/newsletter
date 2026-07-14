@@ -1,7 +1,17 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { useReveal, useScrollReveal } from '../App'
+import { useReveal, useScrollReveal, useTerminalReveal } from '../App'
 import Badge from '../components/ui/Badge'
+
+function Annotation({ children, className = '' }) {
+  return (
+    <p className={`annotation font-mono text-[11px] text-brutal-muted tracking-tight ${className}`}>
+      <span className="text-brutal-green/70">{'// '}</span>
+      {children}
+      <span className="term-cursor text-brutal-green">▍</span>
+    </p>
+  )
+}
 
 const stats = [
   { value: '$1', label: 'Per 10K emails' },
@@ -21,6 +31,7 @@ export default function LandingPage() {
   useReveal(heroRef, { stagger: 0.12, y: 24 })
   useReveal(statRef, { stagger: 0.06, y: 16, delay: 0.2 })
   useScrollReveal('.pillar-card', { stagger: 0.1, y: 30 })
+  useTerminalReveal('.annotation', { stagger: 0.08 })
 
   return (
     <div className="-my-20">
@@ -40,6 +51,7 @@ export default function LandingPage() {
             Collect leads with embeddable forms. Target campaigns by radius around any ZIP code.
             Automate the rest. No code, no monthly fees.
           </p>
+          <Annotation>multi-tenant · BYO SES/SendGrid · $0 platform fee</Annotation>
 
           <div className="flex flex-col sm:flex-row gap-4">
             <Link to="/demo" className="px-8 py-4 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 active:shadow-none transition text-center">
@@ -111,6 +123,7 @@ export default function LandingPage() {
               <Link to="/demo" className="inline-block px-6 py-3 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
                 See it in the demo →
               </Link>
+              <Annotation>embed one line — geo-enriched subscriber on submit</Annotation>
             </div>
             <div className="flex-1 w-full max-w-sm pillar-card">
               <form onSubmit={async (e) => {
@@ -180,6 +193,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+            <Annotation>health scoring · geo radar · open + click + bounce tracking</Annotation>
           </div>
         </div>
       </Section>
@@ -213,6 +227,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+            <Annotation>TipTap editor · merge tags · scheduling · test sends</Annotation>
           </div>
         </div>
       </Section>
@@ -246,6 +261,7 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
+            <Annotation>welcome drip · smart-tag batching · auto-clean cold subs</Annotation>
           </div>
         </div>
       </Section>
