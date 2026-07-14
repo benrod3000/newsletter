@@ -46,7 +46,7 @@ export function ToastProvider({ children }) {
         return [...prev.slice(0, -1), { ...last, count, id: last.id }]
       }
 
-      const toast: any = { id, message, type, count: 1 }
+      const toast = { id, message, type, count: 1 }
       if (prev.length >= MAX_VISIBLE) {
         queue.current.push(toast)
         return prev
