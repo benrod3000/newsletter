@@ -8,6 +8,7 @@ import KeyboardShortcuts from './components/KeyboardShortcuts'
 import HelpPanel from './components/HelpPanel'
 import ErrorBoundary from './components/ErrorBoundary'
 import { CommandActionProvider } from './components/CommandActionContext'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import './App.css'
 
 // Pages — code-split dashboard for faster initial load
@@ -86,6 +87,7 @@ function ProtectedRoute({ children }) {
 function App() {
   return (
     <ToastProvider>
+      <SpeedInsights />
       <BrowserRouter>
         <CommandActionProvider>
         <ErrorBoundary>
