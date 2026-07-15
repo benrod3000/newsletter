@@ -9,6 +9,7 @@ import HelpPanel from './components/HelpPanel'
 import ErrorBoundary from './components/ErrorBoundary'
 import { CommandActionProvider } from './components/CommandActionContext'
 import { SpeedInsights } from '@vercel/speed-insights/react'
+import { Analytics } from '@vercel/analytics/react'
 import './App.css'
 
 // Pages — code-split dashboard for faster initial load
@@ -88,6 +89,7 @@ function App() {
   return (
     <ToastProvider>
       <SpeedInsights />
+      <Analytics />
       <BrowserRouter>
         <CommandActionProvider>
         <ErrorBoundary>
