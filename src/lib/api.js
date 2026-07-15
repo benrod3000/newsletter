@@ -76,9 +76,9 @@ export const campaignsAPI = {
 
 export const templatesAPI = {
   list: (workspaceId) =>
-    api.get(`/api/admin/campaigns/templates`),
+    api.get(`/api/clients/${workspaceId}/templates`),
   create: (workspaceId, data) =>
-    api.post(`/api/admin/campaigns/templates`, data),
+    api.post(`/api/clients/${workspaceId}/templates`, data),
 }
 
 // list/create existed already. remove() calls the new
