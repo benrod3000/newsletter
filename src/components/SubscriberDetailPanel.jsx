@@ -9,6 +9,8 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
   // Notes & tags state
   const [notes, setNotes] = useState([])
   const [tags, setTags] = useState([])
+  const [timeline, setTimeline] = useState([])
+  const [timelineLoading, setTimelineLoading] = useState(false)
   const [newNote, setNewNote] = useState('')
   const [newTag, setNewTag] = useState('')
   const [editingName, setEditingName] = useState(false)
@@ -22,6 +24,11 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
     fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/notes`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(d => { setNotes(d.notes || []); setTags(d.tags || []) }).catch(() => {})
+    // Load timeline
+    setTimelineLoading(true)
+    fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/timeline`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json()).then(d => { setTimeline(d.timeline || []) }).catch(() => setTimeline([])).finally(() => setTimelineLoading(false))
   }, [subscriber?.id, workspaceId])
 
   async function addNote() {
@@ -132,6 +139,29 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
             )}
             {subscriber.timezone && <Row label="Timezone" value={subscriber.timezone} />}
             <Row label="Joined" value={subscriber.created_at ? new Date(subscriber.created_at).toLocaleDateString() : '—'} />
+          </Section>
+
+          {/* Subscriber Journey Timeline */}
+          <Section title="Journey">
+            {timelineLoading ? (
+              <p className="text-xs text-brutal-muted">Loading timeline...</p>
+            ) : timeline.length === 0 ? (
+              <p className="text-xs text-brutal-muted">No activity recorded yet.</p>
+            ) : (
+              <div className="space-y-0 relative">
+                <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-brutal-fg/10" />
+                {timeline.map((event, i) => (
+                  <div key={i} className="flex gap-3 py-1.5 relative">
+                    <span className="shrink-0 text-xs z-10">{event.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold">{event.label}</p>
+                      {event.detail && <p className="text-[10px] text-brutal-muted mt-0.5">{event.detail}</p>}
+                      <p className="text-[9px] text-brutal-muted mt-0.5">{new Date(event.date).toLocaleDateString()} {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </Section>
 
           <Section title="Attribution">
