@@ -48,7 +48,7 @@ export default function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const { email, role, clearAuth } = useAuthStore()
+  const { email, workspaceId, role, clearAuth } = useAuthStore()
 
   const handleLogout = () => {
     clearAuth()
@@ -96,6 +96,7 @@ export default function DashboardLayout() {
         <div className="border-t-3 border-brutal-fg p-4 space-y-1">
           <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted/40">Account</p>
           <p className="text-[10px] font-mono font-bold truncate">{email}</p>
+          <p className="text-[9px] font-mono text-brutal-muted truncate">Workspace: {workspaceId?.slice(0, 12)}</p>
           <p className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider">{role || 'Admin'}</p>
         </div>
       )}

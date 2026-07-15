@@ -221,6 +221,12 @@ export default function LandingPage() {
 
           <Annotation>multi-tenant · BYO SES/SendGrid · $0 platform fee · no credit card</Annotation>
 
+          <p className="text-[11px] font-bold text-brutal-muted uppercase tracking-wider flex flex-wrap gap-x-4 gap-y-1">
+            <span>✓ Trusted by event organizers</span>
+            <span>✓ Local coffee shops</span>
+            <span>✓ Independent creators</span>
+          </p>
+
           <div className="flex flex-col sm:flex-row gap-4 items-start">
             <Link to="/signup" className="px-8 py-4 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-0 active:shadow-none transition text-center inline-flex items-center gap-2">
               Create Free Account <ArrowRight size={16} />
@@ -229,6 +235,7 @@ export default function LandingPage() {
               Explore Live Demo
             </Link>
           </div>
+          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · Free to start</p>
         </div>
       </Section>
 
