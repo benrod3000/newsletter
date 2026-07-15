@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { subscribersAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
@@ -58,12 +58,15 @@ export default function SubscribersPage() {
   // Geo-radius filter
   const [geoFilter, setGeoFilter] = useState(null)
   const [geoLoading, setGeoLoading] = useState(false)
+  const [page, setPage] = useState(1)
+  const [perPage] = useState(50)
+  const searchTimer = useRef(null)
 
   useEffect(() => {
-    if (workspaceId) loadSubscribers(statusFilter)
+    if (workspaceId) loadSubscribers()
     document.title = 'Subscribers | Veloce'
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workspaceId, statusFilter])
+  }, [workspaceId, statusFilter, dateFrom, dateTo, geoFilter, page])
 
   useEffect(() => {
     if (!workspaceId) return
@@ -73,15 +76,15 @@ export default function SubscribersPage() {
     }).then(r => r.json()).then(d => setSubscriberLists(d.lists || d || [])).catch(() => {})
   }, [workspaceId])
 
-  async function loadSubscribers(status) {
+  async function loadSubscribers() {
     setLoading(true)
     setError(null)
     try {
       const params = {}
-      if (status === 'active' || status === 'at_risk' || status === 'cold') {
-        params.status = status
-      } else if (status) {
-        params.status = status
+      if (statusFilter === 'active' || statusFilter === 'at_risk' || statusFilter === 'cold') {
+        params.status = statusFilter
+      } else if (statusFilter) {
+        params.status = statusFilter
       }
       if (dateFrom) params.joined_after = dateFrom
       if (dateTo) params.joined_before = dateTo
@@ -90,7 +93,10 @@ export default function SubscribersPage() {
         params.near_lng = geoFilter.lng
         params.radius = geoFilter.radius
       }
-      const { data } = await subscribersAPI.list(workspaceId, Object.keys(params).length ? params : undefined)
+      if (search.trim()) params.search = search.trim()
+      params.limit = perPage
+      params.offset = (page - 1) * perPage
+      const { data } = await subscribersAPI.list(workspaceId, params)
       setSubscribers(data.subscribers || [])
       setTotal(data.total ?? data.subscribers?.length ?? 0)
     } catch (err) {
@@ -101,15 +107,18 @@ export default function SubscribersPage() {
     }
   }
 
-  // The backend doesn't support a search query param, so this filters the
-  // currently-loaded page client-side rather than hitting the API again.
-  const filtered = useMemo(() => {
-    if (!search.trim()) return subscribers
-    const q = search.trim().toLowerCase()
-    return subscribers.filter((s) =>
-      [s.email, s.first_name, s.last_name].some((v) => v?.toLowerCase().includes(q))
-    )
-  }, [subscribers, search])
+  // Debounced search — resets to page 1 and reloads from server
+  useEffect(() => {
+    if (searchTimer.current) clearTimeout(searchTimer.current)
+    searchTimer.current = setTimeout(() => {
+      setPage(1)
+      if (workspaceId) loadSubscribers()
+    }, 350)
+    return () => { if (searchTimer.current) clearTimeout(searchTimer.current) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search])
+
+  const totalPages = Math.max(1, Math.ceil(total / perPage))
 
   async function addSubscriber() {
     if (!newSubscriber.email.trim()) { toast.addToast('Please enter an email', 'warning'); return }
@@ -118,7 +127,7 @@ export default function SubscribersPage() {
       await subscribersAPI.create(workspaceId, newSubscriber)
       setNewSubscriber({ email: '', first_name: '', last_name: '' })
       setShowAddForm(false)
-      await loadSubscribers(statusFilter)
+      await loadSubscribers()
       toast.addToast('Subscriber added', 'success')
     } catch (err) {
       const apiErr = err?.response?.data?.error
@@ -153,10 +162,10 @@ export default function SubscribersPage() {
   }
 
   function selectAll() {
-    if (selectedIds.size === filtered.length) {
+    if (selectedIds.size === subscribers.length) {
       setSelectedIds(new Set())
     } else {
-      setSelectedIds(new Set(filtered.map((s) => s.id)))
+      setSelectedIds(new Set(subscribers.map((s) => s.id)))
     }
   }
 
@@ -353,7 +362,7 @@ export default function SubscribersPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Filter loaded results by email or name..."
+          placeholder="Search by email or name..."
           className="flex-1 max-w-sm px-4 py-2.5 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
         />
         {!loading && !error && (
@@ -368,12 +377,12 @@ export default function SubscribersPage() {
         onChange={async (geo) => {
           setGeoFilter(geo)
           setGeoLoading(true)
-          await loadSubscribers(statusFilter)
+          await loadSubscribers()
           setGeoLoading(false)
         }}
         onClear={() => {
           setGeoFilter(null)
-          loadSubscribers(statusFilter)
+          loadSubscribers()
         }}
         loading={geoLoading}
         active={!!geoFilter}
@@ -547,18 +556,18 @@ export default function SubscribersPage() {
         <EmptyState
           title="Couldn't load subscribers"
           description={error}
-          action={{ label: 'Retry', onClick: () => loadSubscribers(statusFilter) }}
+          action={{ label: 'Retry', onClick: () => loadSubscribers() }}
         />
-      ) : filtered.length === 0 ? (
+      ) : subscribers.length === 0 ? (
         <EmptyState
-          title={subscribers.length === 0 ? 'No subscribers yet' : 'No matches'}
+          title={total === 0 && !search ? 'No subscribers yet' : 'No matches'}
           description={
-            subscribers.length === 0
+            total === 0 && !search
               ? 'Add your first subscriber to get started.'
-              : 'Nothing in the loaded results matches that filter.'
+              : 'Nothing matches that filter or search. Try different criteria.'
           }
           variant="subscribers"
-          action={subscribers.length === 0 ? { label: '+ Add Subscriber', onClick: () => setShowAddForm(true) } : undefined}
+          action={!search ? { label: '+ Add Subscriber', onClick: () => setShowAddForm(true) } : undefined}
         />
       ) : (
         <div className="border-3 border-brutal-fg overflow-x-auto bg-white">
@@ -568,7 +577,7 @@ export default function SubscribersPage() {
                 <th className="w-10 p-3 hidden md:table-cell">
                   <input
                     type="checkbox"
-                    checked={selectedIds.size === filtered.length && filtered.length > 0}
+                    checked={selectedIds.size === subscribers.length && subscribers.length > 0}
                     onChange={selectAll}
                     className="w-4 h-4 accent-brutal-fg cursor-pointer"
                   />
@@ -583,7 +592,7 @@ export default function SubscribersPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((s) => {
+              {subscribers.map((s) => {
                 const name = [s.first_name, s.last_name].filter(Boolean).join(' ')
                 return (
                   <tr key={s.id} className="border-t border-brutal-fg hover:bg-brutal-yellow/10 cursor-pointer transition" onClick={() => setSelectedSubscriber(s)}>
@@ -636,6 +645,33 @@ export default function SubscribersPage() {
               })}
             </tbody>
           </table>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="border-t-3 border-brutal-fg bg-brutal-bg px-4 py-3 flex items-center justify-between">
+              <span className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider">
+                Page {page} of {totalPages}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="px-3 py-1.5 border-2 border-brutal-fg bg-white text-[10px] font-bold uppercase tracking-wider hover:shadow-brutal transition disabled:opacity-30 disabled:hover:shadow-none"
+                >
+                  ← Previous
+                </button>
+                <span className="text-[10px] font-bold text-brutal-muted px-2">
+                  {((page - 1) * perPage) + 1}–{Math.min(page * perPage, total)} of {total.toLocaleString()}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="px-3 py-1.5 border-2 border-brutal-fg bg-white text-[10px] font-bold uppercase tracking-wider hover:shadow-brutal transition disabled:opacity-30 disabled:hover:shadow-none"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
