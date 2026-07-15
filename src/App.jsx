@@ -194,9 +194,7 @@ function App() {
           <Route
             path="/"
             element={
-              <PublicLayout>
-                <ErrorBoundary><LandingPage /></ErrorBoundary>
-              </PublicLayout>
+              <ErrorBoundary><LandingPage /></ErrorBoundary>
             }
           />
 
