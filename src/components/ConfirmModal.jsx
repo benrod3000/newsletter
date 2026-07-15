@@ -1,4 +1,4 @@
-import Button from './ui/Button'
+import Btn from './ui/Button'
 
 export default function ConfirmModal({ open, title, message, confirmLabel = 'Confirm', cancelLabel = 'Cancel', onConfirm, onCancel, danger = false }) {
   if (!open) return null
@@ -10,12 +10,12 @@ export default function ConfirmModal({ open, title, message, confirmLabel = 'Con
         <h3 className="font-heading text-xl uppercase tracking-wide mb-2">{title}</h3>
         <p className="text-xs text-brutal-fg/70 leading-relaxed mb-5">{message}</p>
         <div className="flex gap-3 justify-end">
-          <Button variant="secondary" size="md" onClick={onCancel}>
+          <Btn variant="secondary" size="md" onClick={onCancel}>
             {cancelLabel}
-          </Button>
-          <Button variant={danger ? 'danger' : 'primary'} size="md" onClick={onConfirm}>
+          </Btn>
+          <Btn variant={danger ? 'danger' : 'primary'} size="md" onClick={onConfirm}>
             {confirmLabel}
-          </Button>
+          </Btn>
         </div>
       </div>
     </div>

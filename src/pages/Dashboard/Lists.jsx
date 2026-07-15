@@ -3,7 +3,7 @@ import { useAuthStore } from '../../stores/authStore'
 import { listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
-import Button from '../../components/ui/Button'
+import Btn from '../../components/ui/Button'
 import { useCommandAction } from '../../components/CommandActionContext'
 
 export default function ListsPage() {
@@ -79,13 +79,13 @@ export default function ListsPage() {
         <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">
           <span className="text-brutal-green">Subscriber</span> Lists
         </h2>
-        <Button
+        <Btn
           variant="primary"
           size="md"
           onClick={() => setShowAddForm(!showAddForm)}
         >
           + New List
-        </Button>
+        </Btn>
       </div>
 
       {showAddForm && (
@@ -123,7 +123,7 @@ export default function ListsPage() {
             </select>
           </div>
           <div className="flex gap-3">
-            <Button
+            <Btn
               variant="primary"
               size="md"
               onClick={createList}
@@ -131,14 +131,14 @@ export default function ListsPage() {
               loading={saving}
             >
               {saving ? 'Creating...' : 'Create List'}
-            </Button>
-            <Button
+            </Btn>
+            <Btn
               variant="secondary"
               size="md"
               onClick={() => setShowAddForm(false)}
             >
               Cancel
-            </Button>
+            </Btn>
           </div>
         </div>
       )}

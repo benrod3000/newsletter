@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { campaignsAPI, listsAPI, templatesAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
-import Button from '../../components/ui/Button'
+import Btn from '../../components/ui/Button'
 import { useToast } from '../../components/Toast'
 import EmailEditor from '../../components/EmailEditor'
 import GeoFilter from '../../components/GeoFilter'
@@ -287,7 +287,7 @@ export default function CampaignsPage() {
             <button onClick={() => setViewMode('cards')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'cards' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>▥ Cards</button>
             <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'calendar' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>📅 Calendar</button>
           </div>
-          <Button variant="primary" size="md" onClick={startNewCampaign}>+ New Newsletter</Button>
+          <Btn variant="primary" size="md" onClick={startNewCampaign}>+ New Newsletter</Btn>
           <button
             onClick={async () => {
               setSmsOpen(!smsOpen)
@@ -423,13 +423,13 @@ export default function CampaignsPage() {
                     placeholder="Summer Sale Starts Now ☀️"
                   />
                   <div className="relative">
-                    <Button
+                    <Btn
                       variant="primary"
                       size="md"
                       onClick={() => setShowSubjectSuggestions(!showSubjectSuggestions)}
                     >
                       Suggest
-                    </Button>
+                    </Btn>
                     {showSubjectSuggestions && (
                       <div className="absolute right-0 top-full mt-1 w-72 border-3 border-brutal-fg bg-white shadow-brutal z-20">
                         <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-3 py-1.5">
@@ -545,14 +545,14 @@ export default function CampaignsPage() {
                     )}
                   </>
                 )}
-                <Button
+                <Btn
                   variant="primary"
                   size="md"
                   onClick={() => sendNow(editingId)}
                   disabled={autosaving}
                 >
                   {editingId === 'new' ? 'Write & Send' : 'Send Now'}
-                </Button>
+                </Btn>
               </div>
             </div>
           </div>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authAPI } from '../lib/api'
-import Button from '../components/ui/Button'
+import Btn from '../components/ui/Button'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -100,7 +100,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button
+          <Btn
             variant="primary"
             fullWidth
             type="submit"
@@ -109,7 +109,7 @@ export default function LoginPage() {
             size="lg"
           >
             {loading ? 'Authenticating...' : 'Login'}
-          </Button>
+          </Btn>
         </form>
 
         <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider text-center pt-1">

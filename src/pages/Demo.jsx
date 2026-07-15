@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, Users, BarChart3, Globe, Zap } from 'lucide-react'
-import Button from '../components/ui/Button'
+import Btn from '../components/ui/Button'
 import gsap from 'gsap'
 
 function Panel({ children, className = '', title, accent }) {
@@ -83,9 +83,9 @@ export default function DemoPage() {
         <Link to="/signup" className="px-5 py-2.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
           Create Free Account
         </Link>
-        <Button variant="primary" size="md" onClick={() => window.location.href = '/login'}>
+        <Btn variant="primary" size="md" onClick={() => window.location.href = '/login'}>
           Sign In
-        </Button>
+        </Btn>
       </div>
 
       <Panel title="Demo Workspace · 12,453 subscribers" accent="bg-brutal-fg text-white">

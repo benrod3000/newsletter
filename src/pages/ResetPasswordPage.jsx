@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import axios from 'axios'
-import Button from '../components/ui/Button'
+import Btn from '../components/ui/Button'
 import Input from '../components/ui/Input'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
@@ -54,7 +54,7 @@ export default function ResetPasswordPage() {
             <div className="border-3 border-brutal-fg bg-brutal-green/10 p-4">
               <p className="text-xs font-bold uppercase tracking-wider text-brutal-green">✓ Password reset successfully</p>
             </div>
-            <Button variant="primary" fullWidth size="lg" onClick={() => window.location.href = '/login'}>Sign In</Button>
+            <Btn variant="primary" fullWidth size="lg" onClick={() => window.location.href = '/login'}>Sign In</Btn>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -68,9 +68,9 @@ export default function ResetPasswordPage() {
               required
               minLength={6}
             />
-            <Button type="submit" disabled={loading} loading={loading} fullWidth size="lg" className="bg-brutal-green text-white border-brutal-fg hover:shadow-brutal">
+            <Btn type="submit" disabled={loading} loading={loading} fullWidth size="lg" className="bg-brutal-green text-white border-brutal-fg hover:shadow-brutal">
               {loading ? 'Resetting...' : 'Reset Password'}
-            </Button>
+            </Btn>
           </form>
         )}
         <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider text-center">

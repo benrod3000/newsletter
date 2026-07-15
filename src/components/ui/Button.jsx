@@ -12,7 +12,7 @@ const SIZES = {
   lg: 'px-6 py-3 text-sm',
 }
 
-export default function Button({
+export default function Btn({
   variant = 'primary',
   size = 'md',
   loading = false,
@@ -43,3 +43,5 @@ export default function Button({
     </button>
   )
 }
+
+export { Btn }

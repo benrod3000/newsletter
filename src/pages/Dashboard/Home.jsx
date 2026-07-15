@@ -8,7 +8,7 @@ import MetricCard from '../../components/ui/MetricCard'
 import Panel from '../../components/ui/Panel'
 import Badge from '../../components/ui/Badge'
 import { Mail, Upload, Zap, Globe } from 'lucide-react'
-import Button from '../../components/ui/Button'
+import Btn from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import { relativeTime } from '../../lib/time'
 
@@ -106,7 +106,7 @@ export default function DashboardHome() {
           <div className="flex-1">
             <p className="text-sm font-bold">You have subscribers but no campaigns yet</p>
             <p className="text-xs text-brutal-muted mt-1">Your audience is waiting. Create your first newsletter to start engaging your subscribers.</p>
-            <Button variant="primary" size="md" onClick={() => window.location.href = '/dashboard/campaigns'}>Write Your First Newsletter →</Button>
+            <Btn variant="primary" size="md" onClick={() => window.location.href = '/dashboard/campaigns'}>Write Your First Newsletter →</Btn>
           </div>
         </Card>
       )}
@@ -120,7 +120,7 @@ export default function DashboardHome() {
           <div className="flex-1">
             <p className="text-sm font-bold">Start building your audience</p>
             <p className="text-xs text-brutal-muted mt-1">Set up a signup widget and start collecting subscribers. Embed it on your website in under a minute.</p>
-            <Button variant="primary" size="md" onClick={() => window.location.href = '/dashboard/widgets'} className="bg-brutal-green text-white border-brutal-fg">Create a Widget →</Button>
+            <Btn variant="primary" size="md" onClick={() => window.location.href = '/dashboard/widgets'} className="bg-brutal-green text-white border-brutal-fg">Create a Widget →</Btn>
           </div>
           <div className="hidden sm:flex items-center gap-6 text-[10px] font-bold text-brutal-muted uppercase tracking-wider">
             <span>← 1. Widget</span>

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authAPI } from '../lib/api'
 import Input from '../components/ui/Input'
-import Button from '../components/ui/Button'
+import Btn from '../components/ui/Button'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -87,9 +87,9 @@ export default function SignupPage() {
             />
           </div>
 
-          <Button type="submit" disabled={loading} loading={loading} fullWidth size="lg" className="bg-brutal-green text-white border-brutal-fg hover:shadow-brutal active:translate-y-0.5">
+          <Btn type="submit" disabled={loading} loading={loading} fullWidth size="lg" className="bg-brutal-green text-white border-brutal-fg hover:shadow-brutal active:translate-y-0.5">
             {loading ? 'Creating account...' : 'Create Account'}
-          </Button>
+          </Btn>
         </form>
 
         <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider text-center">

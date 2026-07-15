@@ -3,7 +3,7 @@ import { useAuthStore } from '../../stores/authStore'
 import { widgetsAPI, listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
-import Button from '../../components/ui/Button'
+import Btn from '../../components/ui/Button'
 
 const EMBED_BASE = 'https://newsletter.brod3000.com/w'
 
@@ -196,13 +196,13 @@ export default function WidgetsPage() {
           <span className="text-brutal-green">Widg</span>ets
         </h2>
         {step === 0 && (
-          <Button
+          <Btn
             variant="primary"
             size="md"
             onClick={openNew}
           >
             + New Widget
-          </Button>
+          </Btn>
         )}
       </div>
 

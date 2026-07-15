@@ -3,7 +3,7 @@ import { useAuthStore } from '../../stores/authStore'
 import { brandingAPI, automationsAPI } from '../../lib/api'
 import { useToast } from '../../components/Toast'
 import { Eye, EyeOff } from 'lucide-react'
-import Button from '../../components/ui/Button'
+import Btn from '../../components/ui/Button'
 
 export default function SettingsPage() {
   const { workspaceId } = useAuthStore()
@@ -443,7 +443,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Button
+              <Btn
                 variant="primary"
                 size="lg"
                 onClick={saveBranding}
@@ -451,8 +451,8 @@ export default function SettingsPage() {
                 loading={loading}
               >
                 {loading ? 'Saving...' : 'Save Branding'}
-              </Button>
-              <Button
+              </Btn>
+              <Btn
                 variant="secondary"
                 size="lg"
                 onClick={testProvider}
@@ -460,7 +460,7 @@ export default function SettingsPage() {
                 loading={testSending}
               >
                 {testSending ? 'Testing...' : 'Test Provider'}
-              </Button>
+              </Btn>
             </div>
           </div>
         </div>
@@ -595,13 +595,13 @@ export default function SettingsPage() {
           <div className="border-t-3 border-brutal-fg pt-8">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-heading text-2xl uppercase tracking-wide">Custom Automations</h3>
-              <Button
+              <Btn
                 variant="primary"
                 size="md"
                 onClick={() => setShowNewAutomation(!showNewAutomation)}
               >
                 + New Automation
-              </Button>
+              </Btn>
             </div>
 
           {/* New Automation Form */}
@@ -668,7 +668,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex gap-3">
-                  <Button
+                  <Btn
                     variant="primary"
                     size="md"
                     onClick={createAutomation}
@@ -676,14 +676,14 @@ export default function SettingsPage() {
                     loading={loading}
                   >
                     {loading ? 'Creating...' : 'Create Automation'}
-                  </Button>
-                  <Button
+                  </Btn>
+                  <Btn
                     variant="secondary"
                     size="md"
                     onClick={() => setShowNewAutomation(false)}
                   >
                     Cancel
-                  </Button>
+                  </Btn>
                 </div>
               </div>
             </div>

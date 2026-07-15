@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
-import Button from '../components/ui/Button'
+import Btn from '../components/ui/Button'
 import Input from '../components/ui/Input'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
@@ -60,9 +60,9 @@ export default function ForgotPasswordPage() {
                 </a>
               </div>
             )}
-            <Button variant="primary" fullWidth size="lg" onClick={() => window.location.href = '/login'}>
+            <Btn variant="primary" fullWidth size="lg" onClick={() => window.location.href = '/login'}>
               Back to Sign In
-            </Button>
+            </Btn>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -77,9 +77,9 @@ export default function ForgotPasswordPage() {
               placeholder="you@example.com"
               required
             />
-            <Button variant="primary" fullWidth type="submit" disabled={loading} loading={loading} size="lg">
+            <Btn variant="primary" fullWidth type="submit" disabled={loading} loading={loading} size="lg">
               {loading ? 'Sending...' : 'Send Reset Link'}
-            </Button>
+            </Btn>
           </form>
         )}
 

@@ -4,7 +4,7 @@ import { useReveal, useScrollReveal, useTerminalReveal } from '../hooks/use-gsap
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Badge from '../components/ui/Badge'
-import Button from '../components/ui/Button'
+import Btn from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Card from '../components/ui/Card'
 import { Annotation, Section, CountUp } from '../components/ux'
@@ -62,7 +62,7 @@ export default function LandingPage() {
             ))}
             <span className="w-px h-5 bg-brutal-fg/15" />
             <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors">Sign In</Link>
-            <Button variant="primary" size="md" onClick={() => window.location.href = '/signup'}>Get Started</Button>
+            <Btn variant="primary" size="md" onClick={() => window.location.href = '/signup'}>Get Started</Btn>
           </div>
 
           {/* Mobile hamburger */}
@@ -79,7 +79,7 @@ export default function LandingPage() {
             ))}
             <hr className="border-brutal-fg/15" />
             <Link to="/login" onClick={() => setMobileOpen(false)} className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg">Sign In</Link>
-            <Button variant="primary" size="md" fullWidth onClick={() => { window.location.href = '/signup'; setMobileOpen(false); }}>Get Started</Button>
+            <Btn variant="primary" size="md" fullWidth onClick={() => { window.location.href = '/signup'; setMobileOpen(false); }}>Get Started</Btn>
           </div>
         )}
       </nav>
@@ -109,12 +109,12 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 items-start">
-            <Button variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
+            <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
               Create Free Account
-            </Button>
-            <Button variant="secondary" size="lg" onClick={() => window.location.href = '/demo'}>
+            </Btn>
+            <Btn variant="secondary" size="lg" onClick={() => window.location.href = '/demo'}>
               Explore Live Demo
-            </Button>
+            </Btn>
           </div>
           <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · Free to start</p>
         </div>
@@ -221,9 +221,9 @@ export default function LandingPage() {
           <p className="text-base sm:text-lg text-brutal-fg/70 max-w-xl mx-auto font-medium">
             Veloce organizes your audience by location automatically. Every newsletter reaches the people who actually matter, without extra work.
           </p>
-          <Button variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
+          <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
             Create Free Account
-          </Button>
+          </Btn>
         </div>
       </Section>
 
@@ -297,9 +297,9 @@ export default function LandingPage() {
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading uppercase tracking-tight leading-none">{pillar.title}</h2>
                   </div>
                   <p className="text-sm text-brutal-fg/70 leading-relaxed max-w-md">{pillar.body}</p>
-                  <Button variant="primary" size="lg" icon={<ArrowRight size={14} />} onClick={() => window.location.href = pillar.cta.to}>
+                  <Btn variant="primary" size="lg" icon={<ArrowRight size={14} />} onClick={() => window.location.href = pillar.cta.to}>
                     {pillar.cta.label}
-                  </Button>
+                  </Btn>
                   <Annotation>{pillar.annotation}</Annotation>
                 </div>
 
@@ -331,9 +331,9 @@ export default function LandingPage() {
                           <input type="text" defaultValue="Austin, TX" className="w-full pl-8 pr-3 py-2 border-3 border-brutal-fg bg-white text-xs focus:outline-none" readOnly />
                         </div>
                         <Input name="email" type="email" required placeholder="you@example.com" />
-                        <Button variant="primary" fullWidth size="md" type="submit" icon={<ArrowRight size={14} />}>
+                        <Btn variant="primary" fullWidth size="md" type="submit" icon={<ArrowRight size={14} />}>
                           Subscribe
-                        </Button>
+                        </Btn>
                         <p className="text-[9px] font-bold text-brutal-muted uppercase text-center flex items-center justify-center gap-1">
                           <MapPin size={10} /> Location captured automatically
                         </p>
@@ -442,12 +442,12 @@ export default function LandingPage() {
             No monthly fees. No platform lock-in. Just a smarter way to send emails that reach the right people, wherever they are.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
+            <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
               Create Free Account
-            </Button>
-            <Button variant="ghost" size="lg" onClick={() => window.location.href = '/demo'}>
+            </Btn>
+            <Btn variant="ghost" size="lg" onClick={() => window.location.href = '/demo'}>
               Explore Live Demo
-            </Button>
+            </Btn>
           </div>
           <Annotation className="justify-center !text-brutal-bg/50">no credit card · no time limit · BYO SendGrid or SES</Annotation>
         </div>

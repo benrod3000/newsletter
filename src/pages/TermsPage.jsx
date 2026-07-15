@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import Button from '../components/ui/Button'
+import Btn from '../components/ui/Button'
 
 export default function TermsPage() {
   return (
@@ -62,7 +62,7 @@ export default function TermsPage() {
           <h2 className="font-heading text-2xl uppercase mt-8">14. Contact</h2>
           <p>For legal inquiries: support@veloce.app. Veloce is operated in California.</p>
         </div>
-        <Button variant="primary" size="lg" onClick={() => window.location.href = '/'}>← Back to Home</Button>
+        <Btn variant="primary" size="lg" onClick={() => window.location.href = '/'}>← Back to Home</Btn>
       </div>
     </div>
   )

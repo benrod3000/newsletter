@@ -8,6 +8,8 @@ const ICONS = {
   settings: '⚙',
 }
 
+import Btn from '../../components/ui/Button'
+
 export default function EmptyState({
   title = "Nothing here",
   description = "There is no data to display yet.",
@@ -31,13 +33,13 @@ export default function EmptyState({
 
       {action && (
         <div className="pt-2">
-          <Button
+          <Btn
             variant="primary"
             size="md"
             onClick={action.onClick}
           >
             {action.label}
-          </Button>
+          </Btn>
         </div>
       )}
     </div>

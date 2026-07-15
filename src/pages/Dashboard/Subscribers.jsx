@@ -8,7 +8,7 @@ import { useCommandAction } from '../../components/CommandActionContext'
 import { relativeTime } from '../../lib/time'
 import GeoFilter from '../../components/GeoFilter'
 import { formatDistance } from '../../lib/geo'
-import Button from '../../components/ui/Button'
+import Btn from '../../components/ui/Button'
 import { STATUS_FILTERS, HEALTH_STYLES } from './Subscribers/constants'
 
 export default function SubscribersPage() {
@@ -232,20 +232,20 @@ export default function SubscribersPage() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">Your <span className="text-brutal-green">Audience</span></h2>
         <div className="flex gap-3">
-          <Button
+          <Btn
             variant="secondary"
             size="md"
             onClick={() => setShowImport(!showImport)}
           >
             {showImport ? 'Cancel Import' : 'Import CSV'}
-          </Button>
-          <Button
+          </Btn>
+          <Btn
             variant="primary"
             size="md"
             onClick={() => setShowAddForm(!showAddForm)}
           >
             + Add Subscriber
-          </Button>
+          </Btn>
         </div>
       </div>
 
@@ -304,7 +304,7 @@ export default function SubscribersPage() {
               )}
             </div>
           )}
-          <Button
+          <Btn
             variant="primary"
             size="md"
             onClick={importSubscribers}
@@ -312,7 +312,7 @@ export default function SubscribersPage() {
             loading={importing}
           >
             {importing ? 'Importing...' : 'Import Subscribers'}
-          </Button>
+          </Btn>
         </div>
       )}
 
@@ -396,13 +396,13 @@ export default function SubscribersPage() {
             {selectedIds.size} selected
           </span>
           <span className="flex-1" />
-          <Button
+          <Btn
             variant="secondary"
             size="md"
             onClick={exportCsv}
           >
             Export CSV
-          </Button>
+          </Btn>
           <div className="relative">
             <button
               onClick={() => setShowListPicker(!showListPicker)}
@@ -529,7 +529,7 @@ export default function SubscribersPage() {
             New subscribers are added as unconfirmed (pending) — the same as a normal signup.
           </p>
           <div className="flex gap-3">
-            <Button
+            <Btn
               variant="primary"
               size="md"
               onClick={addSubscriber}
@@ -537,14 +537,14 @@ export default function SubscribersPage() {
               loading={saving}
             >
               {saving ? 'Adding...' : 'Add Subscriber'}
-            </Button>
-            <Button
+            </Btn>
+            <Btn
               variant="secondary"
               size="md"
               onClick={() => setShowAddForm(false)}
             >
               Cancel
-            </Button>
+            </Btn>
           </div>
         </div>
       )}
