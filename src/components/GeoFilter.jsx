@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { MapPin, Loader2 } from 'lucide-react'
 import { resolveZip } from '../lib/geo'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 
 const PRESETS = [1, 5, 10, 25, 50, 100]
 
@@ -80,44 +82,14 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   // Load Leaflet map when a ZIP is resolved
   const mapRef = useRef(null)
 
-  // Initialize the map once per ZIP resolve (NOT on radius changes)
+  // Initialize the map once per resolved ZIP
   useEffect(() => {
     if (!resolved || !open) return
     const mapEl = document.getElementById(`map-${zip}`)
-    if (!mapEl) return
+    if (!mapEl || mapRef.current) return
 
-    let cancelled = false
-
-    const loadCss = () => {
-      return new Promise((resolve) => {
-        if (document.getElementById('leaflet-css')) { resolve(); return }
-        const link = document.createElement('link')
-        link.id = 'leaflet-css'
-        link.rel = 'stylesheet'
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-        link.onload = resolve
-        document.head.appendChild(link)
-      })
-    }
-
-    const initMap = async () => {
-      await loadCss()
-      if (typeof L === 'undefined') {
-        await new Promise((resolve) => {
-          const script = document.createElement('script')
-          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
-          script.onload = resolve
-          document.body.appendChild(script)
-        })
-      }
-      if (cancelled) return
-
-      // Remove existing map
-      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null }
-
-      // Wait for panel animation (300ms transition) before init
-      await new Promise(r => setTimeout(r, 450))
-      if (cancelled) return
+    const timer = setTimeout(() => {
+      if (mapRef.current) return
 
       const map = L.map(mapEl, {
         center: [resolved.lat, resolved.lng],
@@ -148,23 +120,21 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
         L.circleMarker([s.latitude, s.longitude], {
           radius: sizes[s.health_score] || 4, color: '#0a0a0a',
           fillColor: colors[s.health_score] || '#a8a49a', fillOpacity: 1, weight: 2,
-        }).addTo(map).bindTooltip(`${s.email || ''}${s.distance ? '<br/>' + Math.round(s.distance) + ' mi' : ''}`, {
-          direction: 'top', className: 'bg-white border-2 border-brutal-fg text-[10px] font-mono font-bold p-1',
-        })
+        }).addTo(map)
       })
 
       mapRef.current = map
-      // Triple invalidateSize for safety
-      requestAnimationFrame(() => {
-        map.invalidateSize()
-        requestAnimationFrame(() => map.invalidateSize())
-      })
+      setTimeout(() => map.invalidateSize(), 100)
+    }, 100)
+
+    return () => {
+      clearTimeout(timer)
+      if (mapRef.current) {
+        mapRef.current.remove()
+        mapRef.current = null
+      }
     }
-
-    initMap()
-
-    return () => { cancelled = true; if (mapRef.current) { mapRef.current.remove(); mapRef.current = null } }
-  }, [resolved, open]) // NOT radius — circle updated separately
+  }, [resolved, open])
 
   // Update radius circle without destroying the map
   useEffect(() => {
