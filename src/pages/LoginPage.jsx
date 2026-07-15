@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authAPI } from '../lib/api'
+import Button from '../components/ui/Button'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -99,13 +100,16 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button
+          <Button
+            variant="primary"
+            fullWidth
             type="submit"
             disabled={loading}
-            className="w-full border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold py-3 text-sm uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 active:shadow-none disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none transition"
+            loading={loading}
+            size="lg"
           >
             {loading ? 'Authenticating...' : 'Login'}
-          </button>
+          </Button>
         </form>
 
         <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider text-center pt-1">

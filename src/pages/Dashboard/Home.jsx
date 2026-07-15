@@ -8,6 +8,8 @@ import MetricCard from '../../components/ui/MetricCard'
 import Panel from '../../components/ui/Panel'
 import Badge from '../../components/ui/Badge'
 import { Mail, Upload, Zap, Globe } from 'lucide-react'
+import Button from '../../components/ui/Button'
+import Card from '../../components/ui/Card'
 import { relativeTime } from '../../lib/time'
 
 export default function DashboardHome() {
@@ -97,40 +99,40 @@ export default function DashboardHome() {
 
       {/* Next Best Action — shown when user has activity but hasn't sent recently */}
       {stats && stats.total_subscribers > 0 && stats.campaigns_sent === 0 && (
-        <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal flex items-start gap-4">
+        <Card padding="p-6" className="flex items-start gap-4 shadow-brutal">
           <div className="w-10 h-10 border-3 border-brutal-fg bg-brutal-yellow flex items-center justify-center shrink-0">
             <span className="text-lg font-heading">→</span>
           </div>
           <div className="flex-1">
             <p className="text-sm font-bold">You have subscribers but no campaigns yet</p>
             <p className="text-xs text-brutal-muted mt-1">Your audience is waiting. Create your first newsletter to start engaging your subscribers.</p>
-            <Link to="/dashboard/campaigns" className="inline-block mt-3 px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition">Create Your First Campaign →</Link>
+            <Button variant="primary" size="md" onClick={() => window.location.href = '/dashboard/campaigns'}>Create Your First Campaign →</Button>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Next Best Action — no subscribers yet */}
       {stats && stats.total_subscribers === 0 && (
-        <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal flex items-start gap-4">
+        <Card padding="p-6" className="flex items-start gap-4 shadow-brutal">
           <div className="w-10 h-10 border-3 border-brutal-fg bg-brutal-green flex items-center justify-center shrink-0">
             <span className="text-lg font-heading text-white">1</span>
           </div>
           <div className="flex-1">
             <p className="text-sm font-bold">Start building your audience</p>
             <p className="text-xs text-brutal-muted mt-1">Set up a signup widget and start collecting subscribers. Embed it on your website in under a minute.</p>
-            <Link to="/dashboard/widgets" className="inline-block mt-3 px-4 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition">Create a Widget →</Link>
+            <Button variant="primary" size="md" onClick={() => window.location.href = '/dashboard/widgets'} className="bg-brutal-green text-white border-brutal-fg">Create a Widget →</Button>
           </div>
           <div className="hidden sm:flex items-center gap-6 text-[10px] font-bold text-brutal-muted uppercase tracking-wider">
             <span>← 1. Widget</span>
             <span className="opacity-30">2. Subscribers</span>
             <span className="opacity-30">3. Campaign</span>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Onboarding Checklist — show when workspace is empty */}
       {stats && stats.total_subscribers === 0 && stats.campaigns_sent === 0 && (
-        <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
+        <Card padding="p-6" className="shadow-brutal">
           <h3 className="font-heading text-xl uppercase tracking-wide mb-4">🚀 Get Started in 3 Steps</h3>
           <div className="space-y-3">
             {[
@@ -147,7 +149,7 @@ export default function DashboardHome() {
               </Link>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Quick Actions + Workspace Info */}

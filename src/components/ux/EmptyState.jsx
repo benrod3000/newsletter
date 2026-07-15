@@ -31,12 +31,13 @@ export default function EmptyState({
 
       {action && (
         <div className="pt-2">
-          <button
+          <Button
+            variant="primary"
+            size="md"
             onClick={action.onClick}
-            className="px-5 py-2.5 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition"
           >
             {action.label}
-          </button>
+          </Button>
         </div>
       )}
     </div>

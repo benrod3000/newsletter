@@ -1,6 +1,8 @@
 import { Component } from 'react'
 import EmptyState from './ux/EmptyState'
 
+import Button from '../components/ui/Button'
+
 export default class ErrorBoundary extends Component {
   constructor(props) {
     super(props)

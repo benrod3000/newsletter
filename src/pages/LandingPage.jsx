@@ -5,6 +5,8 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
+import Card from '../components/ui/Card'
 
 gsap.registerPlugin(ScrollTrigger)
 import {
@@ -182,7 +184,7 @@ export default function LandingPage() {
             ))}
             <span className="w-px h-5 bg-brutal-fg/15" />
             <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors">Sign In</Link>
-            <Link to="/signup" className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">Get Started</Link>
+            <Button variant="primary" size="md" onClick={() => window.location.href = '/signup'}>Get Started</Button>
           </div>
 
           {/* Mobile hamburger */}
@@ -199,7 +201,7 @@ export default function LandingPage() {
             ))}
             <hr className="border-brutal-fg/15" />
             <Link to="/login" onClick={() => setMobileOpen(false)} className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg">Sign In</Link>
-            <Link to="/signup" onClick={() => setMobileOpen(false)} className="block text-center px-4 py-3 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider">Get Started</Link>
+            <Button variant="primary" size="md" fullWidth onClick={() => { window.location.href = '/signup'; setMobileOpen(false); }}>Get Started</Button>
           </div>
         )}
       </nav>
@@ -331,11 +333,11 @@ export default function LandingPage() {
               { icon: FileText, title: 'CSV tedium', desc: 'Uploading spreadsheets every week because your tool has no geo awareness.' },
               { icon: Clock, title: 'Overpaying', desc: 'Paying for contacts you cannot actually reach. Most platforms charge per contact, not per send.' },
             ].map((p) => (
-              <div key={p.title} className="border-3 border-brutal-fg bg-white p-5">
+              <Card key={p.title} padding="p-5">
                 <p.icon size={20} className="text-brutal-green mb-2" />
                 <h3 className="font-heading text-lg uppercase tracking-wide">{p.title}</h3>
                 <p className="text-xs text-brutal-muted mt-1 leading-relaxed">{p.desc}</p>
-              </div>
+              </Card>
             ))}
           </div>
           <p className="text-base sm:text-lg text-brutal-fg/70 max-w-xl mx-auto font-medium">
@@ -351,11 +353,11 @@ export default function LandingPage() {
       <Section>
         <div ref={statRef} className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5 max-w-5xl mx-auto">
           {STATS.map((s) => (
-            <div key={s.label} className="border-3 border-brutal-fg bg-white p-5 sm:p-6 text-center hover:shadow-brutal transition">
+            <Card key={s.label} hover padding="p-5 sm:p-6" className="text-center">
               <p className="text-stat text-brutal-green leading-none"><CountUp value={s.value} /></p>
               <p className="text-xs font-bold uppercase tracking-wider mt-2">{s.label}</p>
               <p className="text-[10px] text-brutal-muted mt-1 leading-relaxed">{s.desc}</p>
-            </div>
+            </Card>
           ))}
         </div>
       </Section>
@@ -368,10 +370,10 @@ export default function LandingPage() {
           {/* Trust metrics — big numbers */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {TRUST_METRICS.map((m) => (
-              <div key={m.label} className="border-3 border-brutal-fg bg-white p-5 hover:shadow-brutal hover:-translate-y-0.5 transition">
+              <Card key={m.label} hover padding="p-5">
                 <p className="text-stat text-brutal-green leading-none">{m.value}</p>
                 <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted mt-1">{m.label}</p>
-              </div>
+              </Card>
             ))}
           </div>
 
@@ -383,7 +385,7 @@ export default function LandingPage() {
 
           <div className="grid sm:grid-cols-2 gap-5 text-left">
             {TESTIMONIALS.map((t) => (
-              <div key={t.author} className="border-3 border-brutal-fg bg-white p-5 sm:p-6 relative">
+              <Card key={t.author} padding="p-5 sm:p-6" className="relative">
                 <span className="text-4xl font-heading text-brutal-green/20 absolute top-2 right-4 leading-none">"</span>
                 <p className="text-xs sm:text-sm leading-relaxed font-medium">"{t.quote}"</p>
                 <div className="mt-4 border-t-2 border-brutal-fg/10 pt-3 flex items-center gap-3">
@@ -393,7 +395,7 @@ export default function LandingPage() {
                     <p className="text-[9px] text-brutal-muted uppercase tracking-wider">{t.role}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
@@ -417,9 +419,9 @@ export default function LandingPage() {
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading uppercase tracking-tight leading-none">{pillar.title}</h2>
                   </div>
                   <p className="text-sm text-brutal-fg/70 leading-relaxed max-w-md">{pillar.body}</p>
-                  <Link to={pillar.cta.to} className="inline-flex items-center gap-2 px-6 py-3 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
-                    {pillar.cta.label} <ArrowRight size={14} />
-                  </Link>
+                  <Button variant="primary" size="lg" icon={<ArrowRight size={14} />} onClick={() => window.location.href = pillar.cta.to}>
+                    {pillar.cta.label}
+                  </Button>
                   <Annotation>{pillar.annotation}</Annotation>
                 </div>
 
@@ -450,10 +452,10 @@ export default function LandingPage() {
                           <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brutal-muted" />
                           <input type="text" defaultValue="Austin, TX" className="w-full pl-8 pr-3 py-2 border-3 border-brutal-fg bg-white text-xs focus:outline-none" readOnly />
                         </div>
-                        <input name="email" type="email" required placeholder="you@example.com" className="w-full px-3 py-2 border-3 border-brutal-fg bg-white text-sm focus:outline-none focus:bg-brutal-yellow/10" />
-                        <button type="submit" className="w-full border-3 border-brutal-fg bg-brutal-fg text-white font-bold py-2 text-xs uppercase hover:bg-brutal-green transition flex items-center justify-center gap-2">
-                          Subscribe <ArrowRight size={14} />
-                        </button>
+                        <Input name="email" type="email" required placeholder="you@example.com" />
+                        <Button variant="primary" fullWidth size="md" type="submit" icon={<ArrowRight size={14} />}>
+                          Subscribe
+                        </Button>
                         <p className="text-[9px] font-bold text-brutal-muted uppercase text-center flex items-center justify-center gap-1">
                           <MapPin size={10} /> Location captured automatically
                         </p>

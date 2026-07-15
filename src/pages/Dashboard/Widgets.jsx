@@ -3,6 +3,7 @@ import { useAuthStore } from '../../stores/authStore'
 import { widgetsAPI, listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
+import Button from '../../components/ui/Button'
 
 const EMBED_BASE = 'https://newsletter.brod3000.com/w'
 
@@ -195,12 +196,13 @@ export default function WidgetsPage() {
           <span className="text-brutal-green">Widg</span>ets
         </h2>
         {step === 0 && (
-          <button
+          <Button
+            variant="primary"
+            size="md"
             onClick={openNew}
-            className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal transition"
           >
             + New Widget
-          </button>
+          </Button>
         )}
       </div>
 

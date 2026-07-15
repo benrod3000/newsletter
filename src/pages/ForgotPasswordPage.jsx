@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
+import Button from '../components/ui/Button'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
@@ -58,9 +59,9 @@ export default function ForgotPasswordPage() {
                 </a>
               </div>
             )}
-            <Link to="/login" className="block w-full border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold py-3 text-sm uppercase tracking-wider text-center hover:shadow-brutal transition">
+            <Button variant="primary" fullWidth size="lg" onClick={() => window.location.href = '/login'}>
               Back to Sign In
-            </Link>
+            </Button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -73,10 +74,9 @@ export default function ForgotPasswordPage() {
                 className="w-full bg-white border-3 border-brutal-fg px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
                 placeholder="you@example.com" required />
             </div>
-            <button type="submit" disabled={loading}
-              className="w-full border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold py-3 text-sm uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 disabled:opacity-40 transition">
+            <Button variant="primary" fullWidth type="submit" disabled={loading} loading={loading} size="lg">
               {loading ? 'Sending...' : 'Send Reset Link'}
-            </button>
+            </Button>
           </form>
         )}
 

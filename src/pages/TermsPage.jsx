@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Button from '../components/ui/Button'
 
 export default function TermsPage() {
   return (
@@ -27,7 +28,7 @@ export default function TermsPage() {
           <h2 className="font-heading text-2xl uppercase mt-8">5. Termination</h2>
           <p>You may stop using Veloce at any time. We may terminate or suspend access for violations of these terms or extended inactivity.</p>
         </div>
-        <Link to="/" className="inline-block mt-8 px-6 py-3 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase">← Back to Home</Link>
+        <Button variant="primary" size="lg" onClick={() => window.location.href = '/'}>← Back to Home</Button>
       </div>
     </div>
   )

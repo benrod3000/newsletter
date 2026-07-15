@@ -51,7 +51,7 @@ function PublicLayout({ children }) {
             <Link to="/demo" className="hidden sm:block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 hover:text-brutal-fg transition-colors">Demo</Link>
             <span className="hidden sm:block w-px h-5 bg-brutal-fg/15" />
             <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors">Sign In</Link>
-            <Link to="/signup" className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">Get Started</Link>
+            <Button variant="primary" size="md" onClick={() => window.location.href = '/signup'}>Get Started</Button>
           </div>
         </div>
       </div>

@@ -1,3 +1,5 @@
+import Button from './ui/Button'
+
 export default function ConfirmModal({ open, title, message, confirmLabel = 'Confirm', cancelLabel = 'Cancel', onConfirm, onCancel, danger = false }) {
   if (!open) return null
 
@@ -8,12 +10,12 @@ export default function ConfirmModal({ open, title, message, confirmLabel = 'Con
         <h3 className="font-heading text-xl uppercase tracking-wide mb-2">{title}</h3>
         <p className="text-xs text-brutal-fg/70 leading-relaxed mb-5">{message}</p>
         <div className="flex gap-3 justify-end">
-          <button onClick={onCancel} className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-surface transition">
+          <Button variant="secondary" size="md" onClick={onCancel}>
             {cancelLabel}
-          </button>
-          <button onClick={onConfirm} className={`px-4 py-2 border-3 border-brutal-fg font-bold text-xs uppercase tracking-wider transition ${danger ? 'bg-brutal-red text-white hover:opacity-80' : 'bg-brutal-yellow text-brutal-fg hover:shadow-brutal'}`}>
+          </Button>
+          <Button variant={danger ? 'danger' : 'primary'} size="md" onClick={onConfirm}>
             {confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

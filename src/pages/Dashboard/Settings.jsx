@@ -3,6 +3,7 @@ import { useAuthStore } from '../../stores/authStore'
 import { brandingAPI, automationsAPI } from '../../lib/api'
 import { useToast } from '../../components/Toast'
 import { Eye, EyeOff } from 'lucide-react'
+import Button from '../../components/ui/Button'
 
 export default function SettingsPage() {
   const { workspaceId } = useAuthStore()
@@ -427,13 +428,15 @@ export default function SettingsPage() {
               ))}
             </div>
 
-            <button
+            <Button
+              variant="primary"
+              size="lg"
               onClick={saveBranding}
               disabled={loading}
-              className="px-6 py-3 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
+              loading={loading}
             >
               {loading ? 'Saving...' : 'Save Branding'}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -567,12 +570,13 @@ export default function SettingsPage() {
           <div className="border-t-3 border-brutal-fg pt-8">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-heading text-2xl uppercase tracking-wide">Custom Automations</h3>
-              <button
+              <Button
+                variant="primary"
+                size="md"
                 onClick={() => setShowNewAutomation(!showNewAutomation)}
-                className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
               >
                 + New Automation
-              </button>
+              </Button>
             </div>
 
           {/* New Automation Form */}
@@ -639,19 +643,22 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="flex gap-3">
-                  <button
+                  <Button
+                    variant="primary"
+                    size="md"
                     onClick={createAutomation}
                     disabled={loading}
-                    className="px-5 py-2.5 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
+                    loading={loading}
                   >
                     {loading ? 'Creating...' : 'Create Automation'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
                     onClick={() => setShowNewAutomation(false)}
-                    className="px-5 py-2.5 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
                   >
                     Cancel
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

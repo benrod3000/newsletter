@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import axios from 'axios'
+import Button from '../components/ui/Button'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
@@ -52,7 +53,7 @@ export default function ResetPasswordPage() {
             <div className="border-3 border-brutal-fg bg-brutal-green/10 p-4">
               <p className="text-xs font-bold uppercase tracking-wider text-brutal-green">✓ Password reset successfully</p>
             </div>
-            <Link to="/login" className="block w-full border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold py-3 text-sm uppercase tracking-wider text-center hover:shadow-brutal transition">Sign In</Link>
+            <Button variant="primary" fullWidth size="lg" onClick={() => window.location.href = '/login'}>Sign In</Button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">

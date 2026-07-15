@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Button from '../components/ui/Button'
 
 export default function PrivacyPage() {
   return (
@@ -27,7 +28,7 @@ export default function PrivacyPage() {
           <h2 className="font-heading text-2xl uppercase mt-8">5. Contact</h2>
           <p>For privacy inquiries, contact the newsletter operator directly. Veloce provides GDPR-compliant export and deletion tools to all workspace operators.</p>
         </div>
-        <Link to="/" className="inline-block mt-8 px-6 py-3 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase">← Back to Home</Link>
+        <Button variant="primary" size="lg" onClick={() => window.location.href = '/'}>← Back to Home</Button>
       </div>
     </div>
   )

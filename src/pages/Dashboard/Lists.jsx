@@ -3,6 +3,7 @@ import { useAuthStore } from '../../stores/authStore'
 import { listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
+import Button from '../../components/ui/Button'
 import { useCommandAction } from '../../components/CommandActionContext'
 
 export default function ListsPage() {
@@ -78,12 +79,13 @@ export default function ListsPage() {
         <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">
           <span className="text-brutal-green">Subscriber</span> Lists
         </h2>
-        <button
+        <Button
+          variant="primary"
+          size="md"
           onClick={() => setShowAddForm(!showAddForm)}
-          className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal transition"
         >
           + New List
-        </button>
+        </Button>
       </div>
 
       {showAddForm && (
@@ -121,19 +123,22 @@ export default function ListsPage() {
             </select>
           </div>
           <div className="flex gap-3">
-            <button
+            <Button
+              variant="primary"
+              size="md"
               onClick={createList}
               disabled={saving}
-              className="px-5 py-2.5 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
+              loading={saving}
             >
               {saving ? 'Creating...' : 'Create List'}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
               onClick={() => setShowAddForm(false)}
-              className="px-5 py-2.5 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       )}

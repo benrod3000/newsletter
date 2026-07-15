@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { campaignsAPI, listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
+import Button from '../../components/ui/Button'
 import { useToast } from '../../components/Toast'
 import EmailEditor from '../../components/EmailEditor'
 import GeoFilter from '../../components/GeoFilter'
@@ -323,7 +324,7 @@ export default function CampaignsPage() {
             <button onClick={() => setViewMode('cards')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'cards' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>▥ Cards</button>
             <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'calendar' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>📅 Calendar</button>
           </div>
-          <button onClick={startNewCampaign} className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal hover:-translate-y-0.5 transition active:translate-y-0">+ New Campaign</button>
+          <Button variant="primary" size="md" onClick={startNewCampaign}>+ New Campaign</Button>
           <button
             onClick={async () => {
               setSmsOpen(!smsOpen)
@@ -459,13 +460,13 @@ export default function CampaignsPage() {
                     placeholder="Summer Sale Starts Now ☀️"
                   />
                   <div className="relative">
-                    <button
-                      type="button"
+                    <Button
+                      variant="primary"
+                      size="md"
                       onClick={() => setShowSubjectSuggestions(!showSubjectSuggestions)}
-                      className="px-3 py-2.5 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition whitespace-nowrap"
                     >
                       Suggest
-                    </button>
+                    </Button>
                     {showSubjectSuggestions && (
                       <div className="absolute right-0 top-full mt-1 w-72 border-3 border-brutal-fg bg-white shadow-brutal z-20">
                         <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-3 py-1.5">
@@ -540,13 +541,14 @@ export default function CampaignsPage() {
                     Save as Template
                   </button>
                 )}
-                <button
+                <Button
+                  variant="primary"
+                  size="md"
                   onClick={() => sendNow(editingId)}
                   disabled={autosaving}
-                  className="px-5 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 disabled:opacity-50 transition"
                 >
                   {editingId === 'new' ? 'Save & Send' : 'Send Now'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
