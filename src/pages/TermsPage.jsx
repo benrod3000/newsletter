@@ -54,18 +54,16 @@ export default function TermsPage() {
           <p>You may delete your account at any time. We may terminate or suspend access for violations of these terms or extended inactivity. Upon termination, your data will be deleted within 30 days.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">12. Governing Law & Dispute Resolution</h2>
-          <p>These terms are governed by the laws of the State of California and the United States. Any disputes shall be resolved through binding arbitration in San Diego County, California, before a single arbitrator. Each party bears its own costs. You may opt out of this arbitration clause within 30 days of accepting these terms by emailing support@veloce.app.</p>
+          <p>These terms are governed by the laws of the State of California and the United States. Any disputes shall be resolved through binding arbitration in California before a single arbitrator. Each party bears its own costs. You may opt out of this arbitration clause within 30 days of accepting these terms by emailing support@veloce.app.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">13. Changes to Terms</h2>
           <p>We may update these terms at any time. Material changes will be notified via email. Continued use after changes take effect constitutes acceptance.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">14. Contact</h2>
-          <p>For legal inquiries: support@veloce.app. Veloce is operated from San Diego, California.</p>
+          <p>For legal inquiries: support@veloce.app. Veloce is operated in California.</p>
         </div>
         <Button variant="primary" size="lg" onClick={() => window.location.href = '/'}>← Back to Home</Button>
       </div>
     </div>
   )
 }
-
-/* v2 */

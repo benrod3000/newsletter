@@ -32,7 +32,7 @@ const PAGE_HELP = {
       { label: 'Send a test email', tip: 'Click 🧪 on any draft to preview before sending' },
       { label: 'Write in the editor', tip: 'Use the toolbar to format text, add links, and insert merge tags like {{first_name}}' },
     ],
-    next: 'Campaigns send through your own email provider — configure it in Settings.',
+    next: 'Campaigns send through your own email provider. Configure it in Settings.',
     nextPath: '/dashboard/settings',
   },
   '/dashboard/lists': {
@@ -54,12 +54,12 @@ const PAGE_HELP = {
     next: 'Analytics get better with more data. Send a few campaigns to build up your history.',
   },
   '/dashboard/widgets': {
-    title: 'Widgets — Your Signup Forms',
+    title: 'Widgets · Your Signup Forms',
     what: 'Embed a form on your website to collect subscribers. Each widget has its own link and embed code.',
     actions: [
       { label: 'Create a widget', tip: 'Click + New Widget, fill in the details' },
       { label: 'Get embed code', tip: 'After creating, click Embed to copy the HTML' },
-      { label: 'Paste on your site', tip: 'The embed code works on any website — WordPress, Squarespace, custom HTML' },
+      { label: 'Paste on your site', tip: 'The embed code works on any website. WordPress, Squarespace, custom HTML' },
     ],
     next: 'Widgets are the fastest way to grow your audience. Put one on your homepage.',
   },
@@ -67,7 +67,7 @@ const PAGE_HELP = {
     title: 'Settings',
     what: 'Configure your workspace. Set up your email provider, toggle automations, and manage branding.',
     actions: [
-      { label: 'Set up automations', tip: 'Toggle on Smart Tags, Auto-Clean, and more — they run daily' },
+      { label: 'Set up automations', tip: 'Toggle on Smart Tags, Auto-Clean, and more. They run daily' },
       { label: 'Add your email provider', tip: 'Use SendGrid (free tier) or bring your own Amazon SES keys for $1/10K emails' },
       { label: 'Update branding', tip: 'Set your sender name and email address' },
     ],

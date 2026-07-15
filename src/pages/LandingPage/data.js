@@ -1,8 +1,8 @@
 import { Share2, Target, Mail, Zap, MapPin } from 'lucide-react'
 
 export const NAV_ITEMS = [
-  { label: 'Features', href: '#features' },
-  { label: 'Pricing', href: '#pricing' },
+  { label: 'Features', href: '/#features' },
+  { label: 'Pricing', href: '/#pricing' },
   { label: 'Demo', href: '/demo' },
 ]
 

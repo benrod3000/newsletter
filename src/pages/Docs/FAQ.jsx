@@ -10,7 +10,7 @@ export default function FAQ() {
     },
     {
       q: 'Can I use my own email provider?',
-      a: 'Yes. Veloce supports both SendGrid and Amazon SES. Bring your own API keys — no vendor lock-in.',
+      a: 'Yes. Veloce supports both SendGrid and Amazon SES. Bring your own API keys with no vendor lock-in.',
     },
     {
       q: 'How is this different from Mailchimp?',
@@ -22,7 +22,7 @@ export default function FAQ() {
     },
     {
       q: 'How does geo-targeting work?',
-      a: 'When someone signs up via a widget, their location (city, state, ZIP, lat/lng) is captured automatically. When creating a campaign, you can filter by location or draw a radius on the map.',
+      a: 'When someone signs up via a widget, their location (city, state, ZIP, lat/lng) is captured automatically. You can filter by location or draw a radius on the map when creating a campaign.',
     },
     {
       q: 'Can I send SMS messages too?',

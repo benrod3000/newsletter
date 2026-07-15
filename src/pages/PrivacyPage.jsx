@@ -14,7 +14,7 @@ export default function PrivacyPage() {
         <p className="text-sm text-brutal-muted">Last updated: July 2026</p>
         <div className="space-y-4 text-sm leading-relaxed">
           <h2 className="font-heading text-2xl uppercase mt-8">1. Who We Are</h2>
-          <p>Veloce is an email newsletter platform operated from San Diego, California. This policy explains how we handle personal information when you use our platform — whether you are a workspace operator or a newsletter subscriber.</p>
+          <p>Veloce is an email newsletter platform operated in California. This policy explains how we handle personal information when you use our platform, whether you are a workspace operator or a newsletter subscriber.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">2. Information We Collect</h2>
           <p><strong>Account information:</strong> When you create an account, we collect your email address and workspace name. Passwords are hashed and never stored in plain text.</p>
@@ -69,7 +69,7 @@ export default function PrivacyPage() {
           <p>We will notify workspace operators of material changes via email. Subscribers will be notified via the newsletter operator. Continued use after changes constitutes acceptance.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">11. Contact</h2>
-          <p>Privacy inquiries: support@veloce.app<br />Veloce is operated from San Diego, California, USA.<br />Response time: within 45 days as required by California law.</p>
+          <p>Privacy inquiries: support@veloce.app<br />Veloce is operated in California, USA.<br />Response time: within 45 days as required by California law.</p>
         </div>
         <Button variant="primary" size="lg" onClick={() => window.location.href = '/'}>← Back to Home</Button>
       </div>

@@ -97,15 +97,15 @@ export default function LandingPage() {
           <div className="h-2 w-24 bg-brutal-yellow border-2 border-brutal-fg" />
 
           <p className="text-base sm:text-lg text-brutal-fg/80 leading-relaxed max-w-xl font-medium">
-            A simple way to write newsletters, grow your audience, and send to the people who actually matter — without the complexity.
+            A simple way to write newsletters, grow your audience, and send to the people who actually matter, without the complexity.
           </p>
 
           <Annotation>own your audience · BYO SendGrid/SES · free to start · no credit card</Annotation>
 
           <p className="text-[11px] font-bold text-brutal-muted uppercase tracking-wider flex flex-wrap gap-x-4 gap-y-1">
-            <span>✓ For writers & creators</span>
-            <span>✓ Local shops & restaurants</span>
-            <span>✓ Clubs & nonprofits</span>
+            <span>For writers and creators</span>
+            <span>Local shops and restaurants</span>
+            <span>Clubs and nonprofits</span>
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 items-start">
@@ -121,7 +121,7 @@ export default function LandingPage() {
       </Section>
 
       {/* ═══ DASHBOARD PREVIEW (overlaps hero) ═══ */}
-      <div ref={dashboardRef} className="-mt-20 sm:-mt-32 mb-24 sm:mb-36 relative z-10 max-w-6xl mx-auto px-4 sm:px-8">
+      <div ref={dashboardRef} className="-mt-10 sm:-mt-16 mb-20 sm:mb-28 relative z-10 max-w-6xl mx-auto px-4 sm:px-8">
         <div className="border-3 border-brutal-fg bg-white shadow-brutal overflow-hidden">
           {/* Window chrome */}
           <div className="border-b-3 border-brutal-fg bg-brutal-surface px-4 py-2 flex items-center gap-3">
@@ -130,7 +130,7 @@ export default function LandingPage() {
               <span className="w-3 h-3 border-2 border-brutal-fg bg-brutal-yellow" />
               <span className="w-3 h-3 border-2 border-brutal-fg bg-brutal-green" />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-brutal-fg/40 flex-1 text-center">Veloce — Dashboard</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-brutal-fg/40 flex-1 text-center">Veloce · Dashboard</span>
             <span className="text-[10px] font-mono text-brutal-muted">brod3000</span>
           </div>
 
@@ -219,7 +219,7 @@ export default function LandingPage() {
             ))}
           </div>
           <p className="text-base sm:text-lg text-brutal-fg/70 max-w-xl mx-auto font-medium">
-            Veloce organizes your audience by location automatically. Every newsletter reaches the people who actually matter — without extra work.
+            Veloce organizes your audience by location automatically. Every newsletter reaches the people who actually matter, without extra work.
           </p>
           <Button variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
             Create Free Account

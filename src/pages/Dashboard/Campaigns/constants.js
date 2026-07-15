@@ -21,7 +21,7 @@ export function generateSubjects(name, content) {
   const topWord = Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] || name
 
   return [
-    firstHeading ? `${firstHeading}` : `${name} — Latest Update`,
+    firstHeading ? `${firstHeading}` : `${name} · Latest Update`,
     `Everything you need to know about ${topWord}`,
     `Is your ${name.toLowerCase()} working for you?`,
     `3 ways to improve your ${topWord}`,

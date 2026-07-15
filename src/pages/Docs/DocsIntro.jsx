@@ -24,7 +24,7 @@ export default function DocsIntro() {
       <Section title="What is Veloce?">
         <p className="text-sm text-brutal-fg/70 leading-relaxed">
           Veloce helps you write newsletters, manage your audience, and send to the people who actually matter. 
-          Every subscriber includes location data automatically, so your campaigns reach the right people without extra work.
+          Every subscriber includes location data automatically so your campaigns reach the right people without extra work.
         </p>
       </Section>
 
