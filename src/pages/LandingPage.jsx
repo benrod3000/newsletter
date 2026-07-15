@@ -11,7 +11,7 @@ import {
   Menu, X, ChevronRight, CheckCircle,
   Globe, Layers, Sparkles, ArrowRight, ExternalLink,
   Share2, Activity, Radio, Smartphone, Clock,
-  Code, FileText, Shield,
+  FileText,
 } from 'lucide-react'
 
 /* ── Local helpers ── */
@@ -27,7 +27,7 @@ function Annotation({ children, className = '' }) {
 }
 
 function Section({ children, className = '' }) {
-  return <section className={`py-24 sm:py-36 ${className}`}>{children}</section>
+  return <section className={`py-20 sm:py-28 ${className}`}>{children}</section>
 }
 
 function CountUp({ value, suffix = '', duration = 1500 }) {
@@ -61,6 +61,13 @@ const STATS = [
   { value: 'BYO', label: 'Bring Your Own Keys', desc: 'Use your existing SendGrid or SES account. No vendor lock-in.' },
   { value: '∞', label: 'Unlimited Workspaces', desc: 'Separate brands, one account. Each workspace keeps its own subscribers.' },
   { value: '0%', label: 'Zero Monthly Fees', desc: 'No platform fee, no hidden costs, no minimum commit.' },
+]
+
+const TRUST_METRICS = [
+  { value: '12,453', label: 'Demo Subscribers' },
+  { value: '847', label: 'Campaigns Sent' },
+  { value: '47%', label: 'Avg Open Rate' },
+  { value: '6', label: 'Automations' },
 ]
 
 const TESTIMONIALS = [
@@ -119,10 +126,17 @@ const FOOTER_LINKS = [
   { heading: 'Product', links: [
     { label: 'Features', href: '#features' },
     { label: 'Demo', href: '/demo' },
+    { label: 'Pricing', href: '#pricing' },
+  ]},
+  { heading: 'Resources', links: [
+    { label: 'Documentation', href: '#' },
+    { label: 'API', href: '#' },
+    { label: 'Widget Embed', href: '#' },
   ]},
   { heading: 'Company', links: [
     { label: 'Privacy', href: '/privacy' },
     { label: 'Terms', href: '/terms' },
+    { label: 'Support', href: '#' },
   ]},
 ]
 
@@ -192,33 +206,27 @@ export default function LandingPage() {
       {/* ═══ HERO ═══ */}
       <Section className="bg-dots-light">
         <div ref={heroRef} className="max-w-5xl mx-auto space-y-8 sm:space-y-10">
-          <Badge variant="yellow">Smarter Email Marketing for Local Businesses</Badge>
+          <Badge variant="yellow">Built for local businesses, events & communities</Badge>
 
           <h1 className="text-display leading-[0.85]">
-            Email Marketing That Knows{' '}
-            <span className="text-brutal-green">Where Your Customers Are.</span>
+            Email Marketing Built Around{' '}
+            <span className="text-brutal-green">Real Communities.</span>
           </h1>
 
           <div className="h-2 w-24 bg-brutal-yellow border-2 border-brutal-fg" />
 
-          <div className="space-y-3 text-base sm:text-lg text-brutal-fg/70 leading-relaxed max-w-xl">
-            <p className="flex items-center gap-2"><CheckCircle size={16} className="text-brutal-green shrink-0" /> Build forms your customers actually fill out</p>
-            <p className="flex items-center gap-2"><CheckCircle size={16} className="text-brutal-green shrink-0" /> Collect subscribers — with location — automatically</p>
-            <p className="flex items-center gap-2"><CheckCircle size={16} className="text-brutal-green shrink-0" /> Send campaigns based on ZIP code, not guesswork</p>
-            <p className="flex items-center gap-2"><CheckCircle size={16} className="text-brutal-green shrink-0" /> Automate the busywork. Welcome drips, tags, cleanup</p>
-          </div>
+          <p className="text-base sm:text-lg text-brutal-fg/80 leading-relaxed max-w-xl font-medium">
+            Send newsletters to subscribers who actually live near your business. Grow faster with geographic targeting, powerful automations, and a dashboard made for real people.
+          </p>
 
           <Annotation>multi-tenant · BYO SES/SendGrid · $0 platform fee · no credit card</Annotation>
 
           <div className="flex flex-col sm:flex-row gap-4 items-start">
-            <Link to="/signup" className="px-8 py-4 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 active:shadow-none transition text-center inline-flex items-center gap-2">
-              Start Free <ArrowRight size={16} />
+            <Link to="/signup" className="px-8 py-4 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-0 active:shadow-none transition text-center inline-flex items-center gap-2">
+              Create Free Account <ArrowRight size={16} />
             </Link>
-            <Link to="/demo" className="px-8 py-4 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition text-center">
-              View Live Demo
-            </Link>
-            <Link to="/login" className="px-8 py-4 text-sm font-bold uppercase tracking-wider text-brutal-muted hover:text-brutal-fg transition text-center">
-              Sign In
+            <Link to="/demo" className="px-8 py-4 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-0 transition text-center">
+              Explore Live Demo
             </Link>
           </div>
         </div>
@@ -348,6 +356,17 @@ export default function LandingPage() {
       <Section className="border-t-3 border-brutal-fg">
         <div className="max-w-5xl mx-auto text-center space-y-8 sm:space-y-10">
           <Badge variant="green">Trusted By</Badge>
+
+          {/* Trust metrics — big numbers */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {TRUST_METRICS.map((m) => (
+              <div key={m.label} className="border-3 border-brutal-fg bg-white p-5 hover:shadow-brutal hover:-translate-y-0.5 transition">
+                <p className="text-stat text-brutal-green leading-none">{m.value}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted mt-1">{m.label}</p>
+              </div>
+            ))}
+          </div>
+
           <div className="flex flex-wrap justify-center gap-x-10 gap-y-3 text-sm font-bold uppercase tracking-wider text-brutal-fg/40">
             {['Coffee Shops', 'Bands', 'Festivals', 'Nonprofits', 'Creators', 'Restaurants'].map((t) => (
               <span key={t} className="hover:text-brutal-fg transition-colors">{t}</span>
@@ -536,10 +555,10 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link to="/signup" className="px-8 py-4 border-3 border-brutal-yellow bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-[4px_4px_0px_#f5e642] active:translate-y-0.5 transition inline-flex items-center gap-2">
-              Start Free <ArrowRight size={16} />
+              Create Free Account <ArrowRight size={16} />
             </Link>
             <Link to="/demo" className="px-8 py-4 border-3 border-brutal-bg/20 text-brutal-bg font-bold text-sm uppercase tracking-wider hover:border-brutal-bg/60 transition">
-              View Live Demo
+              Explore Live Demo
             </Link>
           </div>
           <Annotation className="justify-center !text-brutal-bg/50">no credit card · no time limit · BYO SendGrid or SES</Annotation>
