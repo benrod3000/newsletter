@@ -72,6 +72,8 @@ export const campaignsAPI = {
     api.patch(`/api/clients/${workspaceId}/campaigns/${id}`, { schedule_now: true }),
   sendTest: (workspaceId, id, email) =>
     api.post(`/api/clients/${workspaceId}/campaigns/${id}/test`, { email }),
+  publish: (workspaceId, id) =>
+    api.post(`/api/clients/${workspaceId}/campaigns/${id}/publish`),
 }
 
 export const templatesAPI = {

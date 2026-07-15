@@ -496,29 +496,54 @@ export default function CampaignsPage() {
               </div>
               <div className="flex gap-2">
                 {editingId !== 'new' && (
-                  <button
-                    onClick={async () => {
-                      const name = prompt('Template name:', editCampaign?.title || editCampaign?.name || '')
-                      if (!name?.trim()) return
-                      try {
-                        await templatesAPI.create(workspaceId, {
-                          name: name.trim(),
-                          subject: editSubject,
-                          editor_html: editContent,
-                          audience: editAudience,
-                          category: 'campaign',
-                        })
-                        toast.addToast(`Saved "${name.trim()}" as template`, 'success')
-                      } catch (err) {
-                        const apiErr = err?.response?.data?.error
-                        toast.addToast(apiErr || 'Failed to save template', 'error')
-                      }
-                    }}
-                    disabled={autosaving}
-                    className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-[10px] uppercase tracking-wider hover:bg-brutal-surface transition disabled:opacity-50"
-                  >
-                    Save as Template
-                  </button>
+                  <>
+                    <button
+                      onClick={async () => {
+                        const name = prompt('Template name:', editCampaign?.title || editCampaign?.name || '')
+                        if (!name?.trim()) return
+                        try {
+                          await templatesAPI.create(workspaceId, {
+                            name: name.trim(),
+                            subject: editSubject,
+                            editor_html: editContent,
+                            audience: editAudience,
+                            category: 'campaign',
+                          })
+                          toast.addToast(`Saved "${name.trim()}" as template`, 'success')
+                        } catch (err) {
+                          const apiErr = err?.response?.data?.error
+                          toast.addToast(apiErr || 'Failed to save template', 'error')
+                        }
+                      }}
+                      disabled={autosaving}
+                      className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-[10px] uppercase tracking-wider hover:bg-brutal-surface transition disabled:opacity-50"
+                    >
+                      Save as Template
+                    </button>
+                    {editCampaign?.status === 'sent' && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const { data } = await campaignsAPI.publish(workspaceId, editingId)
+                            if (data.public) {
+                              const url = `https://newsletter.brod3000.com/newsletter/${data.slug}`
+                              await navigator.clipboard.writeText(url)
+                              toast.addToast(`Published! Link copied to clipboard.`, 'success')
+                            } else {
+                              toast.addToast('Removed from public archive.', 'info')
+                            }
+                          } catch (err) {
+                            const apiErr = err?.response?.data?.error
+                            toast.addToast(apiErr || 'Failed to update archive', 'error')
+                          }
+                        }}
+                        disabled={autosaving}
+                        className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-[10px] uppercase tracking-wider hover:bg-brutal-surface transition disabled:opacity-50"
+                      >
+                        {editCampaign?.public_archive ? '📄 Unpublish' : '📄 Publish to Web'}
+                      </button>
+                    )}
+                  </>
                 )}
                 <Button
                   variant="primary"
