@@ -534,6 +534,7 @@ export default function SubscribersPage() {
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider">Email</th>
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell">Name</th>
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell">Status</th>
+                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden lg:table-cell">📍 Location</th>
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden md:table-cell">Joined</th>
                 {geoFilter && <th className="text-right p-3 font-bold text-xs uppercase tracking-wider">Distance</th>}
                 <th className="text-right p-3"></th>
@@ -556,13 +557,7 @@ export default function SubscribersPage() {
                     <td className="p-3 text-brutal-muted hidden sm:table-cell" title={name || undefined}>{name || '—'}</td>
                     <td className="p-3 hidden sm:table-cell" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-2">
-                        <span
-                          className={`text-xs font-bold px-2 py-1 border border-brutal-fg ${
-                            s.confirmed
-                              ? 'bg-brutal-green text-white'
-                              : 'bg-brutal-yellow text-brutal-fg'
-                          }`}
-                        >
+                        <span className={`text-xs font-bold px-2 py-1 border border-brutal-fg ${s.confirmed ? 'bg-brutal-green text-white' : 'bg-brutal-yellow text-brutal-fg'}`}>
                           {s.confirmed ? 'confirmed' : 'pending'}
                         </span>
                         {s.health_score && HEALTH_STYLES[s.health_score] && (
@@ -571,6 +566,9 @@ export default function SubscribersPage() {
                           </span>
                         )}
                       </div>
+                    </td>
+                    <td className="p-3 text-[11px] text-brutal-muted hidden lg:table-cell">
+                      {[s.city, s.region, s.postal_code].filter(Boolean).join(', ') || '—'}
                     </td>
                     <td className="p-3 text-brutal-muted text-xs hidden md:table-cell" title={s.created_at ? new Date(s.created_at).toLocaleDateString() : undefined}>
                       {relativeTime(s.created_at)}

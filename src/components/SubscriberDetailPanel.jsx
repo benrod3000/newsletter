@@ -116,6 +116,20 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
             {subscriber.phone_number && <Row label="Phone" value={subscriber.phone_number} />}
             {subscriber.date_of_birth && <Row label="Date of Birth" value={subscriber.date_of_birth} />}
             {location && <Row label="Location" value={location} />}
+            {subscriber.postal_code && <Row label="ZIP / Postal" value={subscriber.postal_code} />}
+            {(subscriber.latitude && subscriber.longitude) && (
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">Map</span>
+                <a
+                  href={`https://maps.google.com/?q=${subscriber.latitude},${subscriber.longitude}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="text-xs font-bold text-brutal-green hover:underline flex items-center gap-1"
+                >
+                  📍 View on map →
+                </a>
+              </div>
+            )}
             {subscriber.timezone && <Row label="Timezone" value={subscriber.timezone} />}
             <Row label="Joined" value={subscriber.created_at ? new Date(subscriber.created_at).toLocaleDateString() : '—'} />
           </Section>
