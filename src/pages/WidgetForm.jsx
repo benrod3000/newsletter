@@ -12,6 +12,7 @@ export default function WidgetFormPage() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
+  const [smsConsent, setSmsConsent] = useState(false)
   const [postal, setPostal] = useState('')
   const [geoCoords, setGeoCoords] = useState(null)
   const [geoLoading, setGeoLoading] = useState(false)
@@ -63,7 +64,7 @@ export default function WidgetFormPage() {
       const payload = { email: email.trim() };
       if (firstName.trim()) payload.first_name = firstName.trim();
       if (lastName.trim()) payload.last_name = lastName.trim();
-      if (phone.trim()) payload.phone = phone.trim();
+      if (phone.trim()) { payload.phone = phone.trim(); payload.sms_consent = smsConsent; }
       if (postal.trim()) payload.postal_code = postal.trim();
       if (geoCoords) {
         payload.browser_latitude = geoCoords.latitude;
@@ -172,7 +173,7 @@ export default function WidgetFormPage() {
                     />
                   </div>
                   {fields.phone?.required && (
-                    <div>
+                    <div className="space-y-2">
                       <input
                         type="tel"
                         value={phone}
@@ -180,6 +181,18 @@ export default function WidgetFormPage() {
                         placeholder="Phone number"
                         className="w-full px-4 py-3 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
                       />
+                      {phone.length > 0 && phone.length < 10 && (
+                        <p className="text-[9px] text-brutal-muted font-bold">Enter 10-digit number e.g. 5125550199</p>
+                      )}
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={smsConsent}
+                          onChange={e => setSmsConsent(e.target.checked)}
+                          className="w-4 h-4 border-3 border-brutal-fg accent-brutal-green"
+                        />
+                        <span className="text-[10px] font-bold text-brutal-fg/70 uppercase tracking-wider">📱 Text me about events & offers</span>
+                      </label>
                     </div>
                   )}
                   {fields.postal_code?.required && (

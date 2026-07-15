@@ -35,7 +35,7 @@ export function ToastProvider({ children }) {
     })
   }, [])
 
-  const addToast = useCallback((message, type = 'info', duration = 4000) => {
+  const addToast = useCallback((message, type = 'info', duration = 4000, undo) => {
     const id = nextId.current++
 
     setToasts((prev) => {
@@ -46,7 +46,7 @@ export function ToastProvider({ children }) {
         return [...prev.slice(0, -1), { ...last, count, id: last.id }]
       }
 
-      const toast = { id, message, type, count: 1 }
+      const toast = { id, message, type, count: 1, undo }
       if (prev.length >= MAX_VISIBLE) {
         queue.current.push(toast)
         return prev
@@ -89,6 +89,14 @@ export function ToastProvider({ children }) {
               <span className="flex-1 text-xs font-bold uppercase tracking-wider leading-tight truncate">
                 {toast.message}{toast.count > 1 ? ` (×${toast.count})` : ''}
               </span>
+              {toast.undo && (
+                <button
+                  onClick={() => { toast.undo(); removeToast(toast.id) }}
+                  className="px-2 py-0.5 border-2 border-current text-[9px] font-bold uppercase tracking-wider hover:opacity-70 shrink-0"
+                >
+                  Undo
+                </button>
+              )}
             </div>
             <button
               onClick={() => removeToast(toast.id)}

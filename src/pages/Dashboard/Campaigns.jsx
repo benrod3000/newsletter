@@ -5,6 +5,7 @@ import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
 import EmailEditor from '../../components/EmailEditor'
 import GeoFilter from '../../components/GeoFilter'
+import ConfirmModal from '../../components/ConfirmModal'
 import { useCommandAction } from '../../components/CommandActionContext'
 
 const STATUS_STYLES = {
@@ -49,6 +50,7 @@ export default function CampaignsPage() {
   const [smsMessage, setSmsMessage] = useState('')
   const [smsSending, setSmsSending] = useState(false)
   const [smsCount, setSmsCount] = useState(0)
+  const [confirmAction, setConfirmAction] = useState(null) // { title, message, onConfirm, danger }
   const { action, consume } = useCommandAction()
   const pendingSends = useRef({}) // { [campaignId]: { pollCount: number, intervalId: any } }
 
@@ -164,18 +166,27 @@ export default function CampaignsPage() {
       id = newId
     }
     const campaign = campaigns.find(c => c.id === id)
-    if (!confirm(`Send "${campaign?.title || campaign?.name}" to ${campaign?.sent_count || 'all'} confirmed subscribers? This cannot be undone.`)) return
-    setBusyId(id)
-    try {
-      toast.addToast('Scheduling campaign for delivery...', 'info')
-      await campaignsAPI.schedule(workspaceId, id)
-      await loadCampaigns()
-      toast.addToast('Campaign scheduled — tracking delivery...', 'success')
-      startPollingSend(id)
-    } catch (err) {
-      const apiErr = err?.response?.data?.error
-      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to schedule', 'error')
-    } finally { setBusyId(null) }
+    // Show custom confirm with cost estimate
+    const recipientCount = getAudienceLabel(campaign?.audience) === '📍 Geo-Targeted' ? 'geo-targeted' : campaign?.sent_count || 'all confirmed'
+    setConfirmAction({
+      title: 'Send Campaign?',
+      message: `"${campaign?.title || campaign?.name}" will be sent to ${recipientCount} subscribers. This cannot be undone. Estimated cost: $${Math.ceil(((campaign?.sent_count || 100) * 0.0001))} via AWS SES.`,
+      onConfirm: async () => {
+        setConfirmAction(null)
+        setBusyId(id)
+        try {
+          toast.addToast('Scheduling campaign for delivery...', 'info')
+          await campaignsAPI.schedule(workspaceId, id)
+          await loadCampaigns()
+          toast.addToast('Campaign scheduled — tracking delivery...', 'success')
+          startPollingSend(id)
+        } catch (err) {
+          const apiErr = err?.response?.data?.error
+          toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to schedule', 'error')
+        } finally { setBusyId(null) }
+      },
+      onCancel: () => setConfirmAction(null),
+    })
   }
 
   async function handleSendTest() {
@@ -280,6 +291,19 @@ export default function CampaignsPage() {
 
   return (
     <div className="space-y-8">
+      {/* Confirm Modal */}
+      {confirmAction && (
+        <ConfirmModal
+          open={true}
+          title={confirmAction.title}
+          message={confirmAction.message}
+          confirmLabel="Send"
+          onConfirm={confirmAction.onConfirm}
+          onCancel={confirmAction.onCancel}
+          danger={confirmAction.danger}
+        />
+      )}
+
       <div className="flex items-center justify-between flex-wrap gap-4 border-b-3 border-brutal-fg pb-4">
         <div>
           <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">
