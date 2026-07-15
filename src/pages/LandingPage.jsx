@@ -7,6 +7,10 @@ import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Card from '../components/ui/Card'
+import { Annotation, Section, CountUp } from '../components/ux'
+import {
+  NAV_ITEMS, STATS, TRUST_METRICS, TESTIMONIALS, PILLARS, FOOTER_LINKS,
+} from './LandingPage/data'
 
 gsap.registerPlugin(ScrollTrigger)
 import {
@@ -16,132 +20,6 @@ import {
   Share2, Activity, Radio, Smartphone, Clock,
   FileText,
 } from 'lucide-react'
-
-/* ── Local helpers ── */
-
-function Annotation({ children, className = '' }) {
-  return (
-    <p className={`annotation font-mono text-[11px] text-brutal-muted tracking-tight ${className}`}>
-      <span className="text-brutal-green/70">{'// '}</span>
-      {children}
-      <span className="term-cursor text-brutal-green">▍</span>
-    </p>
-  )
-}
-
-function Section({ children, className = '' }) {
-  return <section className={`py-20 sm:py-28 ${className}`}>{children}</section>
-}
-
-function CountUp({ value, suffix = '', duration = 1500 }) {
-  const ref = useRef(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const start = performance.now()
-    const target = parseInt(value.replace(/[^0-9]/g, ''), 10)
-    if (isNaN(target)) { el.textContent = value; return }
-    const frame = (now) => {
-      const pct = Math.min((now - start) / duration, 1)
-      el.textContent = Math.floor(pct * target).toLocaleString() + suffix
-      if (pct < 1) requestAnimationFrame(frame)
-    }
-    requestAnimationFrame(frame)
-  }, [value, duration, suffix])
-  return <span ref={ref}>0</span>
-}
-
-/* ── Data ── */
-
-const NAV_ITEMS = [
-  { label: 'Features', href: '#features' },
-  { label: 'Pricing', href: '#pricing' },
-  { label: 'Demo', href: '/demo' },
-]
-
-const STATS = [
-  { value: '$1', label: 'Starts at $1/month', desc: 'Pay only for what you use. BYO SendGrid or AWS SES.' },
-  { value: 'BYO', label: 'Bring Your Own Keys', desc: 'Use your existing SendGrid or SES account. No vendor lock-in.' },
-  { value: '∞', label: 'Unlimited Workspaces', desc: 'Separate brands, one account. Each workspace keeps its own subscribers.' },
-  { value: '0%', label: 'Zero Monthly Fees', desc: 'No platform fee, no hidden costs, no minimum commit.' },
-]
-
-const TRUST_METRICS = [
-  { value: '12,453', label: 'Demo Subscribers' },
-  { value: '847', label: 'Campaigns Sent' },
-  { value: '47%', label: 'Avg Open Rate' },
-  { value: '6', label: 'Automations' },
-]
-
-const TESTIMONIALS = [
-  {
-    quote: 'We went from exporting CSVs every week to sending geo-targeted campaigns in one click. Veloce saved us hours.',
-    author: 'Alex Chen',
-    role: 'Event Organizer, Austin Music Fest',
-  },
-  {
-    quote: 'I was spending $80/month on platforms I barely used. Now I pay a fraction of that through Veloce. Same reach, 95% less cost.',
-    author: 'Maria Santos',
-    role: 'Owner, Corner Coffee Roasters',
-  },
-]
-
-const PILLARS = [
-  {
-    id: 'grow',
-    number: '01',
-    icon: Share2,
-    title: 'Collect Subscribers Anywhere',
-    body: 'Embed a widget on any website. Every signup automatically includes location data: city, state, ZIP, lat/lng. No extra fields, no CSV uploads. Campaigns get smarter from day one.',
-    cta: { label: 'See the form in action', to: '/demo' },
-    annotation: 'embed one line — geo-enriched subscriber on submit',
-  },
-  {
-    id: 'target',
-    number: '02',
-    icon: Target,
-    title: 'Only Email People Near Your Event',
-    body: 'Target subscribers by city or ZIP code without exporting spreadsheets. Our radius filter shows exactly who lives within 1, 5, 10, or 100 miles of any location. No mailers to the wrong coast.',
-    cta: { label: 'Try the geo filter', to: '/demo' },
-    annotation: 'Haversine radius · ZIP resolution · live subscriber map',
-  },
-  {
-    id: 'send',
-    number: '03',
-    icon: Mail,
-    title: 'One Campaign. Thousands of Personalized Emails.',
-    body: 'Use merge tags to personalize every send: first name, last name, location, even dynamic content blocks. Built-in editor with TipTap. Track opens, clicks, bounces per subscriber.',
-    cta: { label: 'Open the editor', to: '/demo' },
-    annotation: 'TipTap rich editor · {{merge_tags}} · open/click tracking',
-  },
-  {
-    id: 'automate',
-    number: '04',
-    icon: Zap,
-    title: 'Automations That Never Forget',
-    body: 'Welcome drips, birthday emails, re-engagement campaigns, smart auto-tagging, and auto-clean for cold subscribers. Toggle on. They run daily. No cron jobs, no config.',
-    cta: { label: 'See all 6 automations', to: '/demo' },
-    annotation: 'welcome drip · smart-tag batching · auto-clean cold subs',
-  },
-]
-
-const FOOTER_LINKS = [
-  { heading: 'Product', links: [
-    { label: 'Features', href: '#features' },
-    { label: 'Demo', href: '/demo' },
-    { label: 'Pricing', href: '#pricing' },
-  ]},
-  { heading: 'Resources', links: [
-    { label: 'Documentation', href: '#' },
-    { label: 'API', href: '#' },
-    { label: 'Widget Embed', href: '#' },
-  ]},
-  { heading: 'Company', links: [
-    { label: 'Privacy', href: '/privacy' },
-    { label: 'Terms', href: '/terms' },
-    { label: 'Support', href: '#' },
-  ]},
-]
 
 /* ═══════════════════════════════════════════════════════
    COMPONENT
