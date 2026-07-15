@@ -149,19 +149,21 @@ export function PageTransition({ children, className = '' }) {
 function PublicLayout({ children }) {
   return (
     <div className="min-h-screen bg-brutal-bg text-brutal-fg flex flex-col">
-      {/* Top nav — full width with inner grid */}
-      <div className="border-b-3 border-brutal-fg bg-white">
+      {/* Top nav — matching landing page style */}
+      <div className="sticky top-0 z-50 border-b-3 border-brutal-fg bg-white/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between">
-          <Link to="/" className="font-heading text-xl uppercase tracking-wider leading-none hover:text-brutal-green transition-colors">Veloce</Link>
-          <div className="flex items-center gap-4">
-            <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors">Login</Link>
-            <Link to="/signup" className="px-3 py-1.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">Sign Up</Link>
-            <Link to="/demo" className="px-3 py-1.5 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">Demo</Link>
+          <Link to="/" className="font-heading text-2xl uppercase tracking-wider leading-none hover:text-brutal-green transition-colors">Veloce</Link>
+          <div className="flex items-center gap-6">
+            <Link to="/" className="hidden sm:block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 hover:text-brutal-fg transition-colors">Home</Link>
+            <Link to="/demo" className="hidden sm:block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 hover:text-brutal-fg transition-colors">Demo</Link>
+            <span className="hidden sm:block w-px h-5 bg-brutal-fg/15" />
+            <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors">Sign In</Link>
+            <Link to="/signup" className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">Get Started</Link>
           </div>
         </div>
       </div>
 
-      {/* Main content — generous breathing room, constrained grid */}
+      {/* Main content */}
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-8 py-12 sm:py-20">
         {children}
       </div>
