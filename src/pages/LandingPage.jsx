@@ -54,7 +54,6 @@ const NAV_ITEMS = [
   { label: 'Features', href: '#features' },
   { label: 'Pricing', href: '#pricing' },
   { label: 'Demo', href: '/demo' },
-  { label: 'Docs', href: '#', disabled: true },
 ]
 
 const STATS = [
@@ -71,7 +70,7 @@ const TESTIMONIALS = [
     role: 'Event Organizer, Austin Music Fest',
   },
   {
-    quote: 'I was paying Mailchimp $80/month for lists I barely used. Now I pay $3 for AWS SES through Veloce. Same reach, 95% less cost.',
+    quote: 'I was spending $80/month on platforms I barely used. Now I pay a fraction of that through Veloce. Same reach, 95% less cost.',
     author: 'Maria Santos',
     role: 'Owner, Corner Coffee Roasters',
   },
@@ -118,22 +117,15 @@ const PILLARS = [
 
 const FOOTER_LINKS = [
   { heading: 'Product', links: [
-    { label: 'Pricing', href: '#pricing' },
     { label: 'Features', href: '#features' },
     { label: 'Demo', href: '/demo' },
-    { label: 'Roadmap', href: '#' },
   ]},
   { heading: 'Developers', links: [
-    { label: 'Documentation', href: '#' },
-    { label: 'API Reference', href: '#' },
-    { label: 'Widget Embed', href: '#' },
-    { label: 'GitHub', href: '#', icon: GitBranch },
+    { label: 'GitHub', href: 'https://github.com/benrod3000/newsletter', icon: GitBranch },
   ]},
   { heading: 'Company', links: [
-    { label: 'Status', href: '#' },
-    { label: 'Privacy', href: '#' },
-    { label: 'Terms', href: '#' },
-    { label: 'Support', href: '#' },
+    { label: 'Privacy', href: '/privacy' },
+    { label: 'Terms', href: '/terms' },
   ]},
 ]
 
@@ -174,11 +166,7 @@ export default function LandingPage() {
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6">
             {NAV_ITEMS.map((item) => (
-              item.disabled ? (
-                <span key={item.label} className="text-xs font-bold uppercase tracking-wider text-brutal-muted/50 cursor-not-allowed">{item.label}</span>
-              ) : (
-                <Link key={item.label} to={item.href} className="text-xs font-bold uppercase tracking-wider text-brutal-fg/60 hover:text-brutal-fg transition-colors">{item.label}</Link>
-              )
+              <Link key={item.label} to={item.href} className="text-xs font-bold uppercase tracking-wider text-brutal-fg/60 hover:text-brutal-fg transition-colors">{item.label}</Link>
             ))}
             <span className="w-px h-5 bg-brutal-fg/15" />
             <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors">Sign In</Link>
@@ -195,11 +183,7 @@ export default function LandingPage() {
         {mobileOpen && (
           <div className="md:hidden border-t-3 border-brutal-fg bg-brutal-bg px-4 py-4 space-y-3 animate-fade-in">
             {NAV_ITEMS.map((item) => (
-              item.disabled ? (
-                <span key={item.label} className="block text-xs font-bold uppercase tracking-wider text-brutal-muted/50 cursor-not-allowed">{item.label}</span>
-              ) : (
-                <Link key={item.label} to={item.href} onClick={() => setMobileOpen(false)} className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/70 hover:text-brutal-fg">{item.label}</Link>
-              )
+              <Link key={item.label} to={item.href} onClick={() => setMobileOpen(false)} className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/70 hover:text-brutal-fg">{item.label}</Link>
             ))}
             <hr className="border-brutal-fg/15" />
             <Link to="/login" onClick={() => setMobileOpen(false)} className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg">Sign In</Link>
@@ -227,7 +211,7 @@ export default function LandingPage() {
             <p className="flex items-center gap-2"><CheckCircle size={16} className="text-brutal-green shrink-0" /> Automate the busywork. Welcome drips, tags, cleanup</p>
           </div>
 
-          <Annotation>multi-tenant · BYO SES/SendGrid · $0 platform fee · built by brod3000</Annotation>
+          <Annotation>multi-tenant · BYO SES/SendGrid · $0 platform fee · no credit card</Annotation>
 
           <div className="flex flex-col sm:flex-row gap-4 items-start">
             <Link to="/signup" className="px-8 py-4 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 active:shadow-none transition text-center inline-flex items-center gap-2">
@@ -325,14 +309,14 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center space-y-8 sm:space-y-10">
           <Badge variant="green">The Problem</Badge>
           <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
-            Still using Mailchimp{' '}
-            <span className="text-brutal-green">for local events?</span>
+            Sending emails{' '}
+            <span className="text-brutal-green">to the wrong people?</span>
           </h2>
           <div className="grid sm:grid-cols-3 gap-6 text-left max-w-3xl mx-auto">
             {[
               { icon: Globe, title: 'Wrong audience', desc: 'Sending emails to people hundreds of miles away who will never show up.' },
               { icon: FileText, title: 'CSV tedium', desc: 'Uploading spreadsheets every week because your tool has no geo awareness.' },
-              { icon: Clock, title: 'Overpaying', desc: 'Paying for contacts you cannot reach. Mailchimp charges per contact, not per send.' },
+              { icon: Clock, title: 'Overpaying', desc: 'Paying for contacts you cannot actually reach. Most platforms charge per contact, not per send.' },
             ].map((p) => (
               <div key={p.title} className="border-3 border-brutal-fg bg-white p-5">
                 <p.icon size={20} className="text-brutal-green mb-2" />
@@ -573,8 +557,7 @@ export default function LandingPage() {
             <div className="col-span-2 sm:col-span-1">
               <Link to="/" className="font-heading text-xl uppercase tracking-wider hover:text-brutal-green transition-colors">Veloce</Link>
               <p className="text-[10px] text-brutal-muted mt-2 leading-relaxed max-w-[180px]">
-                Email marketing for local businesses. Built by{' '}
-                <a href="https://brod3000.com" target="_blank" rel="noopener" className="underline font-bold hover:text-brutal-green transition-colors">brod3000</a>.
+                Email marketing for local businesses — built around location, not complexity.
               </p>
             </div>
 
@@ -584,11 +567,16 @@ export default function LandingPage() {
                 <ul className="space-y-2">
                   {group.links.map((link) => (
                     <li key={link.label}>
-                      {link.href.startsWith('http') || link.href === '#' ? (
-                        <span className="text-xs font-bold text-brutal-muted hover:text-brutal-fg transition-colors cursor-default flex items-center gap-1.5">
+                      {link.href.startsWith('http') ? (
+                        <a href={link.href} target="_blank" rel="noopener" className="text-xs font-bold text-brutal-muted hover:text-brutal-fg transition-colors flex items-center gap-1.5">
                           {link.icon && <link.icon size={12} />}
                           {link.label}
-                        </span>
+                        </a>
+                      ) : link.href.startsWith('#') ? (
+                        <a href={link.href} className="text-xs font-bold text-brutal-muted hover:text-brutal-fg transition-colors flex items-center gap-1.5">
+                          {link.icon && <link.icon size={12} />}
+                          {link.label}
+                        </a>
                       ) : (
                         <Link to={link.href} className="text-xs font-bold text-brutal-muted hover:text-brutal-fg transition-colors flex items-center gap-1.5">
                           {link.icon && <link.icon size={12} />}
@@ -606,9 +594,7 @@ export default function LandingPage() {
             <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">
               &copy; {new Date().getFullYear()} Veloce. All rights reserved.
             </p>
-            <p className="text-[10px] text-brutal-muted">
-              Built with <span className="text-brutal-green">brutalist</span> principles.
-            </p>
+
           </div>
         </div>
       </footer>
