@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useReveal, useScrollReveal, useTerminalReveal } from '../App'
+import { useReveal, useScrollReveal, useTerminalReveal } from '../hooks/use-gsap.jsx'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Badge from '../components/ui/Badge'

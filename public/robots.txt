@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://newsletter.brod3000.com/sitemap.xml

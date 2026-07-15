@@ -95,6 +95,28 @@ export default function DashboardHome() {
         </div>
       )}
 
+      {/* Onboarding Checklist — show when workspace is empty */}
+      {stats && stats.total_subscribers === 0 && stats.campaigns_sent === 0 && (
+        <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
+          <h3 className="font-heading text-xl uppercase tracking-wide mb-4">🚀 Get Started in 3 Steps</h3>
+          <div className="space-y-3">
+            {[
+              { step: 1, label: 'Create a widget', desc: 'Embed a signup form on your website to start collecting subscribers.', to: '/dashboard/widgets' },
+              { step: 2, label: 'Import or add subscribers', desc: 'Upload a CSV or manually add your first subscribers.', to: '/dashboard/subscribers' },
+              { step: 3, label: 'Send your first campaign', desc: 'Write and send your first email to your audience.', to: '/dashboard/campaigns' },
+            ].map((item) => (
+              <Link key={item.step} to={item.to} className="flex items-center gap-4 p-4 border-3 border-brutal-fg/20 hover:border-brutal-fg hover:shadow-brutal transition">
+                <span className="w-8 h-8 border-3 border-brutal-fg bg-brutal-yellow flex items-center justify-center font-heading text-lg shrink-0">{item.step}</span>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider">{item.label}</p>
+                  <p className="text-[10px] text-brutal-muted mt-0.5">{item.desc}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Quick Actions + Workspace Info */}
       <div className="grid sm:grid-cols-2 gap-6">
         {/* Quick Actions */}
