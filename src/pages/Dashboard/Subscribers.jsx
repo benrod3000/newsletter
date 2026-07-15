@@ -8,29 +8,8 @@ import { useCommandAction } from '../../components/CommandActionContext'
 import { relativeTime } from '../../lib/time'
 import GeoFilter from '../../components/GeoFilter'
 import { formatDistance } from '../../lib/geo'
-
-// Matches the real `subscribers` table: there's no generic "status" string —
-// just a `confirmed` boolean. Unsubscribing hard-deletes the row entirely
-// (see /api/unsubscribe), so an "unsubscribed" state never actually shows
-// up here — a subscriber is either present (confirmed or pending) or gone.
-const STATUS_FILTERS = [
-  { value: '', label: 'All' },
-  { value: 'confirmed', label: 'Confirmed' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'active', label: '🟢 Active' },
-  { value: 'at_risk', label: '🟡 At Risk' },
-  { value: 'cold', label: '🔴 Cold' },
-]
-
-const HEALTH_STYLES = {
-  active: 'bg-brutal-green text-white',
-  at_risk: 'bg-brutal-yellow text-brutal-fg',
-  cold: 'bg-brutal-red text-white',
-}
-
-const btn = 'px-4 py-2 border-3 border-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition'
-const btnPrimary = `${btn} bg-brutal-yellow text-brutal-fg`
-const btnSecondary = `${btn} bg-white text-brutal-fg`
+import Button from '../../components/ui/Button'
+import { STATUS_FILTERS, HEALTH_STYLES } from './Subscribers/constants'
 
 export default function SubscribersPage() {
   const { workspaceId } = useAuthStore()
@@ -244,18 +223,20 @@ export default function SubscribersPage() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">Subscribers</h2>
         <div className="flex gap-3">
-          <button
+          <Button
+            variant="secondary"
+            size="md"
             onClick={() => setShowImport(!showImport)}
-            className={btnSecondary}
           >
             {showImport ? 'Cancel Import' : 'Import CSV'}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
             onClick={() => setShowAddForm(!showAddForm)}
-            className={btnPrimary}
           >
             + Add Subscriber
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -314,13 +295,15 @@ export default function SubscribersPage() {
               )}
             </div>
           )}
-          <button
+          <Button
+            variant="primary"
+            size="md"
             onClick={importSubscribers}
             disabled={importing || !importCsvText.trim()}
-            className={btnPrimary + ' disabled:opacity-50'}
+            loading={importing}
           >
             {importing ? 'Importing...' : 'Import Subscribers'}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -404,12 +387,13 @@ export default function SubscribersPage() {
             {selectedIds.size} selected
           </span>
           <span className="flex-1" />
-          <button
+          <Button
+            variant="secondary"
+            size="md"
             onClick={exportCsv}
-            className={btnSecondary}
           >
             Export CSV
-          </button>
+          </Button>
           <div className="relative">
             <button
               onClick={() => setShowListPicker(!showListPicker)}
@@ -536,19 +520,22 @@ export default function SubscribersPage() {
             New subscribers are added as unconfirmed (pending) — the same as a normal signup.
           </p>
           <div className="flex gap-3">
-            <button
+            <Button
+              variant="primary"
+              size="md"
               onClick={addSubscriber}
               disabled={saving}
-              className={btnPrimary + ' disabled:opacity-50'}
+              loading={saving}
             >
               {saving ? 'Adding...' : 'Add Subscriber'}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
               onClick={() => setShowAddForm(false)}
-              className={btnSecondary}
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       )}

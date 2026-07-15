@@ -8,19 +8,7 @@ import EmailEditor from '../../components/EmailEditor'
 import GeoFilter from '../../components/GeoFilter'
 import ConfirmModal from '../../components/ConfirmModal'
 import { useCommandAction } from '../../components/CommandActionContext'
-
-const STATUS_STYLES = {
-  draft: 'bg-brutal-surface text-brutal-fg border-2 border-brutal-fg',
-  scheduled: 'bg-brutal-yellow text-brutal-fg border-2 border-brutal-fg',
-  sent: 'bg-brutal-green text-white border-2 border-brutal-fg',
-}
-
-const AUDIENCE_OPTIONS = [
-  { value: 'confirmed', label: 'Confirmed Subscribers' },
-  { value: 'all', label: 'All Subscribers' },
-  { value: 'pending', label: 'Pending Verification' },
-  { value: 'geo', label: '📍 Geo-Targeted' },
-]
+import { STATUS_STYLES, AUDIENCE_OPTIONS, generateSubjects, getAudienceLabel } from './Campaigns/constants'
 
 export default function CampaignsPage() {
   const { workspaceId, email } = useAuthStore()
@@ -93,25 +81,6 @@ export default function CampaignsPage() {
     }
   }, [])
 
-  function generateSubjects() {
-    if (!editCampaign?.name) return []
-    const name = editCampaign.name
-    // Extract first heading-like line from editor content
-    const headingMatch = editContent.match(/<h[123][^>]*>(.*?)<\/h[123]>/i)
-    const firstHeading = headingMatch ? headingMatch[1].replace(/<[^>]+>/g, '').trim() : null
-    // Find most frequent meaningful word
-    const words = editContent.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(w => w.length > 4)
-    const freq = {}
-    words.forEach(w => { freq[w] = (freq[w] || 0) + 1 })
-    const topWord = Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] || name
-
-    return [
-      firstHeading ? `${firstHeading}` : `${name} — Latest Update`,
-      `Everything you need to know about ${topWord}`,
-      `Is your ${name.toLowerCase()} working for you?`,
-      `3 ways to improve your ${topWord}`,
-    ]
-  }
 
   useEffect(() => {
     if (!action) return
@@ -223,12 +192,6 @@ export default function CampaignsPage() {
       setBusyId(null)
       setConfirmDeleteId(null)
     }
-  }
-
-  function getAudienceLabel(a) {
-    if (a?.startsWith('list:')) return lists.find((l) => l.id === a.slice(5))?.name || a
-    const match = AUDIENCE_OPTIONS.find((opt) => opt.value === a)
-    return match ? match.label : a
   }
 
   // ---- Edit draft flow ----
@@ -472,7 +435,7 @@ export default function CampaignsPage() {
                         <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-3 py-1.5">
                           <span className="text-[10px] font-bold uppercase tracking-wider">Subject Ideas</span>
                         </div>
-                        {generateSubjects().map((s, i) => (
+                        {generateSubjects(editCampaign?.name || '', editContent).map((s, i) => (
                           <button
                             key={i}
                             type="button"
