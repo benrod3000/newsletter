@@ -1,6 +1,6 @@
 /**
  * Frontend geo utilities.
- * Calls ip-api.com directly (CORS supported on free tier).
+ * Uses zippopotam.us (free, no API key) and Census Bureau as fallback.
  */
 
 /**
@@ -20,7 +20,29 @@ export async function resolveZip(zip) {
     }
   } catch {}
 
-  // Try ip-api.com first
+  // Try zippopotam.us (free, reliable, no key needed)
+  try {
+    const res = await fetch(
+      `https://api.zippopotam.us/us/${encodeURIComponent(clean)}`,
+      { signal: AbortSignal.timeout(5000) }
+    )
+    if (res.ok) {
+      const data = await res.json()
+      const place = data?.places?.[0]
+      if (place?.latitude && place?.longitude) {
+        const result = {
+          lat: parseFloat(place.latitude),
+          lng: parseFloat(place.longitude),
+          city: place['place name'] || '',
+          state: place.state || '',
+        }
+        try { localStorage.setItem(cacheKey, JSON.stringify({ data: result, ts: Date.now() })) } catch {}
+        return result
+      }
+    }
+  } catch {}
+
+  // Fallback: ip-api.com
   try {
     const res = await fetch(
       `https://ip-api.com/json/${encodeURIComponent(clean)}?fields=status,lat,lon,city,regionName`,
@@ -36,17 +58,17 @@ export async function resolveZip(zip) {
     }
   } catch {}
 
-  // Fallback: US Census Bureau geocoder (free, unlimited, official)
+  // Last fallback: Nominatim (OpenStreetMap)
   try {
-    const censusRes = await fetch(
-      `https://geocoding.geo.census.gov/geocoder/locations/address?zip=${encodeURIComponent(clean)}&benchmark=2020&format=json`,
+    const nomRes = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(clean)}&country=us&format=json&limit=1`,
       { signal: AbortSignal.timeout(5000) }
     )
-    if (censusRes.ok) {
-      const censusData = await censusRes.json()
-      const match = censusData?.result?.addressMatches?.[0]?.coordinates
-      if (match?.x && match?.y) {
-        const result = { lat: match.y, lng: match.x, city: '', state: '' }
+    if (nomRes.ok) {
+      const nomData = await nomRes.json()
+      const first = nomData?.[0]
+      if (first?.lat && first?.lon) {
+        const result = { lat: parseFloat(first.lat), lng: parseFloat(first.lon), city: '', state: '' }
         try { localStorage.setItem(cacheKey, JSON.stringify({ data: result, ts: Date.now() })) } catch {}
         return result
       }
