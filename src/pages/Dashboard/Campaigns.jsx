@@ -28,8 +28,6 @@ export default function CampaignsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showAddForm, setShowAddForm] = useState(false)
-  const [newCampaign, setNewCampaign] = useState({ name: '', subject: '', audience: 'confirmed' })
-  const [saving, setSaving] = useState(false)
   const [busyId, setBusyId] = useState(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [viewMode, setViewMode] = useState('table')
@@ -104,7 +102,7 @@ export default function CampaignsPage() {
     if (!action) return
     const id = action.id
     consume()
-    if (id === 'create-campaign') setShowAddForm(true)
+    if (id === 'create-campaign') startNewCampaign()
   }, [action?.timestamp])
 
   useEffect(() => {
@@ -125,23 +123,40 @@ export default function CampaignsPage() {
   }
 
   async function createCampaign() {
-    if (!newCampaign.name.trim() || !newCampaign.subject.trim()) {
-      toast.addToast('Please enter a name and subject', 'warning'); return
+    // Called from startNewCampaign when user clicks Save/Send for the first time
+    // Creates a draft with the current editor state, returns the new ID
+    if (!editSubject.trim()) {
+      toast.addToast('Please enter a subject line', 'warning'); return null
     }
-    setSaving(true)
+    setAutosaving(true)
     try {
-      await campaignsAPI.create(workspaceId, { title: newCampaign.name, subject: newCampaign.subject, audience: newCampaign.audience })
-      setNewCampaign({ name: '', subject: '', audience: 'confirmed' })
-      setShowAddForm(false)
+      const { data } = await campaignsAPI.create(workspaceId, { title: editSubject.slice(0, 60), subject: editSubject, audience: editAudience })
       await loadCampaigns()
-      toast.addToast('Draft created successfully', 'success')
+      return data?.campaign?.id || null
     } catch (err) {
       const apiErr = err?.response?.data?.error
-      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to create campaign', 'error')
-    } finally { setSaving(false) }
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to create', 'error')
+      return null
+    } finally { setAutosaving(false) }
+  }
+
+  async function startNewCampaign() {
+    setEditingId('new')
+    setEditCampaign({ name: '', title: '', subject: '', audience: 'confirmed' })
+    setEditContent('')
+    setEditSubject('')
+    setEditAudience('confirmed')
+    setGeoAudience(null)
+    setShowAddForm(false)
   }
 
   async function sendNow(id) {
+    if (id === 'new') {
+      const newId = await createCampaign()
+      if (!newId) return
+      setEditingId(newId)
+      id = newId
+    }
     const campaign = campaigns.find(c => c.id === id)
     if (!confirm(`Send "${campaign?.title || campaign?.name}" to ${campaign?.sent_count || 'all'} confirmed subscribers? This cannot be undone.`)) return
     setBusyId(id)
@@ -230,6 +245,16 @@ export default function CampaignsPage() {
   }, [editingId, workspaceId])
 
   async function saveDraft() {
+    if (editingId === 'new') {
+      const newId = await createCampaign()
+      if (!newId) return
+      setEditingId(newId)
+      if (editContent) {
+        await campaignsAPI.update(workspaceId, newId, { editor_html: editContent, subject: editSubject, audience: editAudience })
+      }
+      await loadCampaigns()
+      return
+    }
     if (!editingId || !workspaceId) return
     setAutosaving(true)
     try {
@@ -261,48 +286,17 @@ export default function CampaignsPage() {
             <button onClick={() => setViewMode('table')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition ${viewMode === 'table' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>▤ Table</button>
             <button onClick={() => setViewMode('cards')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'cards' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>▥ Cards</button>
           </div>
-          <button onClick={() => setShowAddForm(!showAddForm)} className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal hover:-translate-y-0.5 transition active:translate-y-0">{showAddForm ? 'Close Form' : '+ New Campaign'}</button>
+          <button onClick={startNewCampaign} className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal hover:-translate-y-0.5 transition active:translate-y-0">+ New Campaign</button>
         </div>
       </div>
 
-      {showAddForm && (
-        <div className="border-3 border-brutal-fg bg-white p-6 space-y-5 shadow-brutal">
-          <div className="flex justify-between items-center border-b-2 border-brutal-fg pb-2">
-            <h3 className="font-heading text-2xl uppercase tracking-wide">Create New Draft</h3>
-            <span className="text-xs font-mono font-bold bg-brutal-surface px-2 py-1 border border-brutal-fg">Step 1 of 2</span>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg mb-1.5">Internal Campaign Name</label>
-              <input type="text" value={newCampaign.name} onChange={(e) => setNewCampaign({ ...newCampaign, name: e.target.value })} placeholder="e.g., July Product Announcement" className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-medium focus:outline-none focus:bg-brutal-yellow/20" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg mb-1.5">Email Subject Line</label>
-              <input type="text" value={newCampaign.subject} onChange={(e) => setNewCampaign({ ...newCampaign, subject: e.target.value })} placeholder="e.g., What we shipped this month..." className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-medium focus:outline-none focus:bg-brutal-yellow/20" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg mb-1.5">Target Audience</label>
-            <select value={newCampaign.audience} onChange={(e) => setNewCampaign({ ...newCampaign, audience: e.target.value })} className="w-full sm:w-80 px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-bold focus:outline-none cursor-pointer">
-              {AUDIENCE_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-              {lists.length > 0 && (<optgroup label="Custom Lists">{lists.map((l) => (<option key={`list:${l.id}`} value={`list:${l.id}`}>{l.name}</option>))}</optgroup>)}
-            </select>
-          </div>
-          <div className="p-3 bg-brutal-surface/60 border-2 border-brutal-fg text-xs font-bold text-brutal-fg/80 uppercase tracking-wider">ℹ️ Drafts initialize without body content. You can attach email layouts after saving.</div>
-          <div className="flex gap-3 pt-2">
-            <button onClick={createCampaign} disabled={saving} className="px-5 py-2.5 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal hover:-translate-y-0.5 transition active:translate-y-0 disabled:opacity-50">{saving ? 'Creating Draft...' : 'Create Campaign Draft'}</button>
-            <button onClick={() => setShowAddForm(false)} className="px-5 py-2.5 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-surface transition">Cancel</button>
-          </div>
-        </div>
-      )}
-
-      {/* ======== EDIT DRAFT PANEL ======== */}
-      {editingId && editCampaign && (
+      {/* ======== EDIT DRAFT PANEL (also used for new campaigns) ======== */}
+      {(editingId || editingId === 'new') && (
         <div className="border-3 border-brutal-fg bg-white shadow-brutal animate-fade-up">
           <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-5 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="font-heading text-xl uppercase tracking-wide">Edit Draft</span>
-              <span className="text-[10px] font-mono font-bold bg-brutal-fg text-brutal-yellow px-2 py-0.5">{editCampaign.name}</span>
+              <span className="font-heading text-xl uppercase tracking-wide">{editingId === 'new' ? 'New Campaign' : 'Edit Draft'}</span>
+              {editCampaign?.name && <span className="text-[10px] font-mono font-bold bg-brutal-fg text-brutal-yellow px-2 py-0.5">{editCampaign.name}</span>}
             </div>
             <button onClick={closeEditor} className="px-3 py-1 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition">
               Close
@@ -391,12 +385,21 @@ export default function CampaignsPage() {
                 </span>
               </div>
               <div className="flex gap-2">
+                {editingId !== 'new' && (
+                  <button
+                    onClick={() => { toast.addToast('Save as Template — coming soon', 'info') }}
+                    disabled={autosaving}
+                    className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-[10px] uppercase tracking-wider hover:bg-brutal-surface transition disabled:opacity-50"
+                  >
+                    Save as Template
+                  </button>
+                )}
                 <button
                   onClick={() => sendNow(editingId)}
                   disabled={autosaving}
                   className="px-5 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 disabled:opacity-50 transition"
                 >
-                  Send Now
+                  {editingId === 'new' ? 'Save & Send' : 'Send Now'}
                 </button>
               </div>
             </div>
@@ -407,7 +410,7 @@ export default function CampaignsPage() {
       {loading ? (<LoadingState label="Loading campaign workspace" />) : error ? (
         <EmptyState title="Failed to sync campaigns" description={error} action={{ label: 'Retry Connection', onClick: loadCampaigns }} />
       ) : campaigns.length === 0 ? (
-        <EmptyState title="No campaigns found" description="You haven't initialized any email broadcasts yet." action={{ label: '+ Create First Campaign', onClick: () => setShowAddForm(true) }} />
+        <EmptyState title="No campaigns found" description="You haven't created any email broadcasts yet." action={{ label: '+ Create First Campaign', onClick: startNewCampaign }} />
       ) : viewMode === 'cards' ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {campaigns.map((c) => {
