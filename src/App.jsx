@@ -20,6 +20,7 @@ const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 const DemoPage = lazy(() => import('./pages/Demo'))
 const WidgetFormPage = lazy(() => import('./pages/WidgetForm'))
+const PublicNewsletterPage = lazy(() => import('./pages/PublicNewsletterPage'))
 const DashboardLayout = lazy(() => import('./layouts/DashboardLayout'))
 const DashboardHome = lazy(() => import('./pages/Dashboard/Home'))
 const SubscribersPage = lazy(() => import('./pages/Dashboard/Subscribers'))
@@ -173,6 +174,9 @@ function App() {
 
           {/* Public widget form — no layout wrapper */}
           <Route path="/w/:slug" element={<ErrorBoundary><WidgetFormPage /></ErrorBoundary>} />
+
+          {/* Public newsletter archive — no layout wrapper */}
+          <Route path="/newsletter/:slug" element={<ErrorBoundary><PublicNewsletterPage /></ErrorBoundary>} />
 
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />
