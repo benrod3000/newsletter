@@ -4,6 +4,7 @@ import { useReveal, useScrollReveal, useTerminalReveal } from '../hooks/use-gsap
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Badge from '../components/ui/Badge'
+import Button from '../components/ui/Button'
 
 gsap.registerPlugin(ScrollTrigger)
 import {
@@ -228,12 +229,12 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 items-start">
-            <Link to="/signup" className="px-8 py-4 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-0 active:shadow-none transition text-center inline-flex items-center gap-2">
-              Create Free Account <ArrowRight size={16} />
-            </Link>
-            <Link to="/demo" className="px-8 py-4 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-0 transition text-center">
+            <Button variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
+              Create Free Account
+            </Button>
+            <Button variant="secondary" size="lg" onClick={() => window.location.href = '/demo'}>
               Explore Live Demo
-            </Link>
+            </Button>
           </div>
           <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · Free to start</p>
         </div>
@@ -340,9 +341,9 @@ export default function LandingPage() {
           <p className="text-base sm:text-lg text-brutal-fg/70 max-w-xl mx-auto font-medium">
             Veloce organizes subscribers by location automatically. Every campaign reaches the people who actually matter — without extra work.
           </p>
-          <Link to="/signup" className="inline-flex items-center gap-2 px-8 py-4 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-brutal transition">
-            Start Free <ArrowRight size={16} />
-          </Link>
+          <Button variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
+            Create Free Account
+          </Button>
         </div>
       </Section>
 
@@ -561,12 +562,12 @@ export default function LandingPage() {
             No monthly fees. No platform lock-in. Just a smarter way to send emails that reach the right people, wherever they are.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/signup" className="px-8 py-4 border-3 border-brutal-yellow bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-[4px_4px_0px_#f5e642] active:translate-y-0.5 transition inline-flex items-center gap-2">
-              Create Free Account <ArrowRight size={16} />
-            </Link>
-            <Link to="/demo" className="px-8 py-4 border-3 border-brutal-bg/20 text-brutal-bg font-bold text-sm uppercase tracking-wider hover:border-brutal-bg/60 transition">
+            <Button variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
+              Create Free Account
+            </Button>
+            <Button variant="ghost" size="lg" onClick={() => window.location.href = '/demo'}>
               Explore Live Demo
-            </Link>
+            </Button>
           </div>
           <Annotation className="justify-center !text-brutal-bg/50">no credit card · no time limit · BYO SendGrid or SES</Annotation>
         </div>
