@@ -87,25 +87,25 @@ export default function LandingPage() {
       {/* ═══ HERO ═══ */}
       <Section className="bg-dots-light">
         <div ref={heroRef} className="max-w-5xl mx-auto space-y-8 sm:space-y-10">
-          <Badge variant="yellow">Built for local businesses, events & communities</Badge>
+          <Badge variant="yellow">For creators, local businesses & communities</Badge>
 
           <h1 className="text-display leading-[0.85]">
-            Email Marketing Built Around{' '}
-            <span className="text-brutal-green">Real Communities.</span>
+            The newsletter platform that{' '}
+            <span className="text-brutal-green">gets out of your way.</span>
           </h1>
 
           <div className="h-2 w-24 bg-brutal-yellow border-2 border-brutal-fg" />
 
           <p className="text-base sm:text-lg text-brutal-fg/80 leading-relaxed max-w-xl font-medium">
-            Send newsletters to subscribers who actually live near your business. Grow faster with geographic targeting, powerful automations, and a dashboard made for real people.
+            A simple way to write newsletters, grow your audience, and send to the people who actually matter — without the complexity.
           </p>
 
-          <Annotation>multi-tenant · BYO SES/SendGrid · $0 platform fee · no credit card</Annotation>
+          <Annotation>own your audience · BYO SendGrid/SES · free to start · no credit card</Annotation>
 
           <p className="text-[11px] font-bold text-brutal-muted uppercase tracking-wider flex flex-wrap gap-x-4 gap-y-1">
-            <span>✓ Trusted by event organizers</span>
-            <span>✓ Local coffee shops</span>
-            <span>✓ Independent creators</span>
+            <span>✓ For writers & creators</span>
+            <span>✓ Local shops & restaurants</span>
+            <span>✓ Clubs & nonprofits</span>
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 items-start">
@@ -219,7 +219,7 @@ export default function LandingPage() {
             ))}
           </div>
           <p className="text-base sm:text-lg text-brutal-fg/70 max-w-xl mx-auto font-medium">
-            Veloce organizes subscribers by location automatically. Every campaign reaches the people who actually matter — without extra work.
+            Veloce organizes your audience by location automatically. Every newsletter reaches the people who actually matter — without extra work.
           </p>
           <Button variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
             Create Free Account
@@ -243,7 +243,7 @@ export default function LandingPage() {
       {/* ═══ SOCIAL PROOF ═══ */}
       <Section className="border-t-3 border-brutal-fg">
         <div className="max-w-5xl mx-auto text-center space-y-8 sm:space-y-10">
-          <Badge variant="green">Trusted By</Badge>
+          <Badge variant="green">Growing Audiences</Badge>
 
           {/* Trust metrics — big numbers */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
