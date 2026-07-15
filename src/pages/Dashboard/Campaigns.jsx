@@ -61,12 +61,12 @@ export default function CampaignsPage() {
           clearInterval(intervalId)
           delete pendingSends.current[id]
           await loadCampaigns()
-          toast.addToast(`Campaign sent. ${(updated.sent_count || 0).toLocaleString()} delivered.`, 'success')
+          toast.addToast(`Your newsletter reached ${(updated.sent_count || 0).toLocaleString()} people.`, 'success')
         } else if (pollCount >= 30) {
           // 5 min timeout (~10s × 30)
           clearInterval(intervalId)
           delete pendingSends.current[id]
-          toast.addToast('Campaign may still be sending. Check status later.', 'info')
+          toast.addToast('Still delivering. Check back in a moment.', 'info')
         }
       } catch { /* keep polling */ }
     }, 10000)
@@ -151,10 +151,10 @@ export default function CampaignsPage() {
         setConfirmAction(null)
         setBusyId(id)
         try {
-          toast.addToast('Scheduling campaign for delivery...', 'info')
+          toast.addToast('Preparing your newsletter for delivery...', 'info')
           await campaignsAPI.schedule(workspaceId, id)
           await loadCampaigns()
-          toast.addToast('Campaign scheduled. Tracking delivery...', 'success')
+          toast.addToast('Your newsletter is scheduled. Tracking delivery...', 'success')
           startPollingSend(id)
         } catch (err) {
           const apiErr = err?.response?.data?.error
@@ -250,7 +250,7 @@ export default function CampaignsPage() {
         subject: editSubject,
         audience: editAudience,
       })
-      toast.addToast('Draft saved', 'success')
+      toast.addToast('Saved. Your newsletter is ready when you are.', 'success')
       await loadCampaigns()
     } catch (err) {
       toast.addToast('Failed to save draft', 'error')
@@ -277,9 +277,9 @@ export default function CampaignsPage() {
       <div className="flex items-center justify-between flex-wrap gap-4 border-b-3 border-brutal-fg pb-4">
         <div>
           <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">
-            <span className="text-brutal-green">Camp</span>aigns
+            <span className="text-brutal-green">Your</span> Newsletters
           </h2>
-          <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider mt-1">Create, manage, and schedule newsletter broadcasts</p>
+          <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider mt-1">Write, review, and send to your audience</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex border-3 border-brutal-fg bg-white overflow-hidden">
@@ -287,7 +287,7 @@ export default function CampaignsPage() {
             <button onClick={() => setViewMode('cards')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'cards' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>▥ Cards</button>
             <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'calendar' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>📅 Calendar</button>
           </div>
-          <Button variant="primary" size="md" onClick={startNewCampaign}>+ New Campaign</Button>
+          <Button variant="primary" size="md" onClick={startNewCampaign}>+ New Newsletter</Button>
           <button
             onClick={async () => {
               setSmsOpen(!smsOpen)
@@ -396,12 +396,12 @@ export default function CampaignsPage() {
           </div>
         </div>
       )}
-      {/* ======== EDIT DRAFT PANEL (also used for new campaigns) ======== */}
+      {/* ======== EDIT DRAFT PANEL (also used for new newsletters) ======== */}
       {(editingId || editingId === 'new') && (
         <div className="border-3 border-brutal-fg bg-white shadow-brutal animate-fade-up">
           <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-5 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="font-heading text-xl uppercase tracking-wide">{editingId === 'new' ? 'New Campaign' : 'Edit Draft'}</span>
+              <span className="font-heading text-xl uppercase tracking-wide">{editingId === 'new' ? 'New Newsletter' : 'Edit Newsletter'}</span>
               {editCampaign?.name && <span className="text-[10px] font-mono font-bold bg-brutal-fg text-brutal-yellow px-2 py-0.5">{editCampaign.name}</span>}
             </div>
             <button onClick={closeEditor} className="px-3 py-1 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition">
@@ -526,7 +526,7 @@ export default function CampaignsPage() {
                   onClick={() => sendNow(editingId)}
                   disabled={autosaving}
                 >
-                  {editingId === 'new' ? 'Save & Send' : 'Send Now'}
+                  {editingId === 'new' ? 'Write & Send' : 'Send Now'}
                 </Button>
               </div>
             </div>
@@ -535,9 +535,9 @@ export default function CampaignsPage() {
       )}
 
       {loading ? (<LoadingState label="Loading campaign workspace" />) : error ? (
-        <EmptyState title="Failed to sync campaigns" description={error} action={{ label: 'Retry Connection', onClick: loadCampaigns }} />
+        <EmptyState title="Couldn't load your newsletters" description={error} action={{ label: 'Try Again', onClick: loadCampaigns }} />
       ) : campaigns.length === 0 ? (
-        <EmptyState title="No campaigns found" description="You haven't created any email broadcasts yet." action={{ label: '+ Create First Campaign', onClick: startNewCampaign }} />
+        <EmptyState title="Nothing sent yet" description="Your first newsletter is waiting to be written." action={{ label: '+ Write Your First Newsletter', onClick: startNewCampaign }} />
       ) : viewMode === 'cards' ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {campaigns.map((c) => {

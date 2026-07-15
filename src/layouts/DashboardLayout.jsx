@@ -17,7 +17,7 @@ const navGroups = [
   {
     label: 'Create',
     items: [
-      { path: '/dashboard/campaigns', label: 'Campaigns', icon: Mail },
+      { path: '/dashboard/campaigns', label: 'Newsletters', icon: Mail },
       { path: '/dashboard/settings', label: 'Automations', icon: Zap },
     ],
   },

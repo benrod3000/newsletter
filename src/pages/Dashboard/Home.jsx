@@ -25,7 +25,7 @@ export default function DashboardHome() {
 
   useEffect(() => {
     if (!workspaceId) return
-    document.title = 'Dashboard | Veloce'
+    document.title = 'Your audience · Veloce'
     let cancelled = false
 
     async function loadOverview() {
@@ -90,8 +90,8 @@ export default function DashboardHome() {
         <LoadingState label="Loading metrics" />
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link to="/dashboard/subscribers" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Subscribers" value={fmt(stats?.total_subscribers)} accentColor="border-t-brutal-green" change={stats?.total_subscribers > 0 ? `+${stats?.total_subscribers}` : undefined} /></Link>
-          <Link to="/dashboard/campaigns" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Campaigns Sent" value={fmt(stats?.campaigns_sent)} accentColor="border-t-brutal-yellow" /></Link>
+          <Link to="/dashboard/subscribers" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Audience" value={fmt(stats?.total_subscribers)} accentColor="border-t-brutal-green" change={stats?.total_subscribers > 0 ? `+${stats?.total_subscribers}` : undefined} /></Link>
+          <Link to="/dashboard/campaigns" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Newsletters Sent" value={fmt(stats?.campaigns_sent)} accentColor="border-t-brutal-yellow" /></Link>
           <Link to="/dashboard/analytics" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Avg Open Rate" value={pct(stats?.avg_open_rate)} accentColor="border-t-brutal-green" /></Link>
           <Link to="/dashboard/analytics" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Avg Click Rate" value={pct(stats?.avg_click_rate)} accentColor="border-t-brutal-fg" /></Link>
         </div>
@@ -106,7 +106,7 @@ export default function DashboardHome() {
           <div className="flex-1">
             <p className="text-sm font-bold">You have subscribers but no campaigns yet</p>
             <p className="text-xs text-brutal-muted mt-1">Your audience is waiting. Create your first newsletter to start engaging your subscribers.</p>
-            <Button variant="primary" size="md" onClick={() => window.location.href = '/dashboard/campaigns'}>Create Your First Campaign →</Button>
+            <Button variant="primary" size="md" onClick={() => window.location.href = '/dashboard/campaigns'}>Write Your First Newsletter →</Button>
           </div>
         </Card>
       )}
@@ -138,7 +138,7 @@ export default function DashboardHome() {
             {[
               { step: 1, label: 'Create a widget', desc: 'Embed a signup form on your website to start collecting subscribers.', to: '/dashboard/widgets' },
               { step: 2, label: 'Import or add subscribers', desc: 'Upload a CSV or manually add your first subscribers.', to: '/dashboard/subscribers' },
-              { step: 3, label: 'Send your first campaign', desc: 'Write and send your first email to your audience.', to: '/dashboard/campaigns' },
+              { step: 3, label: 'Send your first newsletter', desc: 'Write and send your first email to your audience.', to: '/dashboard/campaigns' },
             ].map((item) => (
               <Link key={item.step} to={item.to} className="flex items-center gap-4 p-4 border-3 border-brutal-fg/20 hover:border-brutal-fg hover:shadow-brutal transition">
                 <span className="w-8 h-8 border-3 border-brutal-fg bg-brutal-yellow flex items-center justify-center font-heading text-lg shrink-0">{item.step}</span>
@@ -155,11 +155,11 @@ export default function DashboardHome() {
       {/* Quick Actions + Workspace Info */}
       <div className="grid sm:grid-cols-2 gap-6">
         {/* Quick Actions */}
-        <Panel title="Quick Actions">
+        <Panel title="Start something">
           <div className="grid grid-cols-2 gap-3">
             <Link to="/dashboard/campaigns" className="border-3 border-brutal-fg bg-brutal-bg p-4 hover:shadow-brutal hover:bg-white active:translate-y-0.5 transition flex items-center gap-3">
               <Mail size={18} className="text-brutal-green shrink-0" />
-              <span className="text-xs font-bold uppercase tracking-wider">New Campaign</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Write Newsletter</span>
             </Link>
             <Link to="/dashboard/subscribers" className="border-3 border-brutal-fg bg-brutal-bg p-4 hover:shadow-brutal hover:bg-white active:translate-y-0.5 transition flex items-center gap-3">
               <Upload size={18} className="text-brutal-green shrink-0" />
@@ -201,8 +201,8 @@ export default function DashboardHome() {
           <LoadingState label="Loading activity" />
         ) : activities.length === 0 ? (
           <div className="text-center py-6">
-            <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">No recent activity yet</p>
-            <p className="text-[10px] text-brutal-muted mt-1">Create your first campaign or add a subscriber</p>
+            <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">Your audience is growing</p>
+            <p className="text-[10px] text-brutal-muted mt-1">Start writing or add someone to your audience</p>
           </div>
         ) : (
           <div className="space-y-3">

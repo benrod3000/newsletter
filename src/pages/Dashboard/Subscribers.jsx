@@ -128,7 +128,7 @@ export default function SubscribersPage() {
       setNewSubscriber({ email: '', first_name: '', last_name: '' })
       setShowAddForm(false)
       await loadSubscribers()
-      toast.addToast('Subscriber added', 'success')
+      toast.addToast('Added to your audience.', 'success')
     } catch (err) {
       const apiErr = err?.response?.data?.error
       toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to add', 'error')
@@ -143,7 +143,7 @@ export default function SubscribersPage() {
       setSubscribers((prev) => prev.filter((s) => s.id !== id))
       setTotal((prev) => Math.max(0, prev - 1))
       setSelectedSubscriber(null)
-      toast.addToast('Subscriber removed', 'success')
+      toast.addToast('Removed from your audience.', 'success')
     } catch (err) {
       const apiErr = err?.response?.data?.error
       toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to remove', 'error')
@@ -176,7 +176,7 @@ export default function SubscribersPage() {
       await subscribersAPI.bulkRemove(workspaceId, Array.from(selectedIds))
       setSubscribers((prev) => prev.filter((s) => !selectedIds.has(s.id)))
       setTotal((prev) => Math.max(0, prev - selectedIds.size))
-      toast.addToast(`Deleted ${selectedIds.size} subscriber(s)`, 'success')
+      toast.addToast(`Removed ${selectedIds.size} from your audience.`, 'success')
     } catch (err) {
       const apiErr = err?.response?.data?.error
       toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Bulk delete failed', 'error')
@@ -230,7 +230,7 @@ export default function SubscribersPage() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">Subscribers</h2>
+        <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">Your <span className="text-brutal-green">Audience</span></h2>
         <div className="flex gap-3">
           <Button
             variant="secondary"
@@ -560,10 +560,10 @@ export default function SubscribersPage() {
         />
       ) : subscribers.length === 0 ? (
         <EmptyState
-          title={total === 0 && !search ? 'No subscribers yet' : 'No matches'}
+          title={total === 0 && !search ? 'Your audience starts here' : 'No matches'}
           description={
             total === 0 && !search
-              ? 'Add your first subscriber to get started.'
+              ? 'Import your contacts or create a signup form.'
               : 'Nothing matches that filter or search. Try different criteria.'
           }
           variant="subscribers"
