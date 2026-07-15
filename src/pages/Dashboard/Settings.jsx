@@ -31,6 +31,7 @@ export default function SettingsPage() {
   })
   const [showAccessKey, setShowAccessKey] = useState(false)
   const [showSecretKey, setShowSecretKey] = useState(false)
+  const [testSending, setTestSending] = useState(false)
 
   // Smart tag history
   const [smartTags, setSmartTags] = useState([])
@@ -117,6 +118,19 @@ export default function SettingsPage() {
       toast.addToast('Failed to update branding', 'error')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function testProvider() {
+    setTestSending(true)
+    try {
+      const { data } = await brandingAPI.testProvider(workspaceId)
+      toast.addToast(data.message || 'Test email sent!', 'success')
+    } catch (err) {
+      const msg = err?.response?.data?.error || 'Provider test failed'
+      toast.addToast(msg, 'error')
+    } finally {
+      setTestSending(false)
     }
   }
 
@@ -428,15 +442,26 @@ export default function SettingsPage() {
               ))}
             </div>
 
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={saveBranding}
-              disabled={loading}
-              loading={loading}
-            >
-              {loading ? 'Saving...' : 'Save Branding'}
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={saveBranding}
+                disabled={loading}
+                loading={loading}
+              >
+                {loading ? 'Saving...' : 'Save Branding'}
+              </Button>
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={testProvider}
+                disabled={testSending}
+                loading={testSending}
+              >
+                {testSending ? 'Testing...' : 'Test Provider'}
+              </Button>
+            </div>
           </div>
         </div>
       )}
