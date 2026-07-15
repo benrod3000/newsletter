@@ -2,15 +2,14 @@ import { Share2, Target, Mail, Zap, MapPin } from 'lucide-react'
 
 export const NAV_ITEMS = [
   { label: 'Features', href: '/#features' },
-  { label: 'Pricing', href: '/#pricing' },
   { label: 'Demo', href: '/demo' },
 ]
 
 export const STATS = [
-  { value: '$1', label: 'Starts at $1/month', desc: 'Pay only for what you use. BYO SendGrid or AWS SES.' },
-  { value: 'BYO', label: 'Bring Your Own Keys', desc: 'Use your existing SendGrid or SES account. No vendor lock-in.' },
-  { value: '∞', label: 'Unlimited Workspaces', desc: 'Separate brands, one account. Each workspace keeps its own subscribers.' },
-  { value: '0%', label: 'Zero Monthly Fees', desc: 'No platform fee, no hidden costs, no minimum commit.' },
+  { value: '100%', label: 'Free to Start', desc: 'No platform fees. Pay only for your email provider.' },
+  { value: 'BYO', label: 'Bring Your Own Provider', desc: 'Use your existing SendGrid or SES account. No lock-in.' },
+  { value: '∞', label: 'Unlimited Workspaces', desc: 'Separate brands, one account. Each workspace is isolated.' },
+  { value: '47%', label: 'Avg Open Rate', desc: 'Real engagement from real subscribers, not bots.' },
 ]
 
 export const TRUST_METRICS = [
@@ -76,7 +75,6 @@ export const FOOTER_LINKS = [
   { heading: 'Product', links: [
     { label: 'Features', href: '/#features' },
     { label: 'Demo', href: '/demo' },
-    { label: 'Pricing', href: '/#pricing' },
   ]},
   { heading: 'Resources', links: [
     { label: 'Documentation', href: '/docs' },
