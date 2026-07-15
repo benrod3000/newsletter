@@ -10,6 +10,9 @@ export default function WidgetFormPage() {
   const [widget, setWidget] = useState(null)
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [postal, setPostal] = useState('')
   const [geoCoords, setGeoCoords] = useState(null)
   const [geoLoading, setGeoLoading] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -17,6 +20,10 @@ export default function WidgetFormPage() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [notFound, setNotFound] = useState(false)
+
+  const fields = widget?.fields || { email: { required: true } }
+  const styles = widget?.styles || {}
+  const widgetType = widget?.type || 'lead_magnet'
 
   const loadWidget = useCallback(async () => {
     try {
@@ -55,6 +62,9 @@ export default function WidgetFormPage() {
     try {
       const payload = { email: email.trim() };
       if (firstName.trim()) payload.first_name = firstName.trim();
+      if (lastName.trim()) payload.last_name = lastName.trim();
+      if (phone.trim()) payload.phone = phone.trim();
+      if (postal.trim()) payload.postal_code = postal.trim();
       if (geoCoords) {
         payload.browser_latitude = geoCoords.latitude;
         payload.browser_longitude = geoCoords.longitude;
@@ -103,7 +113,7 @@ export default function WidgetFormPage() {
       <div className={`w-full ${sizeCls}`}>
         <div className="border-3 border-brutal-fg bg-white shadow-brutal">
           {/* Header */}
-          <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-6 py-4">
+          <div className="border-b-3 border-brutal-fg px-6 py-4" style={{ backgroundColor: styles.primary_color || '#f5e642' }}>
             <h1 className="font-heading text-2xl sm:text-3xl uppercase tracking-tight leading-none">
               {widget.headline}
             </h1>
@@ -128,6 +138,28 @@ export default function WidgetFormPage() {
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {fields.first_name?.required && (
+                    <div>
+                      <input
+                        type="text"
+                        value={firstName}
+                        onChange={e => setFirstName(e.target.value)}
+                        placeholder="First name"
+                        className="w-full px-4 py-3 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
+                      />
+                    </div>
+                  )}
+                  {fields.last_name?.required && (
+                    <div>
+                      <input
+                        type="text"
+                        value={lastName}
+                        onChange={e => setLastName(e.target.value)}
+                        placeholder="Last name"
+                        className="w-full px-4 py-3 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
+                      />
+                    </div>
+                  )}
                   <div>
                     <input
                       type="email"
@@ -139,17 +171,28 @@ export default function WidgetFormPage() {
                       autoFocus
                     />
                   </div>
-
-                  <div>
-                    <input
-                      type="text"
-                      value={firstName}
-                      onChange={e => setFirstName(e.target.value)}
-                      placeholder="First name (optional)"
-                      className="w-full px-4 py-3 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
-                    />
-                  </div>
-
+                  {fields.phone?.required && (
+                    <div>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={e => setPhone(e.target.value)}
+                        placeholder="Phone number"
+                        className="w-full px-4 py-3 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
+                      />
+                    </div>
+                  )}
+                  {fields.postal_code?.required && (
+                    <div>
+                      <input
+                        type="text"
+                        value={postal}
+                        onChange={e => setPostal(e.target.value)}
+                        placeholder="ZIP code"
+                        className="w-full px-4 py-3 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
+                      />
+                    </div>
+                  )}
                   <div>
                     <button
                       type="button"

@@ -10,6 +10,7 @@ const DEFAULT_FORM = {
   name: '',
   slug: '',
   list_id: '',
+  type: 'lead_magnet',
   size: 'medium',
   headline: 'Get the Free Download',
   description: 'Enter your email and we\'ll send you the download link.',
@@ -17,7 +18,17 @@ const DEFAULT_FORM = {
   button_text: 'Send Me the Link',
   success_message: 'Check your inbox! The download link is on its way.',
   placeholder: 'you@example.com',
+  fields: { email: { required: true } },
+  styles: { primary_color: '#f5e642', font_size: 'medium' },
 }
+
+const WIDGET_TYPES = [
+  { value: 'lead_magnet', label: 'Lead Magnet', desc: 'Collects emails, sends a download link' },
+  { value: 'newsletter', label: 'Newsletter Signup', desc: 'Simple email collection for newsletters' },
+  { value: 'event_rsvp', label: 'Event RSVP', desc: 'Collects name + email for event registration' },
+  { value: 'coupon', label: 'Coupon Code', desc: 'Displays a coupon code after signup' },
+  { value: 'feedback', label: 'Feedback Form', desc: 'Collects email + brief message' },
+]
 
 export default function WidgetsPage() {
   const { workspaceId } = useAuthStore()
@@ -78,6 +89,7 @@ export default function WidgetsPage() {
       name: w.name || '',
       slug: w.slug || '',
       list_id: w.list_id || '',
+      type: w.type || 'lead_magnet',
       size: w.size || 'medium',
       headline: w.headline || 'Get the Free Download',
       description: w.description || '',
@@ -85,6 +97,8 @@ export default function WidgetsPage() {
       button_text: w.button_text || 'Send Me the Link',
       success_message: w.success_message || 'Check your inbox!',
       placeholder: w.placeholder || 'you@example.com',
+      fields: w.fields || { email: { required: true } },
+      styles: w.styles || { primary_color: '#f5e642', font_size: 'medium' },
     })
     setEditingId(w.id)
     setErrors({})
@@ -268,6 +282,57 @@ export default function WidgetsPage() {
             </div>
 
             <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Widget Type</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {WIDGET_TYPES.map((t) => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => updateField('type', t.value)}
+                    className={`text-left px-3 py-2.5 border-3 text-xs transition ${form.type === t.value ? 'border-brutal-fg bg-brutal-yellow text-brutal-fg' : 'border-brutal-fg/20 bg-white text-brutal-muted hover:border-brutal-fg'}`}
+                  >
+                    <span className="font-bold block">{t.label}</span>
+                    <span className="text-[9px] block mt-0.5">{t.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Fields to Collect</label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { key: 'email', label: 'Email', required: true },
+                  { key: 'first_name', label: 'First Name' },
+                  { key: 'last_name', label: 'Last Name' },
+                  { key: 'phone', label: 'Phone' },
+                  { key: 'postal_code', label: 'ZIP Code' },
+                ].map((f) => {
+                  const enabled = form.fields?.[f.key]?.required === true || (f.key !== 'email' && form.fields?.[f.key]?.required !== undefined)
+                  return (
+                    <button
+                      key={f.key}
+                      type="button"
+                      disabled={f.required}
+                      onClick={() => {
+                        const newFields = { ...form.fields }
+                        if (newFields[f.key]?.required) {
+                          delete newFields[f.key]
+                        } else {
+                          newFields[f.key] = { required: true }
+                        }
+                        updateField('fields', newFields)
+                      }}
+                      className={`px-3 py-1.5 border-2 text-xs font-bold uppercase tracking-wider transition ${f.required || (form.fields?.[f.key]?.required) ? 'border-brutal-fg bg-brutal-green text-white' : 'border-brutal-fg/20 bg-white text-brutal-muted hover:border-brutal-fg'}`}
+                    >
+                      {f.label}{f.required ? ' *' : ''}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Widget Size</label>
               <div className="flex border-3 border-brutal-fg overflow-hidden">
                 {[
@@ -366,6 +431,24 @@ export default function WidgetsPage() {
                     onChange={e => updateField('success_message', e.target.value)}
                     className="w-full px-4 py-2.5 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Primary Color</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={form.styles?.primary_color || '#f5e642'}
+                      onChange={e => updateField('styles', { ...form.styles, primary_color: e.target.value })}
+                      className="w-12 h-10 border-3 border-brutal-fg cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={form.styles?.primary_color || '#f5e642'}
+                      onChange={e => updateField('styles', { ...form.styles, primary_color: e.target.value })}
+                      className="flex-1 px-3 py-2 bg-white border-3 border-brutal-fg text-xs font-mono focus:outline-none"
+                    />
+                  </div>
                 </div>
 
                 <div className="flex gap-3 pt-2">
