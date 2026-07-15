@@ -64,6 +64,7 @@ export default function SubscribersPage() {
   const [importConfirmed, setImportConfirmed] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState(null)
+  const [dragActive, setDragActive] = useState(false)
 
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState(new Set())
@@ -266,9 +267,12 @@ export default function SubscribersPage() {
             Paste CSV or drag a .csv file. Must include an <strong>email</strong> column. Optional: first_name, last_name, phone_number, country, region, city, timezone
           </p>
           <div
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleFileDrop}
-            className="border-2 border-dashed border-brutal-fg/30 p-8 text-center cursor-pointer hover:border-brutal-fg transition"
+            onDragOver={(e) => { e.preventDefault(); setDragActive(true) }}
+            onDragLeave={() => setDragActive(false)}
+            onDrop={(e) => { setDragActive(false); handleFileDrop(e) }}
+            className={`border-2 border-dashed p-8 text-center cursor-pointer transition ${
+              dragActive ? 'border-brutal-green bg-brutal-green/5' : 'border-brutal-fg/30 hover:border-brutal-fg'
+            } ${importCsvText ? 'bg-brutal-green/10 border-brutal-green border-solid' : ''}`}
           >
             <input
               type="file"

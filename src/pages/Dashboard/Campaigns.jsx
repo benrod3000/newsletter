@@ -51,6 +51,8 @@ export default function CampaignsPage() {
   const [smsSending, setSmsSending] = useState(false)
   const [smsCount, setSmsCount] = useState(0)
   const [confirmAction, setConfirmAction] = useState(null) // { title, message, onConfirm, danger }
+  const [inlineEditId, setInlineEditId] = useState(null)
+  const [inlineEditVal, setInlineEditVal] = useState('')
   const { action, consume } = useCommandAction()
   const pendingSends = useRef({}) // { [campaignId]: { pollCount: number, intervalId: any } }
 
@@ -561,7 +563,35 @@ export default function CampaignsPage() {
                 const status = c.status || 'draft'; const isBusy = busyId === c.id; const isConfirmingDelete = confirmDeleteId === c.id
                 return (
                   <tr key={c.id} className="border-t-2 border-brutal-fg hover:bg-brutal-yellow/10 transition">
-                    <td className="p-3"><div className="font-bold text-brutal-fg">{c.title || c.name}</div><div className="text-xs font-bold text-brutal-muted mt-0.5">{c.subject}</div></td>
+                    <td className="p-3">
+                      {inlineEditId === c.id ? (
+                        <input
+                          type="text"
+                          value={inlineEditVal}
+                          onChange={e => setInlineEditVal(e.target.value)}
+                          onBlur={async () => {
+                            if (inlineEditVal.trim() && inlineEditVal !== (c.title || c.name)) {
+                              await campaignsAPI.update(workspaceId, c.id, { title: inlineEditVal.trim() })
+                              toast.addToast('Campaign renamed', 'success')
+                            }
+                            setInlineEditId(null)
+                            loadCampaigns()
+                          }}
+                          onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setInlineEditId(null) }}
+                          className="px-2 py-1 border-3 border-brutal-fg text-sm focus:outline-none bg-brutal-yellow/20"
+                          autoFocus
+                        />
+                      ) : (
+                        <div
+                          className="font-bold text-brutal-fg cursor-pointer hover:text-brutal-green transition"
+                          onClick={(e) => { e.stopPropagation(); setInlineEditId(c.id); setInlineEditVal(c.title || c.name || '') }}
+                          title="Click to rename"
+                        >
+                          {c.title || c.name}
+                        </div>
+                      )}
+                      <div className="text-xs font-bold text-brutal-muted mt-0.5">{c.subject}</div>
+                    </td>
                     <td className="p-3 text-xs font-bold text-brutal-fg/80 uppercase tracking-wider hidden sm:table-cell">{getAudienceLabel(c.audience)}</td>
                     <td className="p-3">
                       <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${pendingSends.current[c.id] ? 'bg-brutal-yellow text-brutal-fg border-2 border-brutal-fg animate-pulse' : STATUS_STYLES[status]}`}>
