@@ -31,6 +31,8 @@ export default function CampaignsPage() {
   const [busyId, setBusyId] = useState(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [viewMode, setViewMode] = useState('table')
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date().getMonth())
+  const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear())
   const [editingId, setEditingId] = useState(null)
   const [editCampaign, setEditCampaign] = useState(null)
   const [editContent, setEditContent] = useState('')
@@ -289,6 +291,7 @@ export default function CampaignsPage() {
           <div className="flex border-3 border-brutal-fg bg-white overflow-hidden">
             <button onClick={() => setViewMode('table')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition ${viewMode === 'table' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>▤ Table</button>
             <button onClick={() => setViewMode('cards')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'cards' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>▥ Cards</button>
+            <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'calendar' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>📅 Calendar</button>
           </div>
           <button onClick={startNewCampaign} className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal hover:-translate-y-0.5 transition active:translate-y-0">+ New Campaign</button>
           <button
@@ -562,6 +565,62 @@ export default function CampaignsPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* ======== Calendar View ======== */}
+      {viewMode === 'calendar' && (
+        (() => {
+          const months = ['January','February','March','April','May','June','July','August','September','October','November','December']
+          const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate()
+          const firstDay = new Date(calendarYear, calendarMonth, 1).getDay()
+          const today = new Date()
+          const calendarDays = []
+          for (let i = 0; i < firstDay; i++) calendarDays.push(null)
+          for (let d = 1; d <= daysInMonth; d++) calendarDays.push(d)
+          const getDayCampaigns = (day) => {
+            if (!day) return []
+            const dateStr = `${calendarYear}-${String(calendarMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
+            return campaigns.filter(c => {
+              const d = c.scheduled_for || c.last_sent_at || c.created_at
+              return d && d.startsWith(dateStr)
+            })
+          }
+
+          return (
+            <div className="border-3 border-brutal-fg bg-white shadow-brutal">
+              <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-5 py-3 flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-3">
+                  <button onClick={() => { if (calendarMonth===0) { setCalendarMonth(11); setCalendarYear(y=>y-1) } else setCalendarMonth(m=>m-1) }} className="px-3 py-1 border-2 border-brutal-fg bg-white text-xs font-bold hover:bg-brutal-surface">←</button>
+                  <span className="font-heading text-xl uppercase">{months[calendarMonth]} {calendarYear}</span>
+                  <button onClick={() => { if (calendarMonth===11) { setCalendarMonth(0); setCalendarYear(y=>y+1) } else setCalendarMonth(m=>m+1) }} className="px-3 py-1 border-2 border-brutal-fg bg-white text-xs font-bold hover:bg-brutal-surface">→</button>
+                </div>
+                <button onClick={() => { setCalendarMonth(today.getMonth()); setCalendarYear(today.getFullYear()) }} className="px-3 py-1 border-2 border-brutal-fg bg-white text-[10px] font-bold uppercase">Today</button>
+              </div>
+              <div className="grid grid-cols-7 border-b-2 border-brutal-fg">
+                {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+                  <div key={d} className="p-2 text-center text-[10px] font-bold uppercase tracking-wider bg-brutal-surface border-r border-brutal-fg/20 last:border-r-0">{d}</div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7">
+                {calendarDays.map((day, i) => {
+                  const dayCamps = getDayCampaigns(day)
+                  const isToday = day === today.getDate() && calendarMonth === today.getMonth() && calendarYear === today.getFullYear()
+                  return (
+                    <div key={i} className={`min-h-[60px] sm:min-h-[80px] p-1.5 border-r border-b border-brutal-fg/20 ${day ? 'hover:bg-brutal-yellow/5' : 'bg-brutal-bg/50'} ${isToday ? 'ring-2 ring-brutal-green' : ''}`}>
+                      {day && <p className={`text-xs font-bold mb-0.5 ${isToday ? 'text-brutal-green' : ''}`}>{day}</p>}
+                      {dayCamps.slice(0, 2).map(c => (
+                        <div key={c.id} className={`text-[8px] font-bold uppercase px-1 py-0.5 mb-0.5 truncate ${c.status === 'sent' ? 'bg-brutal-green/20 text-brutal-green' : c.status === 'scheduled' ? 'bg-brutal-yellow/30 text-brutal-fg' : 'bg-brutal-surface text-brutal-muted'}`}>
+                          {c.title || c.name || 'Draft'}
+                        </div>
+                      ))}
+                      {dayCamps.length > 2 && <div className="text-[7px] text-brutal-muted font-bold">+{dayCamps.length-2} more</div>}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()
       )}
 
       {/* Test email modal */}

@@ -30,6 +30,7 @@ const ToolbarButton = ({ active, onClick, children, title }) => (
 export default function EmailEditor({ content, onChange, onSave, saving }) {
   const [showTags, setShowTags] = useState(false)
   const [previewMode, setPreviewMode] = useState(null) // null=edit, 'mobile'
+  const [splitMode, setSplitMode] = useState(false) // side-by-side editor + preview
   const [htmlMode, setHtmlMode] = useState(false)
   const [htmlValue, setHtmlValue] = useState('')
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle' | 'unsaved' | 'saving' | 'saved'
@@ -220,6 +221,15 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
         </button>
         <button
           type="button"
+          onClick={() => { setSplitMode(!splitMode); setPreviewMode(null); setHtmlMode(false) }}
+          className={`px-3 py-1 border-3 font-bold text-[10px] uppercase tracking-wider transition ${
+            splitMode ? 'border-brutal-fg bg-brutal-yellow text-brutal-fg' : 'border-transparent text-brutal-fg/50 hover:text-brutal-fg hover:border-brutal-fg'
+          }`}
+        >
+          {splitMode ? '✕ Split' : '◧ Split'}
+        </button>
+        <button
+          type="button"
           onClick={() => setPreviewMode(previewMode ? null : 'mobile')}
           className={`px-3 py-1 border-3 font-bold text-[10px] uppercase tracking-wider transition ${
             previewMode ? 'border-brutal-fg bg-brutal-yellow text-brutal-fg' : 'border-transparent text-brutal-fg/50 hover:text-brutal-fg hover:border-brutal-fg'
@@ -279,6 +289,23 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
             className="w-full min-h-[300px] px-4 py-3 bg-brutal-bg border-3 border-brutal-fg font-mono text-sm leading-relaxed focus:outline-none focus:bg-brutal-yellow/10 resize-y"
             spellCheck={false}
           />
+        </div>
+      ) : splitMode ? (
+        <div className="flex flex-col lg:flex-row divide-y-3 lg:divide-y-0 lg:divide-x-3 divide-brutal-fg min-h-[300px]">
+          {/* Left: Editor */}
+          <div className="flex-1">
+            <div className="border-b-2 border-brutal-fg/20 bg-brutal-surface px-3 py-1">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">✏️ Editor</span>
+            </div>
+            <EditorContent editor={editor} />
+          </div>
+          {/* Right: Rendered Preview */}
+          <div className="flex-1 bg-white">
+            <div className="border-b-2 border-brutal-fg/20 bg-brutal-surface px-3 py-1">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">📱 Preview</span>
+            </div>
+            <div className="p-4 prose prose-sm max-w-none text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: editor?.getHTML() || '' }} />
+          </div>
         </div>
       ) : (
         <div className={previewMode === 'mobile' ? 'max-w-[375px] mx-auto border-x-3 border-brutal-fg' : ''}>
