@@ -16,6 +16,8 @@ import './App.css'
 // Pages
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
+import PrivacyPage from './pages/PrivacyPage'
+import TermsPage from './pages/TermsPage'
 import DashboardLayout from './layouts/DashboardLayout'
 import DashboardHome from './pages/Dashboard/Home'
 import SubscribersPage from './pages/Dashboard/Subscribers'
@@ -197,6 +199,20 @@ function App() {
             path="/"
             element={
               <ErrorBoundary><LandingPage /></ErrorBoundary>
+            }
+          />
+
+          <Route
+            path="/privacy"
+            element={
+              <PrivacyPage />
+            }
+          />
+
+          <Route
+            path="/terms"
+            element={
+              <TermsPage />
             }
           />
 

@@ -336,9 +336,9 @@ export default function WidgetsPage() {
               <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Widget Size</label>
               <div className="flex border-3 border-brutal-fg overflow-hidden">
                 {[
-                  { value: 'small', label: 'Small', desc: 'Compact inline' },
-                  { value: 'medium', label: 'Medium', desc: 'Standard card' },
-                  { value: 'large', label: 'Large', desc: 'Full hero' },
+                  { value: 'small', label: 'Small', h: 'h-8', desc: 'Compact' },
+                  { value: 'medium', label: 'Medium', h: 'h-14', desc: 'Standard' },
+                  { value: 'large', label: 'Large', h: 'h-20', desc: 'Hero' },
                 ].map((opt) => (
                   <button
                     key={opt.value}
@@ -346,6 +346,7 @@ export default function WidgetsPage() {
                     onClick={() => updateField('size', opt.value)}
                     className={`flex-1 px-3 py-2 text-xs font-bold uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ${form.size === opt.value ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}
                   >
+                    <div className={`${opt.h} w-full border-2 mb-1 transition-colors ${form.size === opt.value ? 'border-brutal-fg bg-brutal-fg/20' : 'border-brutal-fg/30 bg-brutal-fg/5'}`} />
                     {opt.label}
                   </button>
                 ))}

@@ -598,7 +598,7 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-2 gap-5">
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
-                      Trigger Type
+                      When should this run?
                     </label>
                     <select
                       value={newAutomation.trigger_type}
@@ -610,16 +610,16 @@ export default function SettingsPage() {
                       }
                       className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-bold focus:outline-none"
                     >
-                      <option value="subscriber_joined">Subscriber Joined</option>
-                      <option value="lead_magnet_claimed">Lead Magnet Claimed</option>
-                      <option value="location_change">Location Changed</option>
-                      <option value="custom_webhook">Custom Webhook</option>
+                      <option value="subscriber_joined">When someone subscribes</option>
+                      <option value="lead_magnet_claimed">When a lead magnet is downloaded</option>
+                      <option value="location_change">When a subscriber moves locations</option>
+                      <option value="custom_webhook">When an external app notifies us</option>
                     </select>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
-                      Action Type
+                      What should happen?
                     </label>
                     <select
                       value={newAutomation.action_type}
@@ -631,9 +631,9 @@ export default function SettingsPage() {
                       }
                       className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-bold focus:outline-none"
                     >
-                      <option value="send_email">Send Email</option>
-                      <option value="add_to_list">Add to List</option>
-                      <option value="send_notification">Send Notification</option>
+                      <option value="send_email">Send an email</option>
+                      <option value="add_to_list">Add to a list</option>
+                      <option value="send_notification">Send a notification</option>
                     </select>
                   </div>
                 </div>

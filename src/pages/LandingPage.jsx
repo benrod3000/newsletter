@@ -11,7 +11,7 @@ import {
   Menu, X, ChevronRight, CheckCircle,
   Globe, Layers, Sparkles, ArrowRight, ExternalLink,
   Share2, Activity, Radio, Smartphone, Clock,
-  Code, FileText, Shield, GitBranch,
+  Code, FileText, Shield,
 } from 'lucide-react'
 
 /* ── Local helpers ── */
@@ -119,9 +119,6 @@ const FOOTER_LINKS = [
   { heading: 'Product', links: [
     { label: 'Features', href: '#features' },
     { label: 'Demo', href: '/demo' },
-  ]},
-  { heading: 'Developers', links: [
-    { label: 'GitHub', href: 'https://github.com/benrod3000/newsletter', icon: GitBranch },
   ]},
   { heading: 'Company', links: [
     { label: 'Privacy', href: '/privacy' },

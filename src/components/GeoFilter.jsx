@@ -78,16 +78,16 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   }, [])
 
   // Load Leaflet map when a ZIP is resolved
-  const mapInitialized = useRef(false)
+  const mapRef = useRef(null)
 
+  // Initialize the map once per ZIP resolve (NOT on radius changes)
   useEffect(() => {
     if (!resolved || !open) return
-
-    const mapId = `map-${zip}`
-    const mapEl = document.getElementById(mapId)
+    const mapEl = document.getElementById(`map-${zip}`)
     if (!mapEl) return
 
-    // Load Leaflet CSS if not already loaded
+    let cancelled = false
+
     const loadCss = () => {
       return new Promise((resolve) => {
         if (document.getElementById('leaflet-css')) { resolve(); return }
@@ -100,24 +100,26 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       })
     }
 
-    // Load Leaflet JS and init map
     const initMap = async () => {
       await loadCss()
-
       if (typeof L === 'undefined') {
-        const script = document.createElement('script')
-        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
-        await new Promise((resolve) => { script.onload = resolve; document.body.appendChild(script) })
+        await new Promise((resolve) => {
+          const script = document.createElement('script')
+          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+          script.onload = resolve
+          document.body.appendChild(script)
+        })
       }
+      if (cancelled) return
 
-      // Remove old map if exists
-      const safeId = mapId.replace(/"/g, '\\"');
-      const existing = document.querySelector(`[id="${safeId}"] .leaflet-container`);
-      if (existing && window._subscriberMap) {
-        window._subscriberMap.remove()
-      }
+      // Remove existing map
+      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null }
 
-      const map = L.map(mapId, {
+      // Wait for panel animation (300ms transition) before init
+      await new Promise(r => setTimeout(r, 450))
+      if (cancelled) return
+
+      const map = L.map(mapEl, {
         center: [resolved.lat, resolved.lng],
         zoom: 11,
         zoomControl: true,
@@ -128,55 +130,55 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
         maxZoom: 18,
       }).addTo(map)
 
-      // Radius circle — brutalist style
-      L.circle([resolved.lat, resolved.lng], {
-        radius: radius * 1609.34,
-        color: '#2f7f5f',
-        weight: 3,
-        fillOpacity: 0,
-        dashArray: '6, 8',
-      }).addTo(map)
-
       // Center marker
       L.circleMarker([resolved.lat, resolved.lng], {
-        radius: 7,
-        color: '#0a0a0a',
-        fillColor: '#f5e642',
-        fillOpacity: 1,
-        weight: 3,
+        radius: 7, color: '#0a0a0a', fillColor: '#f5e642', fillOpacity: 1, weight: 3,
       }).addTo(map)
 
-      // Subscriber pins — colored by health score
+      // Initial radius circle
+      L.circle([resolved.lat, resolved.lng], {
+        radius: radius * 1609.34, color: '#2f7f5f', weight: 3, fillOpacity: 0, dashArray: '6, 8',
+      }).addTo(map)
+
+      // Subscriber pins
       subscribers.forEach(s => {
         if (!s.latitude || !s.longitude) return
         const colors = { active: '#2f7f5f', at_risk: '#f5e642', cold: '#e03131' }
         const sizes = { active: 7, at_risk: 5, cold: 3 }
         L.circleMarker([s.latitude, s.longitude], {
-          radius: sizes[s.health_score] || 4,
-          color: '#0a0a0a',
-          fillColor: colors[s.health_score] || '#a8a49a',
-          fillOpacity: 1,
-          weight: 2,
-        }).addTo(map)
-          .bindTooltip(`${s.email || ''}${s.distance ? '<br/>' + Math.round(s.distance) + ' mi' : ''}`, {
-            direction: 'top',
-            className: 'bg-white border-2 border-brutal-fg text-[10px] font-mono font-bold p-1',
-          })
+          radius: sizes[s.health_score] || 4, color: '#0a0a0a',
+          fillColor: colors[s.health_score] || '#a8a49a', fillOpacity: 1, weight: 2,
+        }).addTo(map).bindTooltip(`${s.email || ''}${s.distance ? '<br/>' + Math.round(s.distance) + ' mi' : ''}`, {
+          direction: 'top', className: 'bg-white border-2 border-brutal-fg text-[10px] font-mono font-bold p-1',
+        })
       })
 
-      window._subscriberMap = map
-      setTimeout(() => { map.invalidateSize(); map.invalidateSize() }, 350)
+      mapRef.current = map
+      // Triple invalidateSize for safety
+      requestAnimationFrame(() => {
+        map.invalidateSize()
+        requestAnimationFrame(() => map.invalidateSize())
+      })
     }
 
     initMap()
 
-    return () => {
-      if (window._subscriberMap) {
-        window._subscriberMap.remove()
-        window._subscriberMap = null
+    return () => { cancelled = true; if (mapRef.current) { mapRef.current.remove(); mapRef.current = null } }
+  }, [resolved, open]) // NOT radius — circle updated separately
+
+  // Update radius circle without destroying the map
+  useEffect(() => {
+    if (!mapRef.current) return
+    // Remove old radius circles
+    mapRef.current.eachLayer((layer) => {
+      if (layer instanceof L.Circle && !(layer instanceof L.CircleMarker)) {
+        mapRef.current.removeLayer(layer)
       }
-    }
-  }, [resolved, radius, open])
+    })
+    L.circle([resolved.lat, resolved.lng], {
+      radius: radius * 1609.34, color: '#2f7f5f', weight: 3, fillOpacity: 0, dashArray: '6, 8',
+    }).addTo(mapRef.current)
+  }, [radius, resolved])
 
   function applyFilter() {
     if (!resolved) return
