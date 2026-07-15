@@ -74,18 +74,18 @@ export const PILLARS = [
 
 export const FOOTER_LINKS = [
   { heading: 'Product', links: [
-    { label: 'Features', href: '#features' },
+    { label: 'Features', href: '/#features' },
     { label: 'Demo', href: '/demo' },
-    { label: 'Pricing', href: '#pricing' },
+    { label: 'Pricing', href: '/#pricing' },
   ]},
   { heading: 'Resources', links: [
-    { label: 'Documentation', href: '#' },
-    { label: 'API', href: '#' },
-    { label: 'Widget Embed', href: '#' },
+    { label: 'Documentation', href: '/docs' },
+    { label: 'API', href: '/docs/api/overview' },
+    { label: 'Widget Embed', href: '/docs/quickstart' },
   ]},
   { heading: 'Company', links: [
     { label: 'Privacy', href: '/privacy' },
     { label: 'Terms', href: '/terms' },
-    { label: 'Support', href: '#' },
+    { label: 'Support', href: 'mailto:support@veloce.app' },
   ]},
 ]
