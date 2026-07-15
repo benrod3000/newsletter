@@ -502,9 +502,9 @@ export default function LandingPage() {
                         <p className="text-xl sm:text-2xl font-bold">Hey <span className="text-brutal-green" id="merge-demo">Alex</span>! 👋</p>
                         <p className="text-sm text-brutal-muted mt-2">Your event at <strong id="location-demo">South Congress</strong> is coming up. We've got <strong id="count-demo">47</strong> subscribers within 5 miles ready to hear about it.</p>
                         <div className="mt-3 flex flex-wrap gap-2">
-                          <span className="text-[10px] font-bold text-brutal-green border-2 border-brutal-green px-2 py-0.5 flex items-center gap-1"><CheckCircle size={10} /> {{first_name}}</span>
-                          <span className="text-[10px] font-bold text-brutal-yellow-dark border-2 border-brutal-yellow-dark px-2 py-0.5 flex items-center gap-1"><MapPin size={10} /> {{city}}</span>
-                          <span className="text-[10px] font-bold text-brutal-muted border-2 border-brutal-muted px-2 py-0.5 flex items-center gap-1"><BarChart3 size={10} /> {{unsubscribe_url}}</span>
+                          <span className="text-[10px] font-bold text-brutal-green border-2 border-brutal-green px-2 py-0.5 flex items-center gap-1"><CheckCircle size={10} /> {'{{first_name}}'}</span>
+                          <span className="text-[10px] font-bold text-brutal-yellow-dark border-2 border-brutal-yellow-dark px-2 py-0.5 flex items-center gap-1"><MapPin size={10} /> {'{{city}}'}</span>
+                          <span className="text-[10px] font-bold text-brutal-muted border-2 border-brutal-muted px-2 py-0.5 flex items-center gap-1"><BarChart3 size={10} /> {'{{unsubscribe_url}}'}</span>
                         </div>
                       </div>
                     </div>
