@@ -43,6 +43,10 @@ export default function CampaignsPage() {
   const [testEmail, setTestEmail] = useState('')
   const [testSending, setTestSending] = useState(false)
   const [showSubjectSuggestions, setShowSubjectSuggestions] = useState(false)
+  const [smsOpen, setSmsOpen] = useState(false)
+  const [smsMessage, setSmsMessage] = useState('')
+  const [smsSending, setSmsSending] = useState(false)
+  const [smsCount, setSmsCount] = useState(0)
   const { action, consume } = useCommandAction()
   const pendingSends = useRef({}) // { [campaignId]: { pollCount: number, intervalId: any } }
 
@@ -287,9 +291,70 @@ export default function CampaignsPage() {
             <button onClick={() => setViewMode('cards')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'cards' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>▥ Cards</button>
           </div>
           <button onClick={startNewCampaign} className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal hover:-translate-y-0.5 transition active:translate-y-0">+ New Campaign</button>
+          <button
+            onClick={async () => {
+              setSmsOpen(!smsOpen)
+              if (!smsOpen) {
+                try {
+                  const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+                  const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/campaigns/sms`, { headers: { Authorization: `Bearer ${token}` } })
+                  const data = await res.json()
+                  setSmsCount(data.reachable || 0)
+                } catch { setSmsCount(0) }
+              }
+            }}
+            className="px-3 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-[10px] uppercase tracking-wider hover:shadow-brutal transition flex items-center gap-1.5"
+          >
+            📱 SMS/RC{smsOpen ? 'S ▲' : 'S ▼'}
+          </button>
         </div>
       </div>
-
+      {/* SMS / RCS Panel */}
+      {smsOpen && (
+        <div className="border-3 border-brutal-fg bg-white p-5 space-y-4 animate-fade-up">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-heading text-xl uppercase tracking-wide">📱 SMS / RCS Campaign</h3>
+              <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider mt-0.5">
+                {smsCount > 0 ? `${smsCount} subscribers with phone consent` : 'Loading...'} · RCS on Android, SMS fallback on iOS
+              </p>
+            </div>
+            <span className="text-[9px] font-bold bg-brutal-surface px-2 py-1 border border-brutal-fg uppercase">Beta</span>
+          </div>
+          <textarea
+            value={smsMessage}
+            onChange={(e) => setSmsMessage(e.target.value)}
+            placeholder="Your message here (160 character limit suggested for SMS)"
+            maxLength={320}
+            rows={3}
+            className="w-full px-4 py-3 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 resize-y"
+          />
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-brutal-muted font-bold">{smsMessage.length}/320 characters</span>
+            <button
+              onClick={async () => {
+                if (!smsMessage.trim()) { toast.addToast('Enter a message', 'warning'); return }
+                setSmsSending(true)
+                try {
+                  const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+                  const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/campaigns/sms`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ message: smsMessage.trim() }),
+                  })
+                  const data = await res.json()
+                  if (data.scheduled) toast.addToast(`SMS scheduled for ${data.scheduled} recipients`, 'success')
+                  else toast.addToast(data.error || 'Failed', 'error')
+                } catch { toast.addToast('Failed to send', 'error') }
+                finally { setSmsSending(false) }
+              }}
+              disabled={smsSending || !smsMessage.trim()}
+              className="px-5 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition disabled:opacity-50"
+            >
+              {smsSending ? 'Sending...' : `Send to ${smsCount} contacts`}
+            </button>
+          </div>
+        </div>
+      )}
       {/* ======== EDIT DRAFT PANEL (also used for new campaigns) ======== */}
       {(editingId || editingId === 'new') && (
         <div className="border-3 border-brutal-fg bg-white shadow-brutal animate-fade-up">
