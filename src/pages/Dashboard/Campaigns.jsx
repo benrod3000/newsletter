@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import { campaignsAPI, listsAPI } from '../../lib/api'
+import { campaignsAPI, listsAPI, templatesAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import Button from '../../components/ui/Button'
 import { useToast } from '../../components/Toast'
@@ -497,7 +497,23 @@ export default function CampaignsPage() {
               <div className="flex gap-2">
                 {editingId !== 'new' && (
                   <button
-                    onClick={() => { toast.addToast('Save as Template — coming soon', 'info') }}
+                    onClick={async () => {
+                      const name = prompt('Template name:', editCampaign?.title || editCampaign?.name || '')
+                      if (!name?.trim()) return
+                      try {
+                        await templatesAPI.create(workspaceId, {
+                          name: name.trim(),
+                          subject: editSubject,
+                          editor_html: editContent,
+                          audience: editAudience,
+                          category: 'campaign',
+                        })
+                        toast.addToast(`Saved "${name.trim()}" as template`, 'success')
+                      } catch (err) {
+                        const apiErr = err?.response?.data?.error
+                        toast.addToast(apiErr || 'Failed to save template', 'error')
+                      }
+                    }}
                     disabled={autosaving}
                     className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-[10px] uppercase tracking-wider hover:bg-brutal-surface transition disabled:opacity-50"
                   >

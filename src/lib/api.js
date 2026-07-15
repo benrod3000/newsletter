@@ -74,6 +74,13 @@ export const campaignsAPI = {
     api.post(`/api/clients/${workspaceId}/campaigns/${id}/test`, { email }),
 }
 
+export const templatesAPI = {
+  list: (workspaceId) =>
+    api.get(`/api/admin/campaigns/templates`),
+  create: (workspaceId, data) =>
+    api.post(`/api/admin/campaigns/templates`, data),
+}
+
 // list/create existed already. remove() calls the new
 // DELETE /api/clients/{workspaceId}/subscriber-lists/{id} route.
 export const listsAPI = {
