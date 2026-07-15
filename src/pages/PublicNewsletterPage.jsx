@@ -10,19 +10,20 @@ export default function PublicNewsletterPage() {
 
   useEffect(() => {
     if (!slug) return
-    // Fetch the rendered HTML from the backend
     fetch(`${API_BASE}/newsletter/${slug}`)
       .then(async (res) => {
         if (!res.ok) throw new Error('Not found')
         const text = await res.text()
-        // Extract just the content div
         const match = text.match(/<div class="content">([\s\S]*)<\/div>\s*<\/body>/i)
         const metaMatch = text.match(/<title>([^<]*)<\/title>/)
-        if (metaMatch) setMeta({ title: metaMatch[1], error: false })
+        const title = metaMatch ? metaMatch[1] : 'Newsletter'
+        if (metaMatch) setMeta({ title, error: false })
+        document.title = title
         setHtml(match ? match[1] : text)
       })
       .catch(() => {
         setMeta({ title: 'Not found', error: true })
+        document.title = 'Not found | Veloce'
       })
   }, [slug])
 
