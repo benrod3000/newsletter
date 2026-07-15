@@ -35,7 +35,11 @@ export default function CommandPalette({ onAction }) {
   const filtered = useMemo(() => {
     if (!query.trim()) return COMMANDS
     const q = query.toLowerCase()
-    return COMMANDS.map((group) => ({
+
+    // Check if query looks like an email or name search
+    const looksLikeSearch = q.includes('@') || q.length >= 3
+
+    let results = COMMANDS.map((group) => ({
       ...group,
       items: group.items.filter(
         (item) =>
@@ -45,6 +49,18 @@ export default function CommandPalette({ onAction }) {
           item.shortcut?.toLowerCase().includes(q)
       ),
     })).filter((g) => g.items.length > 0)
+
+    // Add a "Search subscribers for..." item if query looks like a real search
+    if (looksLikeSearch && results.length === 0) {
+      results = [
+        { group: 'Search', items: [
+          { id: 'search-subscribers', label: `Find "${query}" in subscribers`, description: 'Search your subscriber list for this email or name', keywords: [], action: 'navigate-subscribers', icon: Users },
+          { id: 'search-campaigns', label: `Find "${query}" in campaigns`, description: 'Search your campaigns for this name', keywords: [], action: '/dashboard/campaigns', icon: Mail },
+        ]},
+      ]
+    }
+
+    return results
   }, [query])
 
   const allItems = useMemo(() => filtered.flatMap((g) => g.items), [filtered])

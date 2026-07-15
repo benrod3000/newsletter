@@ -42,12 +42,19 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [days, setDays] = useState(14)
+  const [heatmap, setHeatmap] = useState(null)
+
+  useEffect(() => { if (workspaceId) loadOverview() }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  , [workspaceId, days])
 
   useEffect(() => {
-    if (workspaceId) loadOverview()
-    document.title = 'Analytics — Veloce'
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workspaceId, days])
+    if (!workspaceId) return
+    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+    fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/analytics/heatmap`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(r => r.json()).then(d => setHeatmap(d)).catch(() => {})
+  }, [workspaceId])
 
   async function loadOverview() {
     setLoading(true)
@@ -119,6 +126,52 @@ export default function AnalyticsPage() {
               title="No growth data yet"
               description="Subscriber growth will appear here once you have history to show."
             />
+          )}
+
+          {/* Email Open Heatmap */}
+          {heatmap && heatmap.totalOpens > 0 && (
+            <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
+              <h3 className="font-heading text-xl uppercase tracking-wide mb-4">When Your Emails Get Opened</h3>
+              <p className="text-xs text-brutal-muted mb-4">
+                Best time: <strong className="text-brutal-green">{heatmap.bestHour}:00</strong> &middot;
+                Best day: <strong className="text-brutal-green">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][heatmap.bestDay]}</strong> &middot;
+                Based on {heatmap.totalOpens.toLocaleString()} opens
+              </p>
+
+              {/* Hour-of-day bars */}
+              <div className="mb-4">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">By Hour of Day</p>
+                <div className="flex items-end gap-0.5 h-16">
+                  {heatmap.hours.map((h) => (
+                    <div key={h.hour} className="flex-1 flex flex-col items-center gap-1 group">
+                      <div
+                        className="w-full bg-brutal-green border border-brutal-fg hover:bg-brutal-green-light transition"
+                        style={{ height: `${Math.max(h.pct, 2)}%`, opacity: h.pct / 100 + 0.15 }}
+                        title={`${h.count} opens at ${h.hour}:00`}
+                      />
+                      <span className="text-[8px] font-bold text-brutal-muted">{h.hour}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Day-of-week bars */}
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">By Day of Week</p>
+                <div className="flex items-end gap-1 h-12">
+                  {heatmap.days.map((d) => (
+                    <div key={d.day} className="flex-1 flex flex-col items-center gap-1 group">
+                      <div
+                        className="w-full bg-brutal-yellow border border-brutal-fg hover:bg-brutal-yellow-dark transition"
+                        style={{ height: `${Math.max(d.pct, 4)}%`, opacity: d.pct / 100 + 0.2 }}
+                        title={`${d.count} opens on ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.day]}`}
+                      />
+                      <span className="text-[8px] font-bold text-brutal-muted">{['S','M','T','W','T','F','S'][d.day]}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
 
           <div className="border-3 border-brutal-fg overflow-x-auto bg-white">
