@@ -46,6 +46,39 @@ export default function CampaignsPage() {
   const [testSending, setTestSending] = useState(false)
   const [showSubjectSuggestions, setShowSubjectSuggestions] = useState(false)
   const { action, consume } = useCommandAction()
+  const pendingSends = useRef({}) // { [campaignId]: { pollCount: number, intervalId: any } }
+
+  function startPollingSend(id) {
+    if (pendingSends.current[id]) return
+    let pollCount = 0
+    const intervalId = setInterval(async () => {
+      pollCount++
+      try {
+        const { data } = await campaignsAPI.list(workspaceId)
+        const updated = (data.campaigns || []).find(c => c.id === id)
+        if (updated && updated.status === 'sent') {
+          clearInterval(intervalId)
+          delete pendingSends.current[id]
+          await loadCampaigns()
+          toast.addToast(`Campaign sent — ${(updated.sent_count || 0).toLocaleString()} delivered`, 'success')
+        } else if (pollCount >= 30) {
+          // 5 min timeout (~10s × 30)
+          clearInterval(intervalId)
+          delete pendingSends.current[id]
+          toast.addToast('Campaign may still be sending — check status later', 'info')
+        }
+      } catch { /* keep polling */ }
+    }, 10000)
+    pendingSends.current[id] = { pollCount, intervalId }
+  }
+
+  useEffect(() => {
+    return () => {
+      // Cleanup all polling intervals on unmount
+      Object.values(pendingSends.current).forEach(p => clearInterval(p.intervalId))
+      pendingSends.current = {}
+    }
+  }, [])
 
   function generateSubjects() {
     if (!editCampaign?.name) return []
@@ -116,7 +149,8 @@ export default function CampaignsPage() {
       toast.addToast('Scheduling campaign for delivery...', 'info')
       await campaignsAPI.schedule(workspaceId, id)
       await loadCampaigns()
-      toast.addToast('Campaign scheduled for delivery', 'success')
+      toast.addToast('Campaign scheduled — tracking delivery...', 'success')
+      startPollingSend(id)
     } catch (err) {
       const apiErr = err?.response?.data?.error
       toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to schedule', 'error')
@@ -434,7 +468,11 @@ export default function CampaignsPage() {
                   <tr key={c.id} className="border-t-2 border-brutal-fg hover:bg-brutal-yellow/10 transition">
                     <td className="p-3"><div className="font-bold text-brutal-fg">{c.title || c.name}</div><div className="text-xs font-bold text-brutal-muted mt-0.5">{c.subject}</div></td>
                     <td className="p-3 text-xs font-bold text-brutal-fg/80 uppercase tracking-wider hidden sm:table-cell">{getAudienceLabel(c.audience)}</td>
-                    <td className="p-3"><span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${STATUS_STYLES[status]}`}>{status}</span></td>
+                    <td className="p-3">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${pendingSends.current[c.id] ? 'bg-brutal-yellow text-brutal-fg border-2 border-brutal-fg animate-pulse' : STATUS_STYLES[status]}`}>
+                        {pendingSends.current[c.id] ? 'sending...' : status}
+                      </span>
+                    </td>
                     <td className="p-3 text-right font-mono font-bold hidden md:table-cell">{(c.sent_count ?? 0).toLocaleString()}</td>
                     <td className="p-3 text-brutal-muted font-mono text-xs hidden md:table-cell">{c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '—'}</td>
                     <td className="p-3 text-right whitespace-nowrap">

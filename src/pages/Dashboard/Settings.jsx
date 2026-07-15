@@ -31,13 +31,61 @@ export default function SettingsPage() {
   const [showAccessKey, setShowAccessKey] = useState(false)
   const [showSecretKey, setShowSecretKey] = useState(false)
 
+  // Smart tag history
+  const [smartTags, setSmartTags] = useState([])
+  const [smartTagsLoading, setSmartTagsLoading] = useState(false)
+  const [smartTagsRunning, setSmartTagsRunning] = useState(false)
+
+  // Auto-clean activity log
+  const [activityLog, setActivityLog] = useState([])
+  const [activityLogLoading, setActivityLogLoading] = useState(false)
+
   useEffect(() => {
     if (workspaceId) {
     document.title = 'Settings — Veloce'
       loadBranding()
       loadAutomations()
+      loadSmartTagHistory()
+      loadActivityLog()
     }
   }, [workspaceId])
+
+  async function loadSmartTagHistory() {
+    setSmartTagsLoading(true)
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/automations/smart-tags/history`, {
+        headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token}` }
+      })
+      const data = await res.json()
+      setSmartTags(data.tags || [])
+    } catch { setSmartTags([]) }
+    finally { setSmartTagsLoading(false) }
+  }
+
+  async function runSmartTagsNow() {
+    setSmartTagsRunning(true)
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/admin/automations/smart-tags/run`, {
+        headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token}` }
+      })
+      const data = await res.json()
+      toast.addToast(`Smart tags evaluated: ${data.evaluated || 0} subscribers, ${data.tagged || 0} tagged`, 'success')
+      loadSmartTagHistory()
+    } catch { toast.addToast('Failed to run smart tags', 'error') }
+    finally { setSmartTagsRunning(false) }
+  }
+
+  async function loadActivityLog() {
+    setActivityLogLoading(true)
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/automations/activity-log`, {
+        headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token}` }
+      })
+      const data = await res.json()
+      setActivityLog(data.runs || [])
+    } catch { setActivityLog([]) }
+    finally { setActivityLogLoading(false) }
+  }
 
   async function loadBranding() {
     try {
@@ -454,13 +502,66 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <p className="text-[10px] font-bold text-brutal-fg/60 uppercase tracking-wider mb-3">{auto.status}</p>
-                <div className="mt-auto pt-3 border-t border-brutal-fg/20">
+                <div className="mt-auto pt-3 border-t border-brutal-fg/20 flex items-center justify-between">
                   <span className={`text-xs font-bold uppercase tracking-wider ${auto.disabled ? 'text-brutal-muted' : 'text-brutal-green'}`}>
                     {auto.disabled ? '⏳ Coming Soon' : '✅ Active, runs daily'}
                   </span>
+                  {auto.id === 'smart-tags' && (
+                    <button
+                      onClick={runSmartTagsNow}
+                      disabled={smartTagsRunning}
+                      className="px-2 py-1 border-2 border-brutal-fg bg-brutal-yellow text-[10px] font-bold uppercase tracking-wider hover:shadow-brutal transition disabled:opacity-50"
+                    >
+                      {smartTagsRunning ? 'Running...' : 'Run Now'}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Smart Tags History */}
+          <div className="border-3 border-brutal-fg bg-white p-5">
+            <h4 className="font-heading text-lg uppercase tracking-wide mb-3">🏷️ Auto-Tags Applied</h4>
+            {smartTagsLoading ? (
+              <p className="text-xs text-brutal-muted font-bold">Loading tags...</p>
+            ) : smartTags.length === 0 ? (
+              <p className="text-xs text-brutal-muted font-bold">No auto-tags applied yet. Tags appear after smart tagging runs.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {smartTags.map((t) => (
+                  <div key={t.tag} className="px-3 py-1.5 border-2 border-brutal-fg bg-brutal-yellow/20 text-xs font-bold flex items-center gap-2">
+                    <span>{t.tag}</span>
+                    <span className="text-brutal-muted text-[10px]">×{t.count}</span>
+                    {t.lastApplied && <span className="text-brutal-muted text-[9px]">last {new Date(t.lastApplied).toLocaleDateString()}</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Auto-Clean Activity Log */}
+          <div className="border-3 border-brutal-fg bg-white p-5">
+            <h4 className="font-heading text-lg uppercase tracking-wide mb-3">🧹 Auto-Clean Activity</h4>
+            {activityLogLoading ? (
+              <p className="text-xs text-brutal-muted font-bold">Loading activity...</p>
+            ) : activityLog.length === 0 ? (
+              <p className="text-xs text-brutal-muted font-bold">No auto-clean activity yet. Runs daily at 2am.</p>
+            ) : (
+              <div className="space-y-3">
+                {activityLog.map((run, i) => (
+                  <div key={i} className="border-l-3 border-brutal-fg pl-3 py-1">
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="font-bold">{new Date(run.timestamp).toLocaleDateString()} {new Date(run.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="text-brutal-green font-bold">🗑️ {run.deleted} deleted</span>
+                    </div>
+                    {run.details?.length > 0 && (
+                      <p className="text-[10px] text-brutal-muted mt-0.5">{run.details.join(', ')}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="border-t-3 border-brutal-fg pt-8">

@@ -96,6 +96,37 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
     setHtmlMode(!htmlMode)
   }, [editor, htmlMode, htmlValue, onChange])
 
+  // ── Link Checker ──
+  const [checkingLinks, setCheckingLinks] = useState(false)
+  const [linkResults, setLinkResults] = useState(null) // null | { total, valid, broken, results: [] }
+
+  const checkLinks = useCallback(async () => {
+    if (!editor) return
+    const html = editor.getHTML()
+    setCheckingLinks(true)
+    setLinkResults(null)
+    try {
+      const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/admin/validate-links`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ html }),
+      })
+      const data = await res.json()
+      setLinkResults({
+        total: data.links?.length || 0,
+        valid: data.validationResults?.filter(r => r.valid)?.length || 0,
+        broken: data.brokenLinks?.length || 0,
+        results: data.validationResults || [],
+        missingUnsub: data.unsubscribeTagMissing,
+      })
+    } catch {
+      setLinkResults({ total: 0, valid: 0, broken: 0, results: [], missingUnsub: false, error: 'Failed to validate links' })
+    } finally {
+      setCheckingLinks(false)
+    }
+  }, [editor])
+
   if (!editor) return null
 
   // Sync save status with parent saving state
@@ -166,6 +197,16 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
           )}
         </div>
 
+        {/* Link checker */}
+        <button
+          type="button"
+          onClick={checkLinks}
+          disabled={checkingLinks}
+          className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider border-2 border-transparent hover:border-brutal-fg transition text-brutal-fg/50 hover:text-brutal-fg disabled:opacity-40"
+        >
+          {checkingLinks ? '🔍 Checking...' : '🔗 Check Links'}
+        </button>
+
         {/* Save + Preview */}
         <span className="flex-1" />
         <button
@@ -195,6 +236,36 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
           {saving ? 'Saving...' : 'Save Draft'}
         </button>
       </div>
+
+      {/* Link Checker Results */}
+      {linkResults && (
+        <div className="border-b-3 border-brutal-fg bg-brutal-bg px-4 py-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-bold uppercase tracking-wider">
+              🔗 Link Check — {linkResults.total} total,{' '}
+              <span className="text-brutal-green">{linkResults.valid} valid</span>
+              {linkResults.broken > 0 && (
+                <><span className="text-brutal-muted">, </span><span className="text-brutal-red">{linkResults.broken} broken</span></>
+              )}
+            </p>
+            <button onClick={() => setLinkResults(null)} className="text-xs font-bold text-brutal-muted hover:text-brutal-fg">×</button>
+          </div>
+          {linkResults.missingUnsub && (
+            <p className="text-[10px] text-brutal-red font-bold">⚠️ Missing <code className="bg-white px-1">{'{{unsubscribe_url}}'}</code> tag — add it for CAN-SPAM compliance</p>
+          )}
+          {linkResults.results.filter(r => !r.valid).map((r, i) => (
+            <div key={i} className="flex items-start gap-2 text-[10px]">
+              <span className="text-brutal-red shrink-0">✗</span>
+              <span className="font-mono break-all text-brutal-red">{r.url}</span>
+              {r.statusCode && <span className="text-brutal-muted shrink-0">(HTTP {r.statusCode})</span>}
+            </div>
+          ))}
+          {linkResults.error && <p className="text-[10px] text-brutal-red font-bold">⚠️ {linkResults.error}</p>}
+          {linkResults.broken === 0 && !linkResults.missingUnsub && (
+            <p className="text-[10px] text-brutal-green font-bold">✓ All links look good</p>
+          )}
+        </div>
+      )}
 
       {/* Editor / Preview */}
       {htmlMode ? (

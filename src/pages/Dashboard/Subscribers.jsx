@@ -68,6 +68,7 @@ export default function SubscribersPage() {
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [bulkRemoving, setBulkRemoving] = useState(false)
+  const [bulkTagging, setBulkTagging] = useState(false)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
 
@@ -395,14 +396,34 @@ export default function SubscribersPage() {
             Export CSV
           </button>
           <button
-            onClick={() => {
+            onClick={async () => {
               const tag = prompt('Tag name:')
-              if (tag) toast.addToast(`Tagged ${selectedIds.size} subscribers with "${tag}"`, 'success')
-              setSelectedIds(new Set())
+              if (!tag) return
+              setBulkTagging(true)
+              try {
+                const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+                const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/tags/bulk`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                  body: JSON.stringify({ subscriberIds: Array.from(selectedIds), tag }),
+                })
+                const data = await res.json()
+                if (data.ok) {
+                  toast.addToast(`Tagged ${data.tagged} subscribers with "${tag}"`, 'success')
+                } else {
+                  toast.addToast(data.error || 'Failed to tag subscribers', 'error')
+                }
+              } catch {
+                toast.addToast('Failed to tag subscribers', 'error')
+              } finally {
+                setBulkTagging(false)
+                setSelectedIds(new Set())
+              }
             }}
-            className="px-4 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition"
+            disabled={bulkTagging}
+            className="px-4 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition disabled:opacity-50"
           >
-            Tag Selected
+            {bulkTagging ? 'Tagging...' : 'Tag Selected'}
           </button>
           <button
             onClick={bulkRemove}

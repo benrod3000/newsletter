@@ -99,6 +99,15 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
           }`}>
             {subscriber.confirmed ? 'confirmed' : 'pending'}
           </span>
+          {subscriber.health_score && (
+            <span className={`inline-block ml-2 mt-3 text-xs font-bold px-2 py-1 border border-brutal-fg ${
+              subscriber.health_score === 'active' ? 'bg-brutal-green/10 text-brutal-green' :
+              subscriber.health_score === 'at_risk' ? 'bg-brutal-yellow/10 text-brutal-yellow-800' :
+              'bg-brutal-red/10 text-brutal-red'
+            }`}>
+              {subscriber.health_score === 'active' ? '🟢' : subscriber.health_score === 'at_risk' ? '🟡' : '🔴'} {subscriber.health_score}
+            </span>
+          )}
         </div>
 
         {/* Profile info */}
