@@ -28,6 +28,7 @@ const WIDGET_TYPES = [
   { value: 'event_rsvp', label: 'Event RSVP', desc: 'Collects name + email for event registration' },
   { value: 'coupon', label: 'Coupon Code', desc: 'Displays a coupon code after signup' },
   { value: 'feedback', label: 'Feedback Form', desc: 'Collects email + brief message' },
+  { value: 'sms_list', label: 'SMS-Only List', desc: 'Collects phone numbers, SMS opt-in by default' },
 ]
 
 export default function WidgetsPage() {

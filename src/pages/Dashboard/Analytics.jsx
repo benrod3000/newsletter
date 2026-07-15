@@ -43,6 +43,7 @@ export default function AnalyticsPage() {
   const [error, setError] = useState(null)
   const [days, setDays] = useState(14)
   const [heatmap, setHeatmap] = useState(null)
+  const [smsStats, setSmsStats] = useState(null)
 
   useEffect(() => { if (workspaceId) loadOverview() }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -51,9 +52,13 @@ export default function AnalyticsPage() {
   useEffect(() => {
     if (!workspaceId) return
     const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+    // Load heatmap + SMS stats
     fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/analytics/heatmap`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(r => r.json()).then(d => setHeatmap(d)).catch(() => {})
+    fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/campaigns/sms`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(r => r.json()).then(d => setSmsStats(d)).catch(() => {})
   }, [workspaceId])
 
   async function loadOverview() {
@@ -98,6 +103,28 @@ export default function AnalyticsPage() {
             <StatCard label="Avg Open Rate" value={fmtPct(overview?.avg_open_rate)} />
             <StatCard label="Avg Click Rate" value={fmtPct(overview?.avg_click_rate)} />
           </div>
+
+          {/* SMS Stats */}
+          {smsStats && smsStats.reachable > 0 && (
+            <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
+              <h3 className="font-heading text-xl uppercase tracking-wide mb-3">📱 SMS / RCS</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Reachable</p>
+                  <p className="text-2xl font-heading text-brutal-green">{smsStats.reachable}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Sent (est.)</p>
+                  <p className="text-2xl font-heading">—</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Response Rate</p>
+                  <p className="text-2xl font-heading text-brutal-muted">—</p>
+                </div>
+              </div>
+              <p className="text-[9px] text-brutal-muted mt-2">{smsStats.message}</p>
+            </div>
+          )}
 
           {/* Date range toggle */}
           <div className="flex items-center gap-3">

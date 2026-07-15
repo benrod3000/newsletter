@@ -264,7 +264,7 @@ export default function SubscribersPage() {
         <div className="border-3 border-brutal-fg bg-white p-8 space-y-5">
           <h4 className="font-heading text-xl uppercase tracking-wide">Import Subscribers (CSV)</h4>
           <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">
-            Paste CSV or drag a .csv file. Must include an <strong>email</strong> column. Optional: first_name, last_name, phone_number, country, region, city, timezone
+            Paste CSV or drag a .csv file. Must include an <strong>email</strong> column. Optional: first_name, last_name, phone_number (10 digits), country, region, city, timezone
           </p>
           <div
             onDragOver={(e) => { e.preventDefault(); setDragActive(true) }}
