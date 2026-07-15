@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authAPI } from '../lib/api'
+import Input from '../components/ui/Input'
+import Button from '../components/ui/Button'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -59,32 +61,35 @@ export default function SignupPage() {
           )}
 
           <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white border-3 border-brutal-fg px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
-                placeholder="you@example.com" required />
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white border-3 border-brutal-fg px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
-                placeholder="6+ characters" required minLength={6} />
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
-                Workspace Name <span className="text-brutal-muted font-normal">(optional)</span>
-              </label>
-              <input type="text" value={workspaceName} onChange={(e) => setWorkspaceName(e.target.value)}
-                className="w-full bg-white border-3 border-brutal-fg px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
-                placeholder="My Newsletter" />
-            </div>
+            <Input
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="6+ characters"
+              required
+              minLength={6}
+            />
+            <Input
+              label={<span>Workspace Name <span className="text-brutal-muted font-normal">(optional)</span></span>}
+              type="text"
+              value={workspaceName}
+              onChange={(e) => setWorkspaceName(e.target.value)}
+              placeholder="My Newsletter"
+            />
           </div>
 
-          <button type="submit" disabled={loading}
-            className="w-full border-3 border-brutal-fg bg-brutal-green text-white font-bold py-3 text-sm uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 active:shadow-none disabled:opacity-40 disabled:cursor-not-allowed transition">
+          <Button type="submit" disabled={loading} loading={loading} fullWidth size="lg" className="bg-brutal-green text-white border-brutal-fg hover:shadow-brutal active:translate-y-0.5">
             {loading ? 'Creating account...' : 'Create Account'}
-          </button>
+          </Button>
         </form>
 
         <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider text-center">

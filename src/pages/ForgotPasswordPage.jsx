@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
@@ -68,12 +69,14 @@ export default function ForgotPasswordPage() {
             {error && (
               <div className="text-xs font-bold uppercase border-3 border-brutal-fg bg-brutal-yellow p-3 text-brutal-fg">{error}</div>
             )}
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white border-3 border-brutal-fg px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
-                placeholder="you@example.com" required />
-            </div>
+            <Input
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
             <Button variant="primary" fullWidth type="submit" disabled={loading} loading={loading} size="lg">
               {loading ? 'Sending...' : 'Send Reset Link'}
             </Button>

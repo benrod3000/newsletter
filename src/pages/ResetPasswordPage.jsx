@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import axios from 'axios'
 import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
@@ -58,16 +59,18 @@ export default function ResetPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && <div className="text-xs font-bold uppercase border-3 border-brutal-fg bg-brutal-yellow p-3 text-brutal-fg">{error}</div>}
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">New Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white border-3 border-brutal-fg px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
-                placeholder="6+ characters" required minLength={6} />
-            </div>
-            <button type="submit" disabled={loading}
-              className="w-full border-3 border-brutal-fg bg-brutal-green text-white font-bold py-3 text-sm uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 disabled:opacity-40 transition">
+            <Input
+              label="New Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="6+ characters"
+              required
+              minLength={6}
+            />
+            <Button type="submit" disabled={loading} loading={loading} fullWidth size="lg" className="bg-brutal-green text-white border-brutal-fg hover:shadow-brutal">
               {loading ? 'Resetting...' : 'Reset Password'}
-            </button>
+            </Button>
           </form>
         )}
         <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider text-center">
