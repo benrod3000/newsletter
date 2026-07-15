@@ -72,12 +72,12 @@ export default function CampaignsPage() {
           clearInterval(intervalId)
           delete pendingSends.current[id]
           await loadCampaigns()
-          toast.addToast(`Campaign sent — ${(updated.sent_count || 0).toLocaleString()} delivered`, 'success')
+          toast.addToast(`Campaign sent. ${(updated.sent_count || 0).toLocaleString()} delivered.`, 'success')
         } else if (pollCount >= 30) {
           // 5 min timeout (~10s × 30)
           clearInterval(intervalId)
           delete pendingSends.current[id]
-          toast.addToast('Campaign may still be sending — check status later', 'info')
+          toast.addToast('Campaign may still be sending. Check status later.', 'info')
         }
       } catch { /* keep polling */ }
     }, 10000)
@@ -121,7 +121,7 @@ export default function CampaignsPage() {
 
   useEffect(() => {
     if (workspaceId) { loadCampaigns(); loadLists() }
-    document.title = 'Campaigns — Veloce'
+    document.title = 'Campaigns | Veloce'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId])
 
@@ -184,7 +184,7 @@ export default function CampaignsPage() {
           toast.addToast('Scheduling campaign for delivery...', 'info')
           await campaignsAPI.schedule(workspaceId, id)
           await loadCampaigns()
-          toast.addToast('Campaign scheduled — tracking delivery...', 'success')
+          toast.addToast('Campaign scheduled. Tracking delivery...', 'success')
           startPollingSend(id)
         } catch (err) {
           const apiErr = err?.response?.data?.error

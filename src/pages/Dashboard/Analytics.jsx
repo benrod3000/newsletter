@@ -45,7 +45,7 @@ export default function AnalyticsPage() {
   const [heatmap, setHeatmap] = useState(null)
   const [smsStats, setSmsStats] = useState(null)
 
-  useEffect(() => { if (workspaceId) loadOverview() }
+  useEffect(() => { if (workspaceId) { loadOverview(); document.title = 'Analytics | Veloce' } }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   , [workspaceId, days])
 

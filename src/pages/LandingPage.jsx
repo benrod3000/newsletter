@@ -57,10 +57,10 @@ const NAV_ITEMS = [
 ]
 
 const STATS = [
-  { value: '$1', label: 'Starts at $1/month', desc: 'Pay only for what you use — BYO SendGrid or AWS SES' },
+  { value: '$1', label: 'Starts at $1/month', desc: 'Pay only for what you use. BYO SendGrid or AWS SES.' },
   { value: 'BYO', label: 'Bring Your Own Keys', desc: 'Use your existing SendGrid or SES account. No vendor lock-in.' },
   { value: '∞', label: 'Unlimited Workspaces', desc: 'Separate brands, one account. Each workspace keeps its own subscribers.' },
-  { value: '0%', label: 'Zero Monthly Fees', desc: 'No platform fee. No hidden costs. No minimum commit.' },
+  { value: '0%', label: 'Zero Monthly Fees', desc: 'No platform fee, no hidden costs, no minimum commit.' },
 ]
 
 const TESTIMONIALS = [
@@ -82,7 +82,7 @@ const PILLARS = [
     number: '01',
     icon: Share2,
     title: 'Collect Subscribers Anywhere',
-    body: 'Embed a widget on any website. Every signup automatically includes location data — city, state, ZIP, lat/lng. No extra fields. No CSV uploads. Campaigns get smarter from day one.',
+    body: 'Embed a widget on any website. Every signup automatically includes location data: city, state, ZIP, lat/lng. No extra fields, no CSV uploads. Campaigns get smarter from day one.',
     cta: { label: 'See the form in action', to: '/demo' },
     annotation: 'embed one line — geo-enriched subscriber on submit',
   },
@@ -100,7 +100,7 @@ const PILLARS = [
     number: '03',
     icon: Mail,
     title: 'One Campaign. Thousands of Personalized Emails.',
-    body: 'Use merge tags to personalize every send — first name, last name, location, even dynamic content blocks. Built-in editor with TipTap. Track opens, clicks, bounces per subscriber.',
+    body: 'Use merge tags to personalize every send: first name, last name, location, even dynamic content blocks. Built-in editor with TipTap. Track opens, clicks, bounces per subscriber.',
     cta: { label: 'Open the editor', to: '/demo' },
     annotation: 'TipTap rich editor · {{merge_tags}} · open/click tracking',
   },
@@ -532,7 +532,7 @@ export default function LandingPage() {
             Ready to <span className="text-brutal-yellow">take control</span>?
           </h2>
           <p className="text-sm sm:text-base opacity-60 max-w-lg mx-auto leading-relaxed">
-            No monthly fees. No platform lock-in. Just a smarter way to send emails that reach the right people — wherever they are.
+            No monthly fees. No platform lock-in. Just a smarter way to send emails that reach the right people, wherever they are.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link to="/signup" className="px-8 py-4 border-3 border-brutal-yellow bg-brutal-yellow text-brutal-fg font-bold text-sm uppercase tracking-wider hover:shadow-[4px_4px_0px_#f5e642] active:translate-y-0.5 transition inline-flex items-center gap-2">
@@ -554,7 +554,7 @@ export default function LandingPage() {
             <div className="col-span-2 sm:col-span-1">
               <Link to="/" className="font-heading text-xl uppercase tracking-wider hover:text-brutal-green transition-colors">Veloce</Link>
               <p className="text-[10px] text-brutal-muted mt-2 leading-relaxed max-w-[180px]">
-                Email marketing for local businesses — built around location, not complexity.
+                Email marketing for local businesses. Built around location, not complexity.
               </p>
             </div>
 

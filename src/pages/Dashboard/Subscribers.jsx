@@ -82,7 +82,7 @@ export default function SubscribersPage() {
 
   useEffect(() => {
     if (workspaceId) loadSubscribers(statusFilter)
-    document.title = 'Subscribers — Veloce'
+    document.title = 'Subscribers | Veloce'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId, statusFilter])
 
