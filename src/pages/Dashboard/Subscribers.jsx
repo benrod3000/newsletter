@@ -69,6 +69,9 @@ export default function SubscribersPage() {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [bulkRemoving, setBulkRemoving] = useState(false)
   const [bulkTagging, setBulkTagging] = useState(false)
+  const [showListPicker, setShowListPicker] = useState(false)
+  const [bulkMoving, setBulkMoving] = useState(false)
+  const [subscriberLists, setSubscriberLists] = useState([])
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
 
@@ -81,6 +84,14 @@ export default function SubscribersPage() {
     document.title = 'Subscribers — Veloce'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId, statusFilter])
+
+  useEffect(() => {
+    if (!workspaceId) return
+    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+    fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscriber-lists`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json()).then(d => setSubscriberLists(d.lists || d || [])).catch(() => {})
+  }, [workspaceId])
 
   async function loadSubscribers(status) {
     setLoading(true)
@@ -395,6 +406,46 @@ export default function SubscribersPage() {
           >
             Export CSV
           </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowListPicker(!showListPicker)}
+              disabled={bulkMoving}
+              className="px-4 py-2 bg-white border-3 border-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition disabled:opacity-50"
+            >
+              {bulkMoving ? 'Moving...' : 'Move to List'}
+            </button>
+            {showListPicker && (
+              <div className="absolute top-full right-0 mt-1 border-3 border-brutal-fg bg-white shadow-brutal z-40 min-w-[180px]">
+                <div className="border-b-2 border-brutal-fg bg-brutal-yellow px-3 py-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Select List</span>
+                </div>
+                {subscriberLists?.map((list) => (
+                  <button
+                    key={list.id}
+                    onClick={async () => {
+                      setShowListPicker(false)
+                      setBulkMoving(true)
+                      try {
+                        const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+                        await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscriber-lists/${list.id}/members`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                          body: JSON.stringify({ subscriber_ids: Array.from(selectedIds) }),
+                        })
+                        toast.addToast(`Moved ${selectedIds.size} subscribers to "${list.name}"`, 'success')
+                        setSelectedIds(new Set())
+                      } catch {
+                        toast.addToast('Failed to move subscribers', 'error')
+                      } finally { setBulkMoving(false) }
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs font-bold hover:bg-brutal-yellow/20 border-b border-brutal-fg/10 last:border-0"
+                  >
+                    {list.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             onClick={async () => {
               const tag = prompt('Tag name:')
