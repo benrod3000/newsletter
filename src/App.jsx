@@ -29,6 +29,13 @@ const ListsPage = lazy(() => import('./pages/Dashboard/Lists'))
 const AnalyticsPage = lazy(() => import('./pages/Dashboard/Analytics'))
 const SettingsPage = lazy(() => import('./pages/Dashboard/Settings'))
 const WidgetsPage = lazy(() => import('./pages/Dashboard/Widgets'))
+const DocsLayout = lazy(() => import('./pages/Docs/DocsLayout'))
+const DocsIntro = lazy(() => import('./pages/Docs/DocsIntro'))
+const Quickstart = lazy(() => import('./pages/Docs/Quickstart'))
+const Setup = lazy(() => import('./pages/Docs/Setup'))
+const Security = lazy(() => import('./pages/Docs/Security'))
+const FAQ = lazy(() => import('./pages/Docs/FAQ'))
+const Changelog = lazy(() => import('./pages/Docs/Changelog'))
 
 // Fallback spinner for lazy-loaded routes
 function PageLoader() { return <div className="min-h-screen bg-brutal-bg flex items-center justify-center"><div className="h-4 w-4 bg-brutal-fg animate-pulse" /></div> }
@@ -177,6 +184,28 @@ function App() {
 
           {/* Public newsletter archive — no layout wrapper */}
           <Route path="/newsletter/:slug" element={<ErrorBoundary><PublicNewsletterPage /></ErrorBoundary>} />
+
+          {/* Documentation */}
+          <Route path="/docs" element={<ErrorBoundary><DocsLayout /></ErrorBoundary>}>
+            <Route index element={<DocsIntro />} />
+            <Route path="quickstart" element={<Quickstart />} />
+            <Route path="setup" element={<Setup />} />
+            <Route path="security" element={<Security />} />
+            <Route path="faq" element={<FAQ />} />
+            <Route path="changelog" element={<Changelog />} />
+            <Route path="features/newsletters" element={<DocsIntro />} />
+            <Route path="features/subscribers" element={<DocsIntro />} />
+            <Route path="features/widgets" element={<DocsIntro />} />
+            <Route path="features/automations" element={<DocsIntro />} />
+            <Route path="features/analytics" element={<DocsIntro />} />
+            <Route path="features/sms" element={<DocsIntro />} />
+            <Route path="features/templates" element={<DocsIntro />} />
+            <Route path="integrations/sendgrid" element={<Setup />} />
+            <Route path="integrations/ses" element={<Setup />} />
+            <Route path="api/overview" element={<DocsIntro />} />
+            <Route path="api/subscribers" element={<DocsIntro />} />
+            <Route path="api/campaigns" element={<DocsIntro />} />
+          </Route>
 
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />
