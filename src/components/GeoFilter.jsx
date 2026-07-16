@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { MapPin, Loader2 } from 'lucide-react'
 import { resolveZip } from '../lib/geo'
 import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
 
 const PRESETS = [1, 5, 10, 25, 50, 100]
 
