@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
+
 export default function Setup() {
+  useEffect(() => { document.title = 'Setup Guide | Veloce' }, [])
   return (
     <article className="space-y-6">
       <h1 className="text-3xl font-heading uppercase tracking-tight leading-none">Setup Guide</h1>

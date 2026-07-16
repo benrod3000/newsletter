@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
+
 export default function Quickstart() {
+  useEffect(() => { document.title = 'Quickstart | Veloce' }, [])
   return (
     <article className="space-y-6">
       <h1 className="text-3xl font-heading uppercase tracking-tight leading-none">Quickstart</h1>
@@ -16,9 +19,9 @@ export default function Quickstart() {
       <Step number={3} title="Add subscribers">
         <p>Three ways to build your audience:</p>
         <ul className="text-sm text-brutal-fg/70 space-y-1 list-disc list-inside">
-          <li><strong>Import CSV</strong> — Upload a spreadsheet with email addresses</li>
-          <li><strong>Widget</strong> — Embed a signup form on any website</li>
-          <li><strong>Add manually</strong> — Enter an email address directly</li>
+          <li><strong>Import CSV</strong>: Upload a spreadsheet with email addresses</li>
+          <li><strong>Widget</strong>: Embed a signup form on any website</li>
+          <li><strong>Add manually</strong>: Enter an email address directly</li>
         </ul>
       </Step>
 

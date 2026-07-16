@@ -1,5 +1,5 @@
 export function relativeTime(dateStr) {
-  if (!dateStr) return '—'
+  if (!dateStr) return '--'
   const now = Date.now()
   const date = new Date(dateStr).getTime()
   const diff = now - date

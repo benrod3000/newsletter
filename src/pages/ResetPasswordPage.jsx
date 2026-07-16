@@ -1,22 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import axios from 'axios'
 import Btn from '../components/ui/Button'
 import Input from '../components/ui/Input'
+import Turnstile from '../components/Turnstile'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
 export default function ResetPasswordPage() {
+  useEffect(() => { document.title = 'Reset Password | Veloce' }, [])
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') || ''
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState('')
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    if (!turnstileToken) { setError('Please complete the security check.'); return }
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return }
     setLoading(true)
     try {
@@ -68,7 +72,11 @@ export default function ResetPasswordPage() {
               required
               minLength={6}
             />
-            <Btn type="submit" disabled={loading} loading={loading} fullWidth size="lg" className="bg-brutal-green text-white border-brutal-fg hover:shadow-brutal">
+            {!done && <div className="flex justify-center">
+            <Turnstile onVerify={setTurnstileToken} onExpire={function() { setTurnstileToken('') }} />
+          </div>}
+
+          <Btn type="submit" disabled={loading || !turnstileToken} loading={loading} fullWidth size="lg" className="bg-brutal-green text-white border-brutal-fg hover:shadow-brutal">
               {loading ? 'Resetting...' : 'Reset Password'}
             </Btn>
           </form>

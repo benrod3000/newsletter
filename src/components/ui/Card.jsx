@@ -4,7 +4,7 @@ export default function Card({
   accent = false,
   accentColor = 'bg-brutal-yellow',
   hover = false,
-  padding = 'p-5',
+  padding = 'p-6',
   ...props
 }) {
   return (

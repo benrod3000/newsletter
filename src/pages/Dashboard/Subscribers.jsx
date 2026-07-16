@@ -251,7 +251,7 @@ export default function SubscribersPage() {
 
       {/* CSV Import */}
       {showImport && (
-        <div className="border-3 border-brutal-fg bg-white p-8 space-y-5">
+        <div className="border-3 border-brutal-fg bg-white p-8 space-y-6">
           <h4 className="font-heading text-xl uppercase tracking-wide">Import Subscribers (CSV)</h4>
           <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">
             Paste CSV or drag a .csv file. Must include an <strong>email</strong> column. Optional: first_name, last_name, phone_number (10 digits), country, region, city, timezone
@@ -491,7 +491,7 @@ export default function SubscribersPage() {
 
       {/* Add form */}
       {showAddForm && (
-        <div className="border-3 border-brutal-fg bg-white p-8 space-y-5">
+        <div className="border-3 border-brutal-fg bg-white p-8 space-y-6">
           <h4 className="font-heading text-xl uppercase tracking-wide">New Subscriber</h4>
           <div className="grid sm:grid-cols-3 gap-5">
             <div>
@@ -526,7 +526,7 @@ export default function SubscribersPage() {
             </div>
           </div>
           <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">
-            New subscribers are added as unconfirmed (pending) — the same as a normal signup.
+            New subscribers are added as unconfirmed (pending), the same as a normal signup.
           </p>
           <div className="flex gap-3">
             <Btn
@@ -605,7 +605,7 @@ export default function SubscribersPage() {
                       />
                     </td>
                     <td className="p-3 font-bold" title={s.email}>{s.email}</td>
-                    <td className="p-3 text-brutal-muted hidden sm:table-cell" title={name || undefined}>{name || '—'}</td>
+                    <td className="p-3 text-brutal-muted hidden sm:table-cell" title={name || undefined}>{name || '--'}</td>
                     <td className="p-3 hidden sm:table-cell" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-2">
                         <span className={`text-xs font-bold px-2 py-1 border border-brutal-fg ${s.confirmed ? 'bg-brutal-green text-white' : 'bg-brutal-yellow text-brutal-fg'}`}>
@@ -619,7 +619,7 @@ export default function SubscribersPage() {
                       </div>
                     </td>
                     <td className="p-3 text-[11px] text-brutal-muted hidden lg:table-cell">
-                      {[s.city, s.region, s.postal_code].filter(Boolean).join(', ') || '—'}
+                      {[s.city, s.region, s.postal_code].filter(Boolean).join(', ') || '--'}
                     </td>
                     <td className="p-3 text-brutal-muted text-xs hidden md:table-cell" title={s.created_at ? new Date(s.created_at).toLocaleDateString() : undefined}>
                       {relativeTime(s.created_at)}

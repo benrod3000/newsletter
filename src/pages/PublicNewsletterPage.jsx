@@ -3,6 +3,26 @@ import { useParams, Link } from 'react-router-dom'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
+function setPageMeta(title, description) {
+  document.title = title
+  const setMetaTag = (name, content, isProperty) => {
+    if (!content) return
+    const attr = isProperty ? 'property' : 'name'
+    let el = document.querySelector(`meta[${attr}="${name}"]`)
+    if (!el) {
+      el = document.createElement('meta')
+      el.setAttribute(attr, name)
+      document.head.appendChild(el)
+    }
+    el.setAttribute('content', content)
+  }
+  setMetaTag('description', description)
+  setMetaTag('og:title', title, true)
+  setMetaTag('og:description', description, true)
+  setMetaTag('twitter:title', title)
+  setMetaTag('twitter:description', description)
+}
+
 export default function PublicNewsletterPage() {
   const { slug } = useParams()
   const [html, setHtml] = useState('')
@@ -16,14 +36,16 @@ export default function PublicNewsletterPage() {
         const text = await res.text()
         const match = text.match(/<div class="content">([\s\S]*)<\/div>\s*<\/body>/i)
         const metaMatch = text.match(/<title>([^<]*)<\/title>/)
+        const descMatch = text.match(/<meta name="description" content="([^"]*)"/)
         const title = metaMatch ? metaMatch[1] : 'Newsletter'
+        const desc = descMatch ? descMatch[1] : `Read this newsletter on Veloce`
         if (metaMatch) setMeta({ title, error: false })
-        document.title = title
+        setPageMeta(title, desc)
         setHtml(match ? match[1] : text)
       })
       .catch(() => {
         setMeta({ title: 'Not found', error: true })
-        document.title = 'Not found | Veloce'
+        setPageMeta('Not found | Veloce', 'This newsletter has not been published yet.')
       })
   }, [slug])
 

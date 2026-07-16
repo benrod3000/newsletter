@@ -112,7 +112,7 @@ export default function HelpPanel() {
           <button onClick={() => setOpen(false)} className="text-brutal-fg font-bold text-lg leading-none">✕</button>
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="p-6 space-y-6">
           {/* What this page does */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-brutal-muted mb-1">{help.title}</h3>

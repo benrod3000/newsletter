@@ -56,8 +56,8 @@ export default function DashboardHome() {
     return () => { cancelled = true }
   }, [workspaceId])
 
-  const fmt = (n) => typeof n === 'number' ? n.toLocaleString() : '—'
-  const pct = (n) => typeof n === 'number' ? `${n.toFixed(1)}%` : '—'
+  const fmt = (n) => typeof n === 'number' ? n.toLocaleString() : '--'
+  const pct = (n) => typeof n === 'number' ? `${n.toFixed(1)}%` : '--'
 
   const greeting = () => {
     const h = new Date().getHours()
@@ -67,7 +67,7 @@ export default function DashboardHome() {
   }
 
   return (
-    <div ref={ref} className="space-y-8 sm:space-y-10">
+    <div ref={ref} className="space-y-8">
       {/* Greeting */}
       <div className="space-y-2">
         <p className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none">

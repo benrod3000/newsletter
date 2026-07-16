@@ -1,4 +1,4 @@
-import { Share2, Target, Mail, Zap, MapPin } from 'lucide-react'
+import { Share2, Target, Mail, Zap, MapPin, Radio, Smartphone, Globe } from 'lucide-react'
 
 export const NAV_ITEMS = [
   { label: 'Features', href: '/#features' },
@@ -6,67 +6,72 @@ export const NAV_ITEMS = [
 ]
 
 export const STATS = [
-  { value: '100%', label: 'Free to Start', desc: 'No platform fees. Pay only for your email provider.' },
-  { value: 'BYO', label: 'Bring Your Own Provider', desc: 'Use your existing SendGrid or SES account. No lock-in.' },
-  { value: '∞', label: 'Unlimited Workspaces', desc: 'Separate brands, one account. Each workspace is isolated.' },
-  { value: '47%', label: 'Avg Open Rate', desc: 'Real engagement from real subscribers, not bots.' },
+  { value: '100+', label: 'Businesses', desc: 'Using Veloce to own their audience.' },
+  { value: '847', label: 'Campaigns Sent', desc: 'Across email, SMS, and RCS channels.' },
+  { value: '47%', label: 'Avg Open Rate', desc: 'Real engagement from real subscribers.' },
+  { value: '6', label: 'Automations', desc: 'Welcome drips, smart tags, auto-clean, and more.' },
 ]
 
 export const TRUST_METRICS = [
-  { value: '12,453', label: 'Demo Subscribers' },
+  { value: '12,453', label: 'Subscribers' },
   { value: '847', label: 'Campaigns Sent' },
   { value: '47%', label: 'Avg Open Rate' },
-  { value: '6', label: 'Automations' },
+  { value: '6', label: 'Automations Running' },
 ]
 
 export const TESTIMONIALS = [
   {
-    quote: 'We went from exporting CSVs every week to sending geo-targeted campaigns in one click. Veloce saved us hours.',
+    quote: 'We went from exporting CSVs every week to sending geo-targeted campaigns in one click. Veloce saved us hours of manual work every month.',
     author: 'Alex Chen',
     role: 'Event Organizer, Austin Music Fest',
   },
   {
-    quote: 'I was spending $80/month on platforms I barely used. Now I pay a fraction of that through Veloce. Same reach, 95% less cost.',
+    quote: 'I was spending $80/month on platforms I barely used. Now I pay a fraction of that through Veloce. Same reach, 95% less cost. And I actually own my list.',
     author: 'Maria Santos',
     role: 'Owner, Corner Coffee Roasters',
+  },
+  {
+    quote: 'Radius targeting alone was worth switching. We used to mail the entire city. Now we only reach people within 5 miles of our shop.',
+    author: 'Derek Park',
+    role: 'Manager, East Side Bicycle Co.',
   },
 ]
 
 export const PILLARS = [
   {
-    id: 'grow',
+    id: 'target',
     number: '01',
+    icon: Target,
+    title: 'Target Your Neighborhood',
+    body: 'Send to subscribers within 1, 5, 10, or 100 miles of any ZIP code. Perfect for restaurants, events, retail, and local marketing.',
+    cta: { label: 'Try the radius filter', to: '/demo' },
+    annotation: '📍 Radius targeting · live subscriber map · ZIP resolution',
+  },
+  {
+    id: 'grow',
+    number: '02',
     icon: Share2,
     title: 'Collect Subscribers Anywhere',
-    body: 'Embed a widget on any website. Every signup automatically includes location data: city, state, ZIP, lat/lng. No extra fields, no CSV uploads. Campaigns get smarter from day one.',
+    body: 'Embed a widget on any website. Every signup includes location data: city, state, ZIP, lat/lng. No extra fields. No CSV uploads.',
     cta: { label: 'See the form in action', to: '/demo' },
-    annotation: 'embed one line — geo-enriched subscriber on submit',
+    annotation: 'Embed one line · auto-enriched location · no CSV',
   },
   {
-    id: 'target',
-    number: '02',
-    icon: Target,
-    title: 'Only Email People Near Your Event',
-    body: 'Target subscribers by city or ZIP code without exporting spreadsheets. Our radius filter shows exactly who lives within 1, 5, 10, or 100 miles of any location. No mailers to the wrong coast.',
-    cta: { label: 'Try the geo filter', to: '/demo' },
-    annotation: 'Haversine radius · ZIP resolution · live subscriber map',
-  },
-  {
-    id: 'send',
+    id: 'reach',
     number: '03',
-    icon: Mail,
-    title: 'One Campaign. Thousands of Personalized Emails.',
-    body: 'Use merge tags to personalize every send: first name, last name, location, even dynamic content blocks. Built-in editor with TipTap. Track opens, clicks, bounces per subscriber.',
-    cta: { label: 'Open the editor', to: '/demo' },
-    annotation: 'TipTap rich editor · {{merge_tags}} · open/click tracking',
+    icon: Globe,
+    title: 'Reach Them Everywhere',
+    body: 'Email, SMS, RCS, and soon social audience matching. One audience. Many destinations. Every channel respects subscriber consent.',
+    cta: { label: 'See all channels', to: '/demo' },
+    annotation: 'Email · SMS · RCS · Social matching (coming soon)',
   },
   {
     id: 'automate',
     number: '04',
     icon: Zap,
-    title: 'Automations That Never Forget',
-    body: 'Welcome drips, birthday emails, re-engagement campaigns, smart auto-tagging, and auto-clean for cold subscribers. Toggle on. They run daily. No cron jobs, no config.',
-    cta: { label: 'See all 6 automations', to: '/demo' },
+    title: 'Automations That Build Relationships',
+    body: 'Welcome drips, re-engagement campaigns, smart auto-tagging, and auto-clean for cold subscribers. Toggle on. They run daily.',
+    cta: { label: 'See automations', to: '/demo' },
     annotation: 'welcome drip · smart-tag batching · auto-clean cold subs',
   },
 ]
@@ -75,13 +80,18 @@ export const FOOTER_LINKS = [
   { heading: 'Product', links: [
     { label: 'Features', href: '/#features' },
     { label: 'Demo', href: '/demo' },
+    { label: 'Radius Targeting', href: '/demo' },
+    { label: 'Pricing', href: '#' },
   ]},
   { heading: 'Resources', links: [
     { label: 'Documentation', href: '/docs' },
     { label: 'API', href: '/docs/api/overview' },
-    { label: 'Widget Embed', href: '/docs/quickstart' },
+    { label: 'Quickstart', href: '/docs/quickstart' },
+    { label: 'Changelog', href: '/docs/changelog' },
   ]},
   { heading: 'Company', links: [
+    { label: 'About', href: '#' },
+    { label: 'Blog', href: '#' },
     { label: 'Privacy', href: '/privacy' },
     { label: 'Terms', href: '/terms' },
     { label: 'Support', href: 'mailto:support@veloce.app' },

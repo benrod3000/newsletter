@@ -1,7 +1,9 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Btn from '../components/ui/Button'
 
 export default function TermsPage() {
+  useEffect(() => { document.title = 'Terms of Service | Veloce' }, [])
   return (
     <div className="min-h-screen bg-brutal-bg text-brutal-fg flex flex-col">
       <div className="border-b-3 border-brutal-fg bg-white/95 backdrop-blur-sm">

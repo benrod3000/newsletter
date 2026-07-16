@@ -26,6 +26,7 @@ import {
    ═══════════════════════════════════════════════════════ */
 
 export default function LandingPage() {
+  useEffect(() => { document.title = 'Veloce · A simple newsletter platform for your audience' }, [])
   const [mobileOpen, setMobileOpen] = useState(false)
   const heroRef = useRef(null)
   const statRef = useRef(null)
@@ -51,23 +52,23 @@ export default function LandingPage() {
   return (
     <>
       {/* ═══ STICKY NAV ═══ */}
-      <nav className="sticky top-0 z-50 border-b-3 border-brutal-fg bg-white/95 backdrop-blur-sm">
+      <nav className="sticky top-0 z-50 border-b-3 border-brutal-fg bg-white/95 backdrop-blur-sm" role="navigation" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between">
-          <Link to="/" className="font-heading text-2xl uppercase tracking-wider leading-none hover:text-brutal-green transition-colors">Veloce</Link>
+          <Link to="/" className="font-heading text-2xl uppercase tracking-wider leading-none hover:text-brutal-green transition-colors" aria-label="Veloce home">Veloce</Link>
 
           {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-6" role="menubar">
             {NAV_ITEMS.map((item) => (
-              <Link key={item.label} to={item.href} className="text-xs font-bold uppercase tracking-wider text-brutal-fg/60 hover:text-brutal-fg transition-colors">{item.label}</Link>
+              <Link key={item.label} to={item.href} className="text-xs font-bold uppercase tracking-wider text-brutal-fg/60 hover:text-brutal-fg transition-colors" role="menuitem">{item.label}</Link>
             ))}
-            <span className="w-px h-5 bg-brutal-fg/15" />
-            <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors">Sign In</Link>
-            <Btn variant="primary" size="md" onClick={() => window.location.href = '/signup'}>Get Started</Btn>
+            <span className="w-px h-5 bg-brutal-fg/15" aria-hidden="true" />
+            <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors" role="menuitem">Sign In</Link>
+            <Btn variant="primary" size="md" onClick={() => window.location.href = '/signup'} role="menuitem">Get Started</Btn>
           </div>
 
           {/* Mobile hamburger */}
-          <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 border-3 border-brutal-fg" aria-label="Menu">
-            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 border-3 border-brutal-fg focus:outline-none focus:bg-brutal-yellow/20" aria-label={mobileOpen ? 'Close menu' : 'Open menu'} aria-expanded={mobileOpen}>
+            {mobileOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
           </button>
         </div>
 
@@ -85,28 +86,28 @@ export default function LandingPage() {
       </nav>
 
       {/* ═══ HERO ═══ */}
-      <Section className="bg-dots-light">
-        <div ref={heroRef} className="max-w-5xl mx-auto space-y-8 sm:space-y-10">
-          <Badge variant="yellow">For creators, local businesses & communities</Badge>
+      <Section className="bg-dots-light pt-24 sm:pt-32" id="main-content">
+        <div ref={heroRef} className="max-w-5xl mx-auto space-y-10 sm:space-y-12">
+          <Badge variant="yellow">For local businesses, creators & communities</Badge>
 
           <h1 className="text-display leading-[0.85]">
-            The newsletter platform that{' '}
-            <span className="text-brutal-green">gets out of your way.</span>
+            Own Your{' '}
+            <span className="text-brutal-green">Audience.</span>
           </h1>
 
-          <div className="h-2 w-24 bg-brutal-yellow border-2 border-brutal-fg" />
+          <div className="h-2 w-24 bg-brutal-yellow border-2 border-brutal-fg" aria-hidden="true" />
 
-          <p className="text-base sm:text-lg text-brutal-fg/80 leading-relaxed max-w-xl font-medium">
-            A simple way to write newsletters, grow your audience, and send to the people who actually matter, without the complexity.
+          <p className="text-lg sm:text-xl text-brutal-fg/80 leading-relaxed max-w-2xl font-medium">
+            Email marketing without algorithms. Reach your subscribers on email, SMS, and RCS — starting with a simple newsletter.
           </p>
 
           <Annotation>own your audience · BYO SendGrid/SES · free to start · no credit card</Annotation>
 
-          <p className="text-[11px] font-bold text-brutal-muted uppercase tracking-wider flex flex-wrap gap-x-4 gap-y-1">
-            <span>For writers and creators</span>
-            <span>Local shops and restaurants</span>
-            <span>Clubs and nonprofits</span>
-          </p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+            <span className="flex items-center gap-1 text-[10px] font-bold text-brutal-green uppercase tracking-wider"><CheckCircle size={12} aria-hidden="true" /> Built on Supabase</span>
+            <span className="flex items-center gap-1 text-[10px] font-bold text-brutal-green uppercase tracking-wider"><CheckCircle size={12} aria-hidden="true" /> TLS 1.3 encrypted</span>
+            <span className="flex items-center gap-1 text-[10px] font-bold text-brutal-green uppercase tracking-wider"><CheckCircle size={12} aria-hidden="true" /> Radius geo targeting</span>
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-4 items-start">
             <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
@@ -116,11 +117,42 @@ export default function LandingPage() {
               Explore Live Demo
             </Btn>
           </div>
-          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · Free to start</p>
+          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · Free to start · Cancel anytime</p>
         </div>
       </Section>
 
-      {/* ═══ DASHBOARD PREVIEW (overlaps hero) ═══ */}
+      {/* ═══ PROBLEM ═══ */}
+      <Section className="bg-brutal-surface/20">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          <Badge variant="red">The Problem</Badge>
+          <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none">
+            Email marketing is broken.{' '}
+            <span className="text-brutal-green">Social media rents your audience.</span>
+          </h2>
+          <p className="text-base text-brutal-fg/70 max-w-2xl mx-auto leading-relaxed">
+            You don't own your followers. Algorithms decide who sees your posts. 
+            And most email tools charge per contact, charge for basic features, and lock you into their ecosystem.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-4 text-left max-w-3xl mx-auto">
+            {[
+              { icon: Globe, title: 'Algorithm Dependent', desc: 'Social platforms decide who sees your content. You don\'t.' },
+              { icon: FileText, title: 'Charged Per Contact', desc: 'Pay for subscribers you can\'t even reach. Most platforms do this.' },
+              { icon: Clock, title: 'Locked In', desc: 'Your list, your templates, your data — but you can\'t easily leave.' },
+            ].map((p) => (
+              <div key={p.title} className="border-3 border-brutal-fg bg-white p-5 hover:shadow-brutal transition">
+                <p.icon size={20} className="text-brutal-green mb-2" />
+                <h3 className="font-heading text-lg uppercase tracking-wide">{p.title}</h3>
+                <p className="text-xs text-brutal-muted mt-1 leading-relaxed">{p.desc}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-base font-medium text-brutal-fg/80 max-w-xl mx-auto">
+            Veloce changes that. Own your audience. Reach them on email, SMS, or RCS. Your data. Your rules.
+          </p>
+        </div>
+      </Section>
+
+      {/* ═══ DASHBOARD PREVIEW ═══ */}
       <div ref={dashboardRef} className="-mt-10 sm:-mt-16 mb-20 sm:mb-28 relative z-10 max-w-6xl mx-auto px-4 sm:px-8">
         <div className="border-3 border-brutal-fg bg-white shadow-brutal overflow-hidden">
           {/* Window chrome */}
@@ -159,7 +191,7 @@ export default function LandingPage() {
                 {[
                   { label: 'Subscribers', value: '1,892', change: '+12%', color: 'text-brutal-green' },
                   { label: 'Open Rate', value: '47%', change: '+3%', color: 'text-brutal-green' },
-                  { label: 'Active Campaigns', value: '3', change: '—', color: 'text-brutal-fg' },
+                  { label: 'Active Campaigns', value: '3', change: '--', color: 'text-brutal-fg' },
                 ].map((kpi) => (
                   <div key={kpi.label} className="border-2 border-brutal-fg p-3">
                     <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">{kpi.label}</p>
@@ -178,7 +210,7 @@ export default function LandingPage() {
                 {[
                   { name: 'South Congress Sale', sent: '847', status: 'Sent', geo: 'Austin, TX / 5mi' },
                   { name: 'East Side Workshop', sent: '312', status: 'Scheduled', geo: 'Portland, OR / 10mi' },
-                  { name: 'Weekend Special', sent: '—', status: 'Draft', geo: '—' },
+                  { name: 'Weekend Special', sent: '--', status: 'Draft', geo: '--' },
                 ].map((row) => (
                   <div key={row.name} className="flex items-center justify-between px-3 py-2 border-b border-brutal-fg/20 last:border-0">
                     <div>
@@ -461,8 +493,16 @@ export default function LandingPage() {
             <div className="col-span-2 sm:col-span-1">
               <Link to="/" className="font-heading text-xl uppercase tracking-wider hover:text-brutal-green transition-colors">Veloce</Link>
               <p className="text-[10px] text-brutal-muted mt-2 leading-relaxed max-w-[180px]">
-                Email marketing for local businesses. Built around location, not complexity.
+                The platform for businesses that want to own their audience instead of renting it.
               </p>
+              <div className="flex items-center gap-3 mt-4">
+                <a href="https://github.com/benrod3000" target="_blank" rel="noopener noreferrer" className="text-brutal-muted hover:text-brutal-fg transition-colors" aria-label="GitHub">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                </a>
+                <a href="https://twitter.com/benrod3000" target="_blank" rel="noopener noreferrer" className="text-brutal-muted hover:text-brutal-fg transition-colors" aria-label="Twitter">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+              </div>
             </div>
 
             {FOOTER_LINKS.map((group) => (

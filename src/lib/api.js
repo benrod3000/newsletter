@@ -23,10 +23,10 @@ api.interceptors.request.use((config) => {
 })
 
 export const authAPI = {
-  login: (email, password, workspaceId) =>
-    api.post('/api/auth/token', { email, password, workspaceId }),
-  signup: (email, password, workspaceName) =>
-    api.post('/api/auth/signup', { email, password, workspace_name: workspaceName }),
+  login: (email, password, workspaceId, turnstileToken) =>
+    api.post('/api/auth/token', { email, password, workspaceId, turnstile_token: turnstileToken }),
+  signup: (email, password, workspaceName, turnstileToken) =>
+    api.post('/api/auth/signup', { email, password, workspace_name: workspaceName, turnstile_token: turnstileToken }),
   verify: () => api.get('/api/auth/verify'),
 }
 

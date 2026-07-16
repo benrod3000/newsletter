@@ -20,7 +20,7 @@ export default function CampaignsPage() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [busyId, setBusyId] = useState(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
-  const [viewMode, setViewMode] = useState('table')
+  const [viewMode, setViewMode] = useState('calendar')
   const [calendarMonth, setCalendarMonth] = useState(() => new Date().getMonth())
   const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear())
   const [editingId, setEditingId] = useState(null)
@@ -409,7 +409,7 @@ export default function CampaignsPage() {
             </button>
           </div>
 
-          <div className="p-5 sm:p-6 space-y-5">
+          <div className="p-6 space-y-6">
             {/* Subject + Audience row */}
             <div className="grid sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2">
@@ -572,7 +572,7 @@ export default function CampaignsPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${STATUS_STYLES[status]}`}>{status}</span>
-                    <span className="text-xs font-mono font-bold text-brutal-muted">{c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '—'}</span>
+                    <span className="text-xs font-mono font-bold text-brutal-muted">{c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '--'}</span>
                   </div>
                   <h3 className="font-heading text-2xl uppercase tracking-wide text-brutal-fg truncate" title={c.title || c.name}>{c.title || c.name}</h3>
                   <p className="text-xs font-bold text-brutal-fg/70 line-clamp-2" title={c.subject}>{c.subject}</p>
@@ -657,7 +657,7 @@ export default function CampaignsPage() {
                       </span>
                     </td>
                     <td className="p-3 text-right font-mono font-bold hidden md:table-cell">{(c.sent_count ?? 0).toLocaleString()}</td>
-                    <td className="p-3 text-brutal-muted font-mono text-xs hidden md:table-cell">{c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '—'}</td>
+                    <td className="p-3 text-brutal-muted font-mono text-xs hidden md:table-cell">{c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '--'}</td>
                     <td className="p-3 text-right whitespace-nowrap">
                       {status === 'draft' ? (
                         <div className="flex items-center justify-end gap-2">
@@ -668,7 +668,7 @@ export default function CampaignsPage() {
                           )}
                         </div>
                       ) : (
-                        <span className="text-xs text-brutal-muted font-bold uppercase tracking-wider">—</span>
+                        <span className="text-xs text-brutal-muted font-bold uppercase tracking-wider">--</span>
                       )}
                     </td>
                   </tr>

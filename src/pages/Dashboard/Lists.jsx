@@ -89,7 +89,7 @@ export default function ListsPage() {
       </div>
 
       {showAddForm && (
-        <div className="border-3 border-brutal-fg bg-white p-8 space-y-5">
+        <div className="border-3 border-brutal-fg bg-white p-8 space-y-6">
           <h4 className="font-heading text-xl uppercase tracking-wide">New List</h4>
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">List Name</label>

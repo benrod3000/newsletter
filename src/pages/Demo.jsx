@@ -43,6 +43,7 @@ const navItems = [
 ]
 
 export default function DemoPage() {
+  useEffect(() => { document.title = 'Live Demo | Veloce' }, [])
   const [activeTab, setActiveTab] = useState('dashboard')
 
   const totalSent = mockCampaigns.reduce((s, c) => s + c.sent, 0)

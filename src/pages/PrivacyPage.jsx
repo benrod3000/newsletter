@@ -1,7 +1,9 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Btn from '../components/ui/Button'
 
 export default function PrivacyPage() {
+  useEffect(() => { document.title = 'Privacy Policy | Veloce' }, [])
   return (
     <div className="min-h-screen bg-brutal-bg text-brutal-fg flex flex-col">
       <div className="border-b-3 border-brutal-fg bg-white/95 backdrop-blur-sm">
@@ -50,9 +52,9 @@ export default function PrivacyPage() {
           <h2 className="font-heading text-2xl uppercase mt-8">6. Data Sharing</h2>
           <p>We share data only with:</p>
           <ul className="list-disc list-inside space-y-1">
-            <li><strong>Supabase</strong> (database hosting) — our infrastructure provider</li>
-            <li><strong>SendGrid or AWS SES</strong> — your chosen email delivery provider</li>
-            <li><strong>Vercel</strong> — hosting provider</li>
+          <li><strong>Supabase</strong> (database hosting), our infrastructure provider</li>
+          <li><strong>SendGrid or AWS SES</strong>, your chosen email delivery provider</li>
+          <li><strong>Vercel</strong>, hosting provider</li>
           </ul>
           <p>We require all third parties to maintain appropriate data protection standards.</p>
 

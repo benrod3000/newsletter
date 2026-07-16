@@ -21,6 +21,23 @@
   --font-family-mono: ui-monospace, SFMono-Regular, monospace;
   --shadow-brutal: 4px 4px 0px #0a0a0a;
   --border-width-3: 3px;
+  /* Typography scale */
+  --text-hero: 64px;
+  --text-section: 42px;
+  --text-subtitle: 18px;
+  --text-body: 16px;
+  --text-label: 13px;
+  --text-nav: 14px;
+  --text-metric: 40px;
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+  --space-7: 64px;
+  --space-8: 96px;
 }
 
 @layer base {

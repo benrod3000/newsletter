@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { brandingAPI, automationsAPI } from '../../lib/api'
 import { useToast } from '../../components/Toast'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, ShieldCheck, Copy, Check } from 'lucide-react'
 import Btn from '../../components/ui/Button'
+import Card from '../../components/ui/Card'
 
 export default function SettingsPage() {
   const { workspaceId } = useAuthStore()
@@ -42,6 +43,20 @@ export default function SettingsPage() {
   const [activityLog, setActivityLog] = useState([])
   const [activityLogLoading, setActivityLogLoading] = useState(false)
 
+  // 2FA
+  const [totpSecret, setTotpSecret] = useState('')
+  const [totpQrUri, setTotpQrUri] = useState('')
+  const [totpSettingUp, setTotpSettingUp] = useState(false)
+  const [totpEnabled, setTotpEnabled] = useState(false)
+  const [totpCode, setTotpCode] = useState('')
+  const [totpEnabling, setTotpEnabling] = useState(false)
+  const [totpRecoveryCodes, setTotpRecoveryCodes] = useState([])
+  const [totpCopied, setTotpCopied] = useState(false)
+
+  // Audit logs
+  const [auditLogs, setAuditLogs] = useState([])
+  const [auditLogLoading, setAuditLogLoading] = useState(false)
+
   useEffect(() => {
     if (workspaceId) {
     document.title = 'Settings | Veloce'
@@ -49,6 +64,7 @@ export default function SettingsPage() {
       loadAutomations()
       loadSmartTagHistory()
       loadActivityLog()
+      loadAuditLogs()
     }
   }, [workspaceId])
 
@@ -87,6 +103,20 @@ export default function SettingsPage() {
       setActivityLog(data.runs || [])
     } catch { setActivityLog([]) }
     finally { setActivityLogLoading(false) }
+  }
+
+  async function loadAuditLogs() {
+    setAuditLogLoading(true)
+    try {
+      const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+      const base = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
+      const res = await fetch(base + '/api/clients/' + workspaceId + '/audit-logs?limit=10', {
+        headers: { Authorization: 'Bearer ' + token },
+      })
+      const data = await res.json()
+      setAuditLogs(data.logs || [])
+    } catch {}
+    setAuditLogLoading(false)
   }
 
   async function loadBranding() {
@@ -170,19 +200,12 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <div className="flex border-3 border-brutal-fg overflow-hidden mb-8">
-        {['branding', 'automations'].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-6 py-3 font-bold text-sm uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ${
-              activeTab === tab
-                ? 'bg-brutal-yellow text-brutal-fg'
-                : 'bg-white text-brutal-muted hover:text-brutal-fg'
-            }`}
-          >
-            {tab === 'branding' ? 'Branding' : 'Automations'}
+        {['branding', 'automations', 'security'].map(function(tab) {
+          return <button key={tab} onClick={function() { setActiveTab(tab) }}
+            className={'px-6 py-3 font-bold text-sm uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ' + (activeTab === tab ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg')}>
+            {tab === 'branding' ? 'Branding' : tab === 'automations' ? 'Automations' : 'Security'}
           </button>
-        ))}
+        })}
       </div>
 
       {/* Branding Tab */}
@@ -467,8 +490,7 @@ export default function SettingsPage() {
       )}
 
       {/* Automations Tab */}
-      {activeTab === 'automations' && (
-        <div className="space-y-8">
+      {activeTab === 'automations' && <div className="space-y-8">
           <div>
             <h3 className="font-heading text-2xl uppercase tracking-wide mb-1">Smart Automations</h3>
             <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">Toggle on. They just work. Toggle off anytime.</p>
@@ -730,8 +752,146 @@ export default function SettingsPage() {
             )}
           </div>
         </div>
+      </div>}
+
+      {/* Security Tab */}
+      {activeTab === 'security' && <div className="space-y-8">
+
+        {/* Two-Factor Authentication */}
+        <div className="border-3 border-brutal-fg bg-white p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <ShieldCheck size={20} className="text-brutal-green" />
+            <h3 className="font-heading text-xl uppercase tracking-wide">Two-Factor Authentication</h3>
+          </div>
+
+          {!totpSettingUp && !totpEnabled && <div>
+            <p className="text-xs text-brutal-fg/70 leading-relaxed mb-4">
+              Add an extra layer of security to your account. Once enabled, you will need a code from your authenticator app to sign in.
+            </p>
+            <Btn variant="primary" size="sm" onClick={async function() {
+              setTotpSettingUp(true)
+              try {
+                var token = JSON.parse(localStorage.getItem('auth-storage') || '{}')
+                if (token && token.state && token.state.token) {
+                  token = token.state.token
+                } else { token = null }
+                var base = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
+                var res = await fetch(base + '/api/auth/totp/setup', {
+                  method: 'POST',
+                  headers: { Authorization: 'Bearer ' + token },
+                })
+                var data = await res.json()
+                setTotpSecret(data.secret)
+                setTotpQrUri(data.uri)
+              } catch(e) {
+                toast.addToast('Failed to start 2FA setup', 'error')
+                setTotpSettingUp(false)
+              }
+            }}>Set Up Two-Factor Auth</Btn>
+          </div>}
+
+          {totpSettingUp && !totpEnabled && <div>
+            <p className="text-xs text-brutal-fg/70 leading-relaxed mb-4">
+              Scan this QR code with your authenticator app (Google Authenticator, 1Password, Authy, etc.):
+            </p>
+            <div className="border-3 border-brutal-fg bg-white p-4 inline-block mb-4">
+              <div className="w-48 h-48 bg-brutal-surface flex items-center justify-center">
+                <img src={'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(totpQrUri)}
+                  alt="QR code for authenticator app" className="w-48 h-48" />
+              </div>
+            </div>
+            <p className="text-[10px] text-brutal-muted font-bold mb-4">
+              Can not scan? Manual entry key: <code className="bg-brutal-surface px-1">{totpSecret}</code>
+            </p>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Enter the 6-digit code from your app</label>
+              <div className="flex gap-3">
+                <input type="text" value={totpCode} onChange={function(e) { setTotpCode(e.target.value) }}
+                  className="w-32 bg-white border-3 border-brutal-fg px-4 py-2.5 text-lg font-mono tracking-widest text-center focus:outline-none focus:bg-brutal-yellow/10 transition"
+                  placeholder="000000" maxLength={6} />
+                <Btn variant="primary" size="md" loading={totpEnabling}
+                  disabled={totpCode.length < 6}
+                  onClick={async function() {
+                    setTotpEnabling(true)
+                    try {
+                      var token = JSON.parse(localStorage.getItem('auth-storage') || '{}')
+                      if (token && token.state && token.state.token) {
+                        token = token.state.token
+                      } else { token = null }
+                      var base = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
+                      var res = await fetch(base + '/api/auth/totp/enable', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+                        body: JSON.stringify({ secret: totpSecret, code: totpCode }),
+                      })
+                      var data = await res.json()
+                      if (!res.ok) {
+                        toast.addToast(data.error && data.error.message || 'Invalid code', 'error')
+                        return
+                      }
+                      setTotpEnabled(true)
+                      setTotpRecoveryCodes(data.recovery_codes || [])
+                      toast.addToast('Two-factor authentication enabled', 'success')
+                    } catch(e) {
+                      toast.addToast('Failed to enable 2FA', 'error')
+                    }
+                    setTotpEnabling(false)
+                  }}>Verify and Enable</Btn>
+              </div>
+            </div>
+          </div>}
+
+          {totpEnabled && <div>
+            <div className="flex items-center gap-2 text-brutal-green mb-3">
+              <ShieldCheck size={18} />
+              <span className="text-xs font-bold uppercase tracking-wider">Two-factor authentication is active</span>
+            </div>
+            {totpRecoveryCodes.length > 0 && <div className="border-3 border-brutal-fg bg-brutal-yellow p-4">
+              <p className="text-xs font-bold uppercase tracking-wider mb-2">Recovery Codes</p>
+              <p className="text-[10px] text-brutal-fg/70 mb-3">Save these in a secure place. Each code can be used once if you lose access to your authenticator app.</p>
+              <div className="font-mono text-sm space-y-1">
+                {totpRecoveryCodes.map(function(code, i) {
+                  return <div key={i} className="flex items-center gap-2">
+                    <span className="w-6 text-right text-[10px] text-brutal-muted">{i + 1}.</span>
+                    <code className="bg-white px-2 py-0.5 border border-brutal-fg">{code}</code>
+                  </div>
+                })}
+              </div>
+              <Btn variant="secondary" size="sm" className="mt-3"
+                icon={totpCopied ? <Check size={12} /> : <Copy size={12} />}
+                onClick={function() {
+                  navigator.clipboard.writeText(totpRecoveryCodes.join('\n'))
+                  setTotpCopied(true)
+                  setTimeout(function() { setTotpCopied(false) }, 2000)
+                  toast.addToast('Recovery codes copied', 'success')
+                }}>{totpCopied ? 'Copied!' : 'Copy Codes'}</Btn>
+            </div>}
+          </div>}
         </div>
-      )}
+
+        {/* Login History */}
+        <div className="border-3 border-brutal-fg bg-white p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <ShieldCheck size={20} className="text-brutal-green" />
+            <h3 className="font-heading text-xl uppercase tracking-wide">Login History</h3>
+          </div>
+          {auditLogLoading && <p className="text-xs text-brutal-muted">Loading...</p>}
+          {!auditLogLoading && auditLogs.length === 0 && <p className="text-xs text-brutal-muted">No login history yet.</p>}
+          {!auditLogLoading && auditLogs.length > 0 && <div className="space-y-2">
+            {auditLogs.slice(0, 10).map(function(log) {
+              return <div key={log.id} className="border-3 border-brutal-fg bg-brutal-bg p-3 flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider">{log.action.replace(/_/g, ' ')}</p>
+                  <p className="text-[10px] text-brutal-muted mt-0.5">
+                    {new Date(log.created_at).toLocaleString()} {'·'} {log.ip_address || 'unknown IP'}
+                  </p>
+                </div>
+              </div>
+            })}
+          </div>}
+        </div>
+
+      </div>}
     </div>
   )
 }

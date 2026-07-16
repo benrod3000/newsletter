@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
+
 export default function Security() {
+  useEffect(() => { document.title = 'Security | Veloce' }, [])
   return (
     <article className="space-y-6">
       <h1 className="text-3xl font-heading uppercase tracking-tight leading-none">Security & Privacy</h1>
@@ -6,10 +9,10 @@ export default function Security() {
 
       <Section title="Data Protection">
         <ul className="text-sm text-brutal-fg/70 space-y-2">
-          <li><strong>Encryption at rest</strong> — All subscriber data is stored in a Supabase PostgreSQL database with encryption at rest.</li>
-          <li><strong>Encryption in transit</strong> — All API traffic uses TLS 1.3. No plaintext HTTP.</li>
-          <li><strong>Password security</strong> — Passwords are hashed with PBKDF2 before storage. We never see or store raw passwords.</li>
-          <li><strong>JWT authentication</strong> — All API requests are authenticated with signed JWTs. Tokens expire after 30 days.</li>
+          <li><strong>Encryption at rest</strong>: All subscriber data is stored in a Supabase PostgreSQL database with encryption at rest.</li>
+          <li><strong>Encryption in transit</strong>: All API traffic uses TLS 1.3. No plaintext HTTP.</li>
+          <li><strong>Password security</strong>: Passwords are hashed with PBKDF2 before storage. We never see or store raw passwords.</li>
+          <li><strong>JWT authentication</strong>: All API requests are authenticated with signed JWTs. Tokens expire after 30 days.</li>
         </ul>
       </Section>
 
@@ -33,10 +36,10 @@ export default function Security() {
       <Section title="Email Compliance">
         <p className="text-sm text-brutal-fg/70">Every email includes:</p>
         <ul className="text-sm text-brutal-fg/70 space-y-1 list-disc list-inside">
-          <li><strong>One-click unsubscribe</strong> — RFC 8058 compliant List-Unsubscribe header</li>
-          <li><strong>Unsubscribe link</strong> — Token-based, works without authentication</li>
-          <li><strong>Sender identification</strong> — Clear from name and address</li>
-          <li><strong>Physical address</strong> — Configured per workspace</li>
+          <li><strong>One-click unsubscribe</strong>: RFC 8058 compliant List-Unsubscribe header</li>
+          <li><strong>Unsubscribe link</strong>: Token-based, works without authentication</li>
+          <li><strong>Sender identification</strong>: Clear from name and address</li>
+          <li><strong>Physical address</strong>: Configured per workspace</li>
         </ul>
       </Section>
 

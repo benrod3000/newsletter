@@ -24,6 +24,9 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   const [applied, setApplied] = useState(false)
   const panelRef = useRef(null)
   const resolveTimer = useRef(null)
+  const mapRef = useRef(null)
+  const markerRef = useRef(null)
+  const circleRef = useRef(null)
 
   // GSAP open/close animation
   useEffect(() => {
@@ -54,7 +57,6 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     resolveTimer.current = setTimeout(async () => {
       setResolving(true)
       try {
-        // Check localStorage cache first (24h TTL)
         const cacheKey = `geo-zip-${clean}`
         const cached = localStorage.getItem(cacheKey)
         if (cached) {
@@ -79,38 +81,71 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     }, 600)
   }, [])
 
-  // Load Leaflet map when a ZIP is resolved
-  const mapRef = useRef(null)
-
-  // Initialize the map once per resolved ZIP
+  // Initialize/reset the map when ZIP resolves
   useEffect(() => {
     if (!resolved || !open) return
     const mapEl = document.getElementById(`map-${zip}`)
-    if (!mapEl || mapRef.current) return
+    if (!mapEl) return
+
+    // Destroy previous instance
+    if (mapRef.current) {
+      mapRef.current.remove()
+      mapRef.current = null
+      markerRef.current = null
+      circleRef.current = null
+    }
 
     const timer = setTimeout(() => {
-      if (mapRef.current) return
+      const center = [resolved.lat, resolved.lng]
 
       const map = L.map(mapEl, {
-        center: [resolved.lat, resolved.lng],
+        center,
         zoom: 11,
         zoomControl: true,
         attributionControl: false,
       })
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 18,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
       }).addTo(map)
 
-      // Center marker
-      L.circleMarker([resolved.lat, resolved.lng], {
-        radius: 7, color: '#0a0a0a', fillColor: '#f5e642', fillOpacity: 1, weight: 3,
+      // Draggable center marker — enables two-way interaction
+      const marker = L.marker(center, {
+        draggable: true,
+        icon: L.divIcon({
+          className: '',
+          html: '<div style="width:16px;height:16px;background:#f5e642;border:3px solid #0a0a0a;border-radius:50%;cursor:grab;"></div>',
+          iconSize: [16, 16],
+          iconAnchor: [8, 8],
+        }),
       }).addTo(map)
 
-      // Initial radius circle
-      L.circle([resolved.lat, resolved.lng], {
+      marker.on('dragend', async (e) => {
+        const pos = e.target.getLatLng()
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}&zoom=10`)
+          const data = await res.json()
+          const postalCode = data.address?.postcode || ''
+          const city = data.address?.city || data.address?.town || data.address?.village || ''
+          const state = data.address?.state || ''
+          if (postalCode) setZip(postalCode)
+          setResolved({ lat: pos.lat, lng: pos.lng, city, state })
+        } catch {
+          setResolved(prev => prev ? { ...prev, lat: pos.lat, lng: pos.lng } : null)
+        }
+      })
+
+      markerRef.current = marker
+
+      // Radius circle
+      const circle = L.circle(center, {
         radius: radius * 1609.34, color: '#2f7f5f', weight: 3, fillOpacity: 0, dashArray: '6, 8',
       }).addTo(map)
+      circleRef.current = circle
+
+      // Auto-zoom to fit the full radius circle
+      map.fitBounds(circle.getBounds(), { padding: [30, 30] })
 
       // Subscriber pins
       subscribers.forEach(s => {
@@ -132,22 +167,26 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       if (mapRef.current) {
         mapRef.current.remove()
         mapRef.current = null
+        markerRef.current = null
+        circleRef.current = null
       }
     }
   }, [resolved, open])
 
-  // Update radius circle without destroying the map
+  // Update radius circle + auto-zoom when radius changes
   useEffect(() => {
-    if (!mapRef.current) return
-    // Remove old radius circles
-    mapRef.current.eachLayer((layer) => {
-      if (layer instanceof L.Circle && !(layer instanceof L.CircleMarker)) {
-        mapRef.current.removeLayer(layer)
-      }
-    })
-    L.circle([resolved.lat, resolved.lng], {
+    if (!mapRef.current || !resolved) return
+    const map = mapRef.current
+
+    if (circleRef.current) map.removeLayer(circleRef.current)
+
+    const circle = L.circle([resolved.lat, resolved.lng], {
       radius: radius * 1609.34, color: '#2f7f5f', weight: 3, fillOpacity: 0, dashArray: '6, 8',
-    }).addTo(mapRef.current)
+    }).addTo(map)
+    circleRef.current = circle
+
+    // Auto-zoom so the full circle is visible
+    map.fitBounds(circle.getBounds(), { padding: [30, 30] })
   }, [radius, resolved])
 
   function applyFilter() {
@@ -196,7 +235,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
         style={{ height: '0px', overflow: 'hidden' }}
         className="border-t-3 border-brutal-fg"
       >
-        <div className="p-5 space-y-5">
+        <div className="p-6 space-y-6">
           {/* ZIP input */}
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
@@ -227,6 +266,17 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
               </p>
             )}
           </div>
+
+          {/* Live map — integrated as visual feedback loop */}
+          {resolved && (
+            <div className="border-3 border-brutal-fg overflow-hidden">
+              <div className="bg-brutal-fg text-white px-3 py-1.5 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
+                <span>{resolved.city}, {resolved.state}</span>
+                <span className="text-brutal-fg/60">{radius} mi radius</span>
+              </div>
+              <div id={`map-${zip}`} style={{ height: '220px', width: '100%', background: '#e8e8e0' }} />
+            </div>
+          )}
 
           {/* Radar display */}
           <div className="flex justify-center">
@@ -305,17 +355,6 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
           </div>
         </div>
       </div>
-
-      {/* Map — rendered outside the animated panel for stable height */}
-      {resolved && (
-        <div className="border-t-3 border-brutal-fg overflow-hidden">
-          <div className="bg-brutal-fg text-white px-3 py-1.5 flex items-center justify-between">
-            <p className="text-[10px] font-bold uppercase tracking-wider">📍 Map</p>
-            <span className="text-[9px] font-bold text-brutal-fg/60">{resolved.city}, {resolved.state}</span>
-          </div>
-          <div id={`map-${zip}`} style={{ height: '240px', width: '100%', background: '#e8e8e0' }} />
-        </div>
-      )}
 
     </div>
   )

@@ -252,7 +252,7 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
         <div className="border-b-3 border-brutal-fg bg-brutal-bg px-4 py-3 space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-bold uppercase tracking-wider">
-              🔗 Link Check — {linkResults.total} total,{' '}
+              🔗 Link Check: {linkResults.total} total,{' '}
               <span className="text-brutal-green">{linkResults.valid} valid</span>
               {linkResults.broken > 0 && (
                 <><span className="text-brutal-muted">, </span><span className="text-brutal-red">{linkResults.broken} broken</span></>
@@ -261,7 +261,7 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
             <button onClick={() => setLinkResults(null)} className="text-xs font-bold text-brutal-muted hover:text-brutal-fg">×</button>
           </div>
           {linkResults.missingUnsub && (
-            <p className="text-[10px] text-brutal-red font-bold">⚠️ Missing <code className="bg-white px-1">{'{{unsubscribe_url}}'}</code> tag — add it for CAN-SPAM compliance</p>
+            <p className="text-[10px] text-brutal-red font-bold">⚠️ Missing <code className="bg-white px-1">{'{{unsubscribe_url}}'}</code> tag. Add it for CAN-SPAM compliance</p>
           )}
           {linkResults.results.filter(r => !r.valid).map((r, i) => (
             <div key={i} className="flex items-start gap-2 text-[10px]">

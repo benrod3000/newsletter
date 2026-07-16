@@ -8,16 +8,18 @@ const Input = forwardRef(({
   icon: Icon,
   type = 'text',
   className = '',
+  id,
   ...props
 }, ref) => {
   const [showPassword, setShowPassword] = useState(false)
   const isPassword = type === 'password'
   const inputType = isPassword && showPassword ? 'text' : type
+  const inputId = id || (label ? `input-${label.toString().toLowerCase().replace(/\s+/g, '-')}` : undefined)
 
   return (
     <div className="space-y-1">
       {label && (
-        <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-fg/60 mb-1">
+        <label htmlFor={inputId} className="block text-[10px] font-bold uppercase tracking-wider text-brutal-fg/60 mb-1">
           {label}
         </label>
       )}
@@ -29,6 +31,7 @@ const Input = forwardRef(({
         )}
         <input
           ref={ref}
+          id={inputId}
           type={inputType}
           className={`w-full px-4 py-2.5 bg-white border-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition
             ${error ? 'border-brutal-red' : 'border-brutal-fg'}

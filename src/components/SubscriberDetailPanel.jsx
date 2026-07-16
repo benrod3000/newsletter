@@ -118,7 +118,7 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
         </div>
 
         {/* Profile info */}
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-6">
           <Section title="Profile">
             {subscriber.phone_number && <Row label="Phone" value={subscriber.phone_number} />}
             {subscriber.date_of_birth && <Row label="Date of Birth" value={subscriber.date_of_birth} />}
@@ -138,7 +138,7 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
               </div>
             )}
             {subscriber.timezone && <Row label="Timezone" value={subscriber.timezone} />}
-            <Row label="Joined" value={subscriber.created_at ? new Date(subscriber.created_at).toLocaleDateString() : '—'} />
+            <Row label="Joined" value={subscriber.created_at ? new Date(subscriber.created_at).toLocaleDateString() : '--'} />
           </Section>
 
           {/* Subscriber Journey Timeline */}

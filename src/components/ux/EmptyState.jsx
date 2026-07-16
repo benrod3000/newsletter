@@ -19,7 +19,7 @@ export default function EmptyState({
 }) {
   const displayIcon = variant ? ICONS[variant] || ICONS.default : icon
   return (
-    <div className="border-3 border-brutal-fg bg-white p-10 text-center space-y-5 animate-fade-up">
+    <div className="border-3 border-brutal-fg bg-white p-8 text-center space-y-6 animate-fade-up">
       <div className="text-4xl text-brutal-muted/40 font-heading">{displayIcon}</div>
 
       <div className="space-y-2">

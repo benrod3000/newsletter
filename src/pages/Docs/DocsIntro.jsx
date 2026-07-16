@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
+
 export default function DocsIntro() {
+  useEffect(() => { document.title = 'Documentation | Veloce' }, [])
   return (
     <article className="space-y-6">
       <h1 className="text-4xl font-heading uppercase tracking-tight leading-none">Documentation</h1>
@@ -30,13 +33,13 @@ export default function DocsIntro() {
 
       <Section title="Key Features">
         <ul className="text-sm text-brutal-fg/70 space-y-2">
-          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Newsletter Editor</strong> — Rich text editor with TipTap. Draft, preview, and schedule.</span></li>
-          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Audience Management</strong> — Import, export, tag, and search your subscribers.</span></li>
-          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Geo Targeting</strong> — Send by city, ZIP code, or radius. Know exactly who you're reaching.</span></li>
-          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Automations</strong> — Welcome drips, re-engagement, smart tagging. Simple if/then flows.</span></li>
-          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>SMS / RCS</strong> — Reach subscribers with phone consent via SMS or rich RCS messages.</span></li>
-          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Analytics</strong> — Opens, clicks, growth. See how your audience responds.</span></li>
-          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Newsletter Archive</strong> — Auto-publish sent newsletters to a public, SEO-friendly URL.</span></li>
+          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Newsletter Editor</strong>: Rich text editor with TipTap. Draft, preview, and schedule.</span></li>
+          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Audience Management</strong>: Import, export, tag, and search your subscribers.</span></li>
+          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Geo Targeting</strong>: Send by city, ZIP code, or radius. Know exactly who you're reaching.</span></li>
+          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Automations</strong>: Welcome drips, re-engagement, smart tagging. Simple if/then flows.</span></li>
+          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>SMS / RCS</strong>: Reach subscribers with phone consent via SMS or rich RCS messages.</span></li>
+          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Analytics</strong>: Opens, clicks, growth. See how your audience responds.</span></li>
+          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Newsletter Archive</strong>: Auto-publish sent newsletters to a public, SEO-friendly URL.</span></li>
         </ul>
       </Section>
 

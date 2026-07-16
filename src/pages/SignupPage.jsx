@@ -1,16 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authAPI } from '../lib/api'
 import Input from '../components/ui/Input'
 import Btn from '../components/ui/Button'
+import Turnstile from '../components/Turnstile'
 
 export default function SignupPage() {
+  useEffect(() => { document.title = 'Create Account | Veloce' }, [])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [workspaceName, setWorkspaceName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState('')
 
   const navigate = useNavigate()
   const setAuth = useAuthStore((s) => s.setAuth)
@@ -19,6 +22,11 @@ export default function SignupPage() {
     e.preventDefault()
     setError('')
 
+    if (!turnstileToken) {
+      setError('Please complete the security check.')
+      return
+    }
+
     if (password.length < 6) {
       setError('Password must be at least 6 characters.')
       return
@@ -26,12 +34,13 @@ export default function SignupPage() {
 
     setLoading(true)
     try {
-      const { data } = await authAPI.signup(email, password, workspaceName || undefined)
+      const { data } = await authAPI.signup(email, password, workspaceName || undefined, turnstileToken)
       setAuth(data.token, data.workspaceId, data.email, data.role)
       navigate('/dashboard')
     } catch (err) {
       const apiErr = err?.response?.data?.error
       setError(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Signup failed. Try again.')
+      setTurnstileToken('')
     } finally {
       setLoading(false)
     }
@@ -87,7 +96,11 @@ export default function SignupPage() {
             />
           </div>
 
-          <Btn type="submit" disabled={loading} loading={loading} fullWidth size="lg" className="bg-brutal-green text-white border-brutal-fg hover:shadow-brutal active:translate-y-0.5">
+          <div className="flex justify-center">
+            <Turnstile onVerify={setTurnstileToken} onExpire={function() { setTurnstileToken('') }} />
+          </div>
+
+          <Btn variant="primary" type="submit" disabled={loading || !turnstileToken} loading={loading} fullWidth size="lg">
             {loading ? 'Creating account...' : 'Create Account'}
           </Btn>
         </form>

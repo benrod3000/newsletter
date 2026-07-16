@@ -1,3 +1,5 @@
+import { forwardRef } from 'react'
+
 const VARIANTS = {
   primary: 'bg-brutal-yellow text-brutal-fg border-3 border-brutal-fg hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-0 active:shadow-none',
   secondary: 'bg-white text-brutal-fg border-3 border-brutal-fg hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-0',
@@ -12,7 +14,7 @@ const SIZES = {
   lg: 'px-6 py-3 text-sm',
 }
 
-export default function Btn({
+function BtnBase({
   variant = 'primary',
   size = 'md',
   loading = false,
@@ -22,9 +24,10 @@ export default function Btn({
   className = '',
   fullWidth,
   ...props
-}) {
+}, ref) {
   return (
     <button
+      ref={ref}
       disabled={disabled || loading}
       className={`inline-flex items-center justify-center gap-2 font-bold uppercase tracking-wider transition-all
         ${VARIANTS[variant] || VARIANTS.primary}
@@ -44,4 +47,7 @@ export default function Btn({
   )
 }
 
+const Btn = forwardRef(BtnBase)
+
 export { Btn }
+export default Btn

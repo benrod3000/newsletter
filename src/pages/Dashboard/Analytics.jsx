@@ -5,7 +5,7 @@ import { EmptyState, LoadingState } from '../../components/ux'
 
 function StatCard({ label, value }) {
   return (
-    <div className="border-3 border-brutal-fg bg-white p-5 border-t-[6px] border-t-brutal-yellow hover:shadow-brutal transition">
+    <div className="border-3 border-brutal-fg bg-white p-6 border-t-[6px] border-t-brutal-yellow hover:shadow-brutal transition">
       <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">{label}</p>
       <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">{value}</p>
     </div>
@@ -78,8 +78,8 @@ export default function AnalyticsPage() {
   const growth = overview?.subscriber_growth || []
   const topCampaigns = overview?.top_campaigns || []
 
-  const fmt = (n) => (typeof n === 'number' ? n.toLocaleString() : '—')
-  const fmtPct = (n) => (typeof n === 'number' ? `${n.toFixed(1)}%` : '—')
+  const fmt = (n) => (typeof n === 'number' ? n.toLocaleString() : '--')
+  const fmtPct = (n) => (typeof n === 'number' ? `${n.toFixed(1)}%` : '--')
 
   return (
     <div className="space-y-8">
@@ -115,11 +115,11 @@ export default function AnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Sent (est.)</p>
-                  <p className="text-2xl font-heading">—</p>
+                  <p className="text-2xl font-heading">--</p>
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Response Rate</p>
-                  <p className="text-2xl font-heading text-brutal-muted">—</p>
+                  <p className="text-2xl font-heading text-brutal-muted">--</p>
                 </div>
               </div>
               <p className="text-[9px] text-brutal-muted mt-2">{smsStats.message}</p>

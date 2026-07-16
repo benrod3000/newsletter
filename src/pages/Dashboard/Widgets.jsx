@@ -221,7 +221,7 @@ export default function WidgetsPage() {
             </div>
           </div>
 
-          <div className="p-8 space-y-5">
+          <div className="p-8 space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
@@ -482,8 +482,8 @@ export default function WidgetsPage() {
 
               {/* Right: Live Preview */}
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted mb-3">Live Preview</p>
-                <div className="border-3 border-brutal-fg shadow-brutal">
+                <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted mb-3">Live Preview · <span className="text-brutal-green">{form.size}</span></p>
+                <div className={`border-3 border-brutal-fg shadow-brutal transition-all duration-200 ${form.size === 'small' ? 'max-w-sm' : form.size === 'large' ? 'max-w-lg' : 'max-w-md'}`}>
                   <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-5 py-3">
                     <p className="font-heading text-lg uppercase leading-none">{formPreview.headline || 'Your Headline'}</p>
                   </div>

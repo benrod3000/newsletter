@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
+
 export default function FAQ() {
+  useEffect(() => { document.title = 'FAQ | Veloce' }, [])
   const faqs = [
     {
       q: 'How much does Veloce cost?',
@@ -14,7 +17,7 @@ export default function FAQ() {
     },
     {
       q: 'How is this different from Mailchimp?',
-      a: 'Veloce is simpler, calmer, and built for people who want to own their audience without the complexity of enterprise marketing tools. No sales funnels, no landing page builders — just newsletters.',
+      a: 'Veloce is simpler, calmer, and built for people who want to own their audience without the complexity of enterprise marketing tools. No sales funnels, no landing page builders. Just newsletters.',
     },
     {
       q: 'Can I import my existing subscribers?',

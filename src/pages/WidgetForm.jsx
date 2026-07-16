@@ -6,6 +6,7 @@ import LoadingState from '../components/ux/LoadingState'
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
 export default function WidgetFormPage() {
+  useEffect(() => { document.title = 'Subscribe | Veloce' }, [])
   const { slug } = useParams()
   const [widget, setWidget] = useState(null)
   const [email, setEmail] = useState('')

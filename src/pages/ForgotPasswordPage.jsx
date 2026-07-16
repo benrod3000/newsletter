@@ -1,21 +1,25 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import Btn from '../components/ui/Button'
 import Input from '../components/ui/Input'
+import Turnstile from '../components/Turnstile'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
 export default function ForgotPasswordPage() {
+  useEffect(() => { document.title = 'Forgot Password | Veloce' }, [])
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const [resetLink, setResetLink] = useState('')
   const [error, setError] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState('')
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    if (!turnstileToken) { setError('Please complete the security check.'); return }
     setLoading(true)
     try {
       const { data } = await axios.post(`${API_URL}/api/auth/forgot-password`, { email })
@@ -77,7 +81,11 @@ export default function ForgotPasswordPage() {
               placeholder="you@example.com"
               required
             />
-            <Btn variant="primary" fullWidth type="submit" disabled={loading} loading={loading} size="lg">
+            {!sent && <div className="flex justify-center">
+            <Turnstile onVerify={setTurnstileToken} onExpire={function() { setTurnstileToken('') }} />
+          </div>}
+
+          <Btn variant="primary" fullWidth type="submit" disabled={loading || (!sent && !turnstileToken)} loading={loading} size="lg">
               {loading ? 'Sending...' : 'Send Reset Link'}
             </Btn>
           </form>

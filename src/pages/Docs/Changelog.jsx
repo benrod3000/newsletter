@@ -1,4 +1,7 @@
+import { useEffect } from 'react'
+
 export default function Changelog() {
+  useEffect(() => { document.title = 'Changelog | Veloce' }, [])
   const entries = [
     {
       date: 'July 15, 2026',
