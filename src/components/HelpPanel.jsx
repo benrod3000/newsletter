@@ -14,7 +14,7 @@ const PAGE_HELP = {
   },
   '/dashboard/subscribers': {
     title: 'Your Subscribers',
-    what: 'This is where your audience lives. Each person has an email and a health score: 🟢 active (opened recently), 🟡 at risk (quiet for 30 days), 🔴 cold (60+ days inactive).',
+    what: 'This is where your audience lives. Each subscriber has an email, name, location, and engagement tracking so you can target them effectively.',
     actions: [
       { label: 'Add a subscriber manually', tip: 'Click + Add Subscriber' },
       { label: 'Import from CSV', tip: 'Click Import CSV or press I' },

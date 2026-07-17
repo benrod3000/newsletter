@@ -4,6 +4,37 @@ export default function Changelog() {
   useEffect(() => { document.title = 'Changelog | Veloce' }, [])
   const entries = [
     {
+      date: 'July 17, 2026',
+      items: [
+        'Transactional email system: welcome emails on signup, password reset emails via SendGrid',
+        'Provider status dashboard: live SendGrid key validation in Settings',
+        'RCS preview with real image rendering and phone-style CTA buttons',
+        'Auto-recover from stale code-split chunks after deployment',
+        'SendGrid credential management in Settings with step-by-step setup guides',
+        'CSV import visual template guide with downloadable template.csv',
+        'Widget theme presets renamed: Veloce, Clean, Midnight',
+        'Widget preview now respects size selection (small/medium/large)',
+        'SMS preview auto-differentiates between RCS (rich) and plain SMS',
+        'Location-triggered geo-filter wiring for SMS campaigns',
+      ],
+    },
+    {
+      date: 'July 16, 2026',
+      items: [
+        'Widget full style customization: 5 color tokens with live preview',
+        'Widget embed: dynamic height calculation, View Live button, color picker',
+        'Multi-ZIP GeoFilter with GSAP circle grow animations and subscriber counts',
+        'SMS/RCS pipeline: Twilio credentials, test SMS send, cost estimates',
+        'Email Provider setup: SendGrid and SES with guided instructions',
+        'Inline form validation on login and signup pages',
+        'Toast duration tuning: success 3s, error 6s, info 4s',
+        'Centralized sentinel logger for critical routes',
+        'CSS cleanup: removed dead classes, radar animations, redundant styles',
+        'CSP fix: Turnstile frame-src and external API connect-src',
+        'Saved audience segments: CRUD with workspace-scoped access',
+      ],
+    },
+    {
       date: 'July 15, 2026',
       items: [
         'Email queue architecture: campaign_jobs tracking, Promise.allSettled for partial failure handling, per-batch progress updates',

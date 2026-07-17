@@ -81,17 +81,13 @@ export const FOOTER_LINKS = [
     { label: 'Features', href: '/#features' },
     { label: 'Demo', href: '/demo' },
     { label: 'Radius Targeting', href: '/demo' },
-    { label: 'Pricing', href: '#' },
   ]},
   { heading: 'Resources', links: [
     { label: 'Documentation', href: '/docs' },
-    { label: 'API', href: '/docs/api/overview' },
     { label: 'Quickstart', href: '/docs/quickstart' },
     { label: 'Changelog', href: '/docs/changelog' },
   ]},
   { heading: 'Company', links: [
-    { label: 'About', href: '#' },
-    { label: 'Blog', href: '#' },
     { label: 'Privacy', href: '/privacy' },
     { label: 'Terms', href: '/terms' },
     { label: 'Support', href: 'mailto:support@veloce.app' },
