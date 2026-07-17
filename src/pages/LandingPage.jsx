@@ -98,7 +98,7 @@ export default function LandingPage() {
           <div className="h-2 w-24 bg-brutal-yellow border-2 border-brutal-fg" aria-hidden="true" />
 
           <p className="text-lg sm:text-xl text-brutal-fg/80 leading-relaxed max-w-2xl font-medium">
-            Email marketing without algorithms. Reach your subscribers on email, SMS, and RCS — starting with a simple newsletter.
+            Email marketing without algorithms. Reach your subscribers on email, SMS, and RCS -- starting with a simple newsletter.
           </p>
 
           <Annotation>own your audience · BYO SendGrid/SES · free to start · no credit card</Annotation>
@@ -137,7 +137,7 @@ export default function LandingPage() {
             {[
               { icon: Globe, title: 'Algorithm Dependent', desc: 'Social platforms decide who sees your content. You don\'t.' },
               { icon: FileText, title: 'Charged Per Contact', desc: 'Pay for subscribers you can\'t even reach. Most platforms do this.' },
-              { icon: Clock, title: 'Locked In', desc: 'Your list, your templates, your data — but you can\'t easily leave.' },
+              { icon: Clock, title: 'Locked In', desc: 'Your list, your templates, your data -- but you can\'t easily leave.' },
             ].map((p) => (
               <div key={p.title} className="border-3 border-brutal-fg bg-white p-5 hover:shadow-brutal transition">
                 <p.icon size={20} className="text-brutal-green mb-2" />
