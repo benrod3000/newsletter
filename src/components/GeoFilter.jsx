@@ -241,7 +241,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
 
         const dc = locations.length > 0 ? [locations[0].lat, locations[0].lng] : [39.8283, -98.5795]
         const map = L.map(el, {
-          center: dc, zoom: 4, zoomControl: true, attributionControl: true,
+          center: dc, zoom: 4, zoomControl: true, attributionControl: true, scrollWheelZoom: false,
         })
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
           maxZoom: 18,
@@ -470,7 +470,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
                 )}
                 <span className="text-white/60">☌ {totalInRange} in range · {radius} mi radius</span>
               </div>
-              <div id="geo-filter-map" style={{ height: '220px', width: '100%', background: '#e8e8e0' }} />
+              <div id="geo-filter-map" style={{ height: '220px', width: '100%', background: '#e8e8e0', touchAction: 'auto' }} />
             </div>
           )}
 
