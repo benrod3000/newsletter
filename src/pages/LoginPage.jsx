@@ -21,6 +21,7 @@ export default function LoginPage() {
   const [workspaceId, setWorkspaceId] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
   const [totpRequired, setTotpRequired] = useState(false)
   const [totpCode, setTotpCode] = useState('')
   const [partialToken, setPartialToken] = useState('')
@@ -32,6 +33,12 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setFieldErrors({})
+
+    const fe = {}
+    if (!email.includes('@')) fe.email = 'Enter a valid email'
+    if (password.length < 6) fe.password = 'At least 6 characters'
+    if (Object.keys(fe).length) { setFieldErrors(fe); return }
 
     if (!turnstileToken) {
       setError('Please complete the security check.')
@@ -139,11 +146,12 @@ export default function LoginPage() {
                   id="login-password"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white border-3 border-brutal-fg px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
+                  onChange={(e) => { setPassword(e.target.value); if (fieldErrors.password) setFieldErrors({}) }}
+                  className={`w-full bg-white border-3 px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition ${fieldErrors.password ? 'border-brutal-red' : 'border-brutal-fg'}`}
                   placeholder="••••••••"
                   required
                 />
+                {fieldErrors.password && <p className="mt-1 text-[9px] font-bold text-brutal-red uppercase tracking-wider">{fieldErrors.password}</p>}
               </div>
 
               <div>

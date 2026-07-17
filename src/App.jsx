@@ -192,6 +192,18 @@ function App() {
           <Route path="/newsletter/:slug" element={<ErrorBoundary><PublicNewsletterPage /></ErrorBoundary>} />
           <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
 
+          {/* 404 catch-all */}
+          <Route path="*" element={
+            <main className="min-h-[80vh] flex items-center justify-center">
+              <div className="text-center space-y-4 max-w-sm">
+                <div className="h-1 w-12 bg-brutal-red mx-auto" />
+                <h1 className="text-6xl font-heading uppercase tracking-tight leading-none">404</h1>
+                <p className="text-sm text-brutal-muted">This page doesn't exist.</p>
+                <Link to="/" className="inline-block px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition">← Back to Veloce</Link>
+              </div>
+            </main>
+          } />
+
           {/* Documentation */}
           <Route path="/docs" element={<ErrorBoundary><DocsLayout /></ErrorBoundary>}>
             <Route index element={<DocsIntro />} />

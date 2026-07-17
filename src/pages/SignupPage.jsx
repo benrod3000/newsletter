@@ -13,6 +13,7 @@ export default function SignupPage() {
   const [workspaceName, setWorkspaceName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
   const [turnstileToken, setTurnstileToken] = useState('')
 
   const navigate = useNavigate()
@@ -21,16 +22,12 @@ export default function SignupPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    setFieldErrors({})
 
-    if (!turnstileToken) {
-      setError('Please complete the security check.')
-      return
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.')
-      return
-    }
+    const fe = {}
+    if (!email.includes('@')) fe.email = 'Enter a valid email'
+    if (password.length < 6) fe.password = 'At least 6 characters'
+    if (Object.keys(fe).length) { setFieldErrors(fe); return }
 
     setLoading(true)
     try {
@@ -74,18 +71,21 @@ export default function SignupPage() {
               label="Email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); if (fieldErrors.email) setFieldErrors({}) }}
               placeholder="you@example.com"
               required
+              autoFocus
+              error={fieldErrors.email}
             />
             <Input
               label="Password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); if (fieldErrors.password) setFieldErrors({}) }}
               placeholder="6+ characters"
               required
               minLength={6}
+              error={fieldErrors.password}
             />
             <Input
               label={<span>Workspace Name <span className="text-brutal-muted font-normal">(optional)</span></span>}

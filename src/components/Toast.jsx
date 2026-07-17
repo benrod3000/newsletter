@@ -35,7 +35,10 @@ export function ToastProvider({ children }) {
     })
   }, [])
 
-  const addToast = useCallback((message, type = 'info', duration = 4000, undo) => {
+  const addToast = useCallback((message, type = 'info', duration, undo) => {
+    if (!duration) {
+      duration = type === 'success' ? 3000 : type === 'error' ? 6000 : 4000
+    }
     const id = nextId.current++
 
     setToasts((prev) => {
