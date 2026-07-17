@@ -380,7 +380,10 @@ export default function CampaignsPage() {
                   const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
                   const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/campaigns/sms`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                    body: JSON.stringify({ message: smsMessage.trim() }),
+                    body: JSON.stringify({
+                      message: smsMessage.trim(),
+                      image_urls: smsImages.trim() ? smsImages.split(',').map(u => u.trim()).filter(Boolean) : undefined,
+                    }),
                   })
                   const data = await res.json()
                   if (data.sent > 0) toast.addToast(`SMS sent to ${data.sent} recipients${data.failed > 0 ? `, ${data.failed} failed` : ''}`, data.failed > 0 ? 'warning' : 'success')

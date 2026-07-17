@@ -58,6 +58,11 @@ export default function SubscribersPage() {
   // Geo-radius filter
   const [geoFilter, setGeoFilter] = useState(null)
   const [geoLoading, setGeoLoading] = useState(false)
+
+  // Audience segments
+  const [segments, setSegments] = useState([])
+  const [segmentName, setSegmentName] = useState('')
+  const [savingSegment, setSavingSegment] = useState(false)
   const [page, setPage] = useState(1)
   const [perPage] = useState(50)
   const searchTimer = useRef(null)
@@ -74,6 +79,10 @@ export default function SubscribersPage() {
     fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscriber-lists`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(d => setSubscriberLists(d.lists || d || [])).catch(() => {})
+    // Load saved segments
+    fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/segments`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json()).then(d => setSegments(d.segments || [])).catch(() => {})
   }, [workspaceId])
 
   async function loadSubscribers() {
@@ -183,6 +192,38 @@ export default function SubscribersPage() {
     } finally {
       setBulkRemoving(false)
     }
+  }
+
+  // ─── Audience segments ───
+  async function saveSegment() {
+    if (!segmentName.trim()) return
+    setSavingSegment(true)
+    try {
+      const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+      const filters = {}
+      if (statusFilter) filters.status = statusFilter
+      if (search.trim()) filters.search = search.trim()
+      if (geoFilter) filters.geoFilter = geoFilter
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/segments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: segmentName.trim(), filters }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        toast.addToast(`Segment "${segmentName.trim()}" saved`, 'success')
+        setSegmentName('')
+        setSegments(prev => [data.segment, ...prev])
+      } else toast.addToast(data.error || 'Failed to save', 'error')
+    } catch { toast.addToast('Failed to save segment', 'error') }
+    finally { setSavingSegment(false) }
+  }
+
+  function applySegment(s) {
+    const f = s.filters || {}
+    setStatusFilter(f.status || '')
+    setSearch(f.search || '')
+    setGeoFilter(f.geoFilter || null)
   }
 
   async function exportCsv() {
@@ -388,6 +429,42 @@ export default function SubscribersPage() {
         active={!!geoFilter}
         subscribers={subscribers}
       />
+
+      {/* Save current filter as a segment */}
+      {(statusFilter || search.trim() || geoFilter) && (
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={segmentName}
+            onChange={e => setSegmentName(e.target.value)}
+            placeholder="Name this segment..."
+            maxLength={60}
+            className="flex-1 max-w-xs px-3 py-1.5 bg-white border-3 border-brutal-fg text-xs focus:outline-none focus:bg-brutal-yellow/10"
+          />
+          <button
+            onClick={saveSegment}
+            disabled={!segmentName.trim() || savingSegment}
+            className="px-3 py-1.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-[10px] uppercase tracking-wider hover:shadow-brutal disabled:opacity-40 transition"
+          >
+            {savingSegment ? 'Saving...' : '💾 Save Filter'}
+          </button>
+        </div>
+      )}
+
+      {/* Saved segments */}
+      {segments.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {segments.map(s => (
+            <button
+              key={s.id}
+              onClick={() => applySegment(s)}
+              className="px-2.5 py-1 border-2 border-brutal-fg text-[9px] font-bold uppercase tracking-wider bg-white hover:bg-brutal-yellow/20 transition"
+            >
+              🔖 {s.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Bulk action bar */}
       {selectedIds.size > 0 && (
