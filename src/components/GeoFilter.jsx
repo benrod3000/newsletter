@@ -170,6 +170,10 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
 
     if (locations.length === 0) return
 
+    if (!map || !map.getContainer()?.offsetHeight) {
+      map?.invalidateSize()
+    }
+
     const expectedBounds = L.latLngBounds()
 
     locations.forEach((loc, i) => {
@@ -180,12 +184,10 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       }).addTo(map)
       circlesRef.current.push(circle)
       animateCircleGrow(circle, radius * 1609.34, 0.5 + i * 0.1)
-
-      // Calculate expected bounds from target radius (not animated radius)
       expectedBounds.extend(L.circle(center, { radius: radius * 1609.34 }).getBounds())
     })
 
-    map.fitBounds(expectedBounds, { padding: [40, 40] })
+    try { map.fitBounds(expectedBounds, { padding: [40, 40] }) } catch {}
   }
 
   // ─── Map init & update ───
@@ -206,21 +208,58 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
 
     // First time — schedule map creation (container needs to finish open animation)
     if (!mapRef.current) {
-      const dc = locations.length > 0 ? [locations[0].lat, locations[0].lng] : [39.8283, -98.5795]
       setTimeout(() => {
         const el = document.getElementById('geo-filter-map')
         if (!el || mapRef.current) return
+
+        const dc = locations.length > 0 ? [locations[0].lat, locations[0].lng] : [39.8283, -98.5795]
         const map = L.map(el, {
-          center: dc, zoom: 11, zoomControl: true, attributionControl: true,
+          center: dc, zoom: 4, zoomControl: true, attributionControl: true,
         })
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
           maxZoom: 18,
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
         }).addTo(map)
         mapRef.current = map
-        setTimeout(() => map.invalidateSize(), 100)
-      }, 200)
-      return // will rebuild on next render cycle
+        map.invalidateSize()
+
+        // Draw circles, marker, pins immediately
+        rebuildCircles(map)
+
+        if (locations.length > 0) {
+          const fc = [locations[0].lat, locations[0].lng]
+          const marker = L.marker(fc, {
+            draggable: true,
+            icon: L.divIcon({
+              className: '',
+              html: '<div style="width:16px;height:16px;background:#f5e642;border:3px solid #0a0a0a;border-radius:50%;cursor:grab;"></div>',
+              iconSize: [16, 16], iconAnchor: [8, 8],
+            }),
+          }).addTo(map)
+
+          marker.on('dragend', async (e) => {
+            const pos = e.target.getLatLng()
+            try {
+              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}&zoom=10`)
+              const data = await res.json()
+              const pc = data.address?.postcode || ''
+              const city = data.address?.city || data.address?.town || data.address?.village || ''
+              const state = data.address?.state || ''
+              if (pc) setZip(pc)
+              setLocations(prev => { const n = [...prev]; n[0] = { ...n[0], lat: pos.lat, lng: pos.lng, city, state }; return n })
+            } catch {
+              setLocations(prev => { const n = [...prev]; n[0] = { ...n[0], lat: pos.lat, lng: pos.lng }; return n })
+            }
+          })
+          markerRef.current = marker
+        }
+
+        const g = L.layerGroup()
+        addSubscriberPins(g)
+        g.addTo(map)
+        subscriberLayerRef.current = g
+      }, 300)
+      return // update path handles subsequent location changes
     }
 
     // Map exists — update circles, marker, pins in place
