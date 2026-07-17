@@ -130,17 +130,15 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     setLocations(prev => [...prev, newLoc])
   }
 
-  // ─── Remove a location with GSAP exit ───
+  // ─── Remove a location with GSAP exit (guard against double-remove) ───
   function removeLocation(index) {
     const chipEl = chipsRef.current[index]
-    if (chipEl) {
-      gsap.to(chipEl, {
-        scale: 0.5, opacity: 0, duration: 0.2, ease: 'power2.in',
-        onComplete: () => setLocations(prev => prev.filter((_, i) => i !== index)),
-      })
-    } else {
-      setLocations(prev => prev.filter((_, i) => i !== index))
-    }
+    if (!chipEl || chipEl.dataset.removing === 'true') return
+    chipEl.dataset.removing = 'true'
+    gsap.to(chipEl, {
+      scale: 0.5, opacity: 0, duration: 0.2, ease: 'power2.in',
+      onComplete: () => setLocations(prev => prev.filter((_, i) => i !== index)),
+    })
   }
 
   // ─── GSAP-animated circle grow (radius tween → Leaflet) ───
@@ -172,6 +170,8 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
 
     if (locations.length === 0) return
 
+    const expectedBounds = L.latLngBounds()
+
     locations.forEach((loc, i) => {
       const color = CIRCLE_COLORS[i % CIRCLE_COLORS.length]
       const center = [loc.lat, loc.lng]
@@ -180,15 +180,12 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       }).addTo(map)
       circlesRef.current.push(circle)
       animateCircleGrow(circle, radius * 1609.34, 0.5 + i * 0.1)
+
+      // Calculate expected bounds from target radius (not animated radius)
+      expectedBounds.extend(L.circle(center, { radius: radius * 1609.34 }).getBounds())
     })
 
-    if (circlesRef.current.length > 0) {
-      const bounds = circlesRef.current.reduce(
-        (b, c) => b.extend(c.getBounds()),
-        L.latLngBounds(circlesRef.current[0].getLatLng(), circlesRef.current[0].getLatLng())
-      )
-      map.fitBounds(bounds, { padding: [40, 40] })
-    }
+    map.fitBounds(expectedBounds, { padding: [40, 40] })
   }
 
   // ─── Map init & update ───
@@ -207,19 +204,26 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     const mapEl = document.getElementById('geo-filter-map')
     if (!mapEl) return
 
+    // First time — schedule map creation (container needs to finish open animation)
     if (!mapRef.current) {
       const dc = locations.length > 0 ? [locations[0].lat, locations[0].lng] : [39.8283, -98.5795]
-      const map = L.map(mapEl, {
-        center: dc, zoom: 11, zoomControl: true, attributionControl: true,
-      })
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 18,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-      }).addTo(map)
-      mapRef.current = map
-      setTimeout(() => map.invalidateSize(), 100)
+      setTimeout(() => {
+        const el = document.getElementById('geo-filter-map')
+        if (!el || mapRef.current) return
+        const map = L.map(el, {
+          center: dc, zoom: 11, zoomControl: true, attributionControl: true,
+        })
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+          maxZoom: 18,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+        }).addTo(map)
+        mapRef.current = map
+        setTimeout(() => map.invalidateSize(), 100)
+      }, 200)
+      return // will rebuild on next render cycle
     }
 
+    // Map exists — update circles, marker, pins in place
     const map = mapRef.current
     rebuildCircles(map)
 
@@ -269,12 +273,13 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   // ─── Radius change: update all circles ───
   useEffect(() => {
     if (!mapRef.current || circlesRef.current.length === 0) return
-    circlesRef.current.forEach(c => animateCircleGrow(c, radius * 1609.34, 0.35))
-    const bounds = circlesRef.current.reduce(
-      (b, c) => b.extend(c.getBounds()),
-      L.latLngBounds(circlesRef.current[0].getLatLng(), circlesRef.current[0].getLatLng())
-    )
-    mapRef.current.fitBounds(bounds, { padding: [40, 40] })
+    const targetR = radius * 1609.34
+    circlesRef.current.forEach(c => animateCircleGrow(c, targetR, 0.35))
+
+    // Calculate bounds from a fresh circle at target radius (not animated radius)
+    const expectedBounds = L.latLngBounds()
+    locations.forEach(loc => expectedBounds.extend(L.circle([loc.lat, loc.lng], { radius: targetR }).getBounds()))
+    mapRef.current.fitBounds(expectedBounds, { padding: [40, 40] })
   }, [radius])
 
   // ─── Actions ───
