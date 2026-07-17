@@ -60,11 +60,14 @@ export default function DemoPage() {
     if (!contentRef.current) return
     const ctx = gsap.context(() => {
       // Stagger rows/tables
-      gsap.fromTo('.demo-stagger', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, stagger: 0.05, ease: 'power2.out' })
+      const staggerEls = gsap.utils.toArray('.demo-stagger')
+      if (staggerEls.length) gsap.fromTo(staggerEls, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, stagger: 0.05, ease: 'power2.out' })
       // Bounce badges
-      gsap.fromTo('.demo-bounce', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'back.out(1.7)' })
+      const bounceEls = gsap.utils.toArray('.demo-bounce')
+      if (bounceEls.length) gsap.fromTo(bounceEls, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'back.out(1.7)' })
       // Slide cards
-      gsap.fromTo('.demo-slide', { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'power2.out' })
+      const slideEls = gsap.utils.toArray('.demo-slide')
+      if (slideEls.length) gsap.fromTo(slideEls, { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'power2.out' })
     }, contentRef)
     return () => ctx.revert()
   }, [activeTab])
