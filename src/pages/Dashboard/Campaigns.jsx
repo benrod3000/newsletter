@@ -40,7 +40,6 @@ export default function CampaignsPage() {
   const [smsSending, setSmsSending] = useState(false)
   const [smsCount, setSmsCount] = useState(0)
   const [smsPreview, setSmsPreview] = useState(false)
-  const [twoChannel, setTwoChannel] = useState(false) // Also send SMS follow-up
   const [geoTrigger, setGeoTrigger] = useState(false) // Location-triggered
   const [smsImages, setSmsImages] = useState('') // RCS carousel (comma-separated URLs)
   const [confirmAction, setConfirmAction] = useState(null) // { title, message, onConfirm, danger }

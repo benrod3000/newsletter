@@ -15,8 +15,8 @@ import {
 gsap.registerPlugin(ScrollTrigger)
 import {
   MapPin, Mail, Zap, Target, Users, BarChart3,
-  Menu, X, ChevronRight, CheckCircle,
-  Globe, Layers, Sparkles, ArrowRight, ExternalLink,
+  Menu, X, CheckCircle,
+  Globe, ArrowRight,
   Share2, Activity, Radio, Smartphone, Clock,
   FileText,
 } from 'lucide-react'

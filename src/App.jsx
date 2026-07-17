@@ -133,14 +133,14 @@ function App() {
           <Route
             path="/privacy"
             element={
-              <PrivacyPage />
+              <ErrorBoundary><PrivacyPage /></ErrorBoundary>
             }
           />
 
           <Route
             path="/terms"
             element={
-              <TermsPage />
+              <ErrorBoundary><TermsPage /></ErrorBoundary>
             }
           />
 
@@ -212,7 +212,7 @@ function App() {
 
           {/* Public newsletter archive — no layout wrapper */}
           <Route path="/newsletter/:slug" element={<ErrorBoundary><PublicNewsletterPage /></ErrorBoundary>} />
-          <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+          <Route path="/oauth/callback" element={<ErrorBoundary><OAuthCallbackPage /></ErrorBoundary>} />
 
           {/* Documentation */}
           <Route path="/docs" element={<ErrorBoundary><DocsLayout /></ErrorBoundary>}>

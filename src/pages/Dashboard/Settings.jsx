@@ -4,13 +4,14 @@ import { brandingAPI, automationsAPI } from '../../lib/api'
 import { useToast } from '../../components/Toast'
 import { Eye, EyeOff, ShieldCheck, Copy, Check } from 'lucide-react'
 import Btn from '../../components/ui/Button'
-import Card from '../../components/ui/Card'
+import LoadingState from '../../components/ux/LoadingState'
 
 export default function SettingsPage() {
   const { workspaceId } = useAuthStore()
   const toast = useToast()
   const [activeTab, setActiveTab] = useState('branding')
   const [loading, setLoading] = useState(false)
+  const [pageLoading, setPageLoading] = useState(true)
   const [branding, setBranding] = useState({
     logo_url: '',
     brand_colors: { primary: '#f59e0b', secondary: '#18181b' },
@@ -132,6 +133,8 @@ export default function SettingsPage() {
       setBranding(data)
     } catch (error) {
       console.error('Failed to load branding:', error)
+    } finally {
+      setPageLoading(false)
     }
   }
 
@@ -224,6 +227,8 @@ export default function SettingsPage() {
           </button>
         })}
       </div>
+
+      {pageLoading && <LoadingState label="Loading settings" />}
 
       {/* Branding Tab */}
       {activeTab === 'branding' && (
