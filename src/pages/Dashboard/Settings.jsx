@@ -95,8 +95,12 @@ export default function SettingsPage() {
         headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token}` }
       })
       const data = await res.json()
-      toast.addToast(`Smart tags evaluated: ${data.evaluated || 0} subscribers, ${data.tagged || 0} tagged`, 'success')
-      loadSmartTagHistory()
+      if (data.error) {
+        toast.addToast(data.error, 'error')
+      } else {
+        toast.addToast(`Smart tags evaluated: ${data.evaluated || 0} subscribers, ${data.tagged || 0} tagged`, 'success')
+        loadSmartTagHistory()
+      }
     } catch { toast.addToast('Failed to run smart tags', 'error') }
     finally { setSmartTagsRunning(false) }
   }
