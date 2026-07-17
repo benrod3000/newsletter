@@ -33,6 +33,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   const chipsRef = useRef([])
   const addBtnRef = useRef(null)
   const pendingPulse = useRef(null)
+  const gsapTweens = useRef([])
 
   // ─── Panel open/close (GSAP) ───
   useEffect(() => {
@@ -144,10 +145,11 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   // ─── GSAP-animated circle grow (radius tween → Leaflet) ───
   function animateCircleGrow(circle, targetMeters, duration = 0.5) {
     const proxy = { r: 0 }
-    gsap.to(proxy, {
+    const tw = gsap.to(proxy, {
       r: targetMeters, duration, ease: 'power3.out',
       onUpdate: () => { try { circle.setRadius(proxy.r) } catch {} },
     })
+    gsapTweens.current.push(tw)
   }
 
   // ─── Helper: add subscriber pins to a Leaflet layer ───
@@ -165,16 +167,23 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
 
   // ─── Rebuild all circles on the map ───
   function rebuildCircles(map) {
+    // Kill any running GSAP circle animations first
+    gsapTweens.current.forEach(t => t.kill())
+    gsapTweens.current = []
+
     circlesRef.current.forEach(c => { try { map.removeLayer(c) } catch {} })
     circlesRef.current = []
 
     if (locations.length === 0) return
 
-    if (!map || !map.getContainer()?.offsetHeight) {
-      map?.invalidateSize()
-    }
-
-    const expectedBounds = L.latLngBounds()
+    // Compute bounds directly from lat/lng + radius (avoids temp circle objects)
+    const lats = locations.map(l => l.lat)
+    const lngs = locations.map(l => l.lng)
+    const degOffset = (radius * 1609.34) / 111320
+    const bounds = L.latLngBounds(
+      [Math.min(...lats) - degOffset, Math.min(...lngs) - degOffset],
+      [Math.max(...lats) + degOffset, Math.max(...lngs) + degOffset]
+    )
 
     locations.forEach((loc, i) => {
       const color = CIRCLE_COLORS[i % CIRCLE_COLORS.length]
@@ -184,16 +193,18 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       }).addTo(map)
       circlesRef.current.push(circle)
       animateCircleGrow(circle, radius * 1609.34, 0.5 + i * 0.1)
-      expectedBounds.extend(L.circle(center, { radius: radius * 1609.34 }).getBounds())
     })
 
-    try { map.fitBounds(expectedBounds, { padding: [40, 40] }) } catch {}
+    map.invalidateSize()
+    try { map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 }) } catch {}
   }
 
   // ─── Map init & update ───
   useEffect(() => {
     if (!open) {
       if (mapRef.current) {
+        gsapTweens.current.forEach(t => t.kill())
+        gsapTweens.current = []
         mapRef.current.remove()
         mapRef.current = null
         markerRef.current = null
@@ -315,10 +326,16 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     const targetR = radius * 1609.34
     circlesRef.current.forEach(c => animateCircleGrow(c, targetR, 0.35))
 
-    // Calculate bounds from a fresh circle at target radius (not animated radius)
-    const expectedBounds = L.latLngBounds()
-    locations.forEach(loc => expectedBounds.extend(L.circle([loc.lat, loc.lng], { radius: targetR }).getBounds()))
-    mapRef.current.fitBounds(expectedBounds, { padding: [40, 40] })
+    // Calculate bounds from lat/lng + radius (no temp circle objects)
+    const lats = locations.map(l => l.lat)
+    const lngs = locations.map(l => l.lng)
+    const degOffset = (radius * 1609.34) / 111320
+    const bounds = L.latLngBounds(
+      [Math.min(...lats) - degOffset, Math.min(...lngs) - degOffset],
+      [Math.max(...lats) + degOffset, Math.max(...lngs) + degOffset]
+    )
+    mapRef.current.invalidateSize()
+    mapRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 })
   }, [radius])
 
   // ─── Actions ───
