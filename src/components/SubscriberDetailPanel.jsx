@@ -120,7 +120,7 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
         {/* Profile info */}
         <div className="p-6 space-y-6">
           <Section title="Profile">
-            {subscriber.phone_number && <Row label="Phone" value={subscriber.phone_number} />}
+            {(subscriber.phone || subscriber.phone_number) && <Row label="Phone" value={subscriber.phone || subscriber.phone_number} />}
             {subscriber.date_of_birth && <Row label="Date of Birth" value={subscriber.date_of_birth} />}
             {location && <Row label="Location" value={location} />}
             {subscriber.postal_code && <Row label="ZIP / Postal" value={subscriber.postal_code} />}

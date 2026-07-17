@@ -586,6 +586,7 @@ export default function SubscribersPage() {
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell">Name</th>
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell">Status</th>
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden lg:table-cell">📍 Location</th>
+                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden md:table-cell">📱 Phone</th>
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden md:table-cell">Joined</th>
                 {geoFilter && <th className="text-right p-3 font-bold text-xs uppercase tracking-wider">Distance</th>}
                 <th className="text-right p-3"></th>
