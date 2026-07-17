@@ -22,6 +22,9 @@ export default function SettingsPage() {
     ses_access_key: '',
     ses_secret_key: '',
     ses_from_email: '',
+    twilio_account_sid: '',
+    twilio_auth_token: '',
+    twilio_phone_number: '',
   })
   const [automations, setAutomations] = useState([])
   const [showNewAutomation, setShowNewAutomation] = useState(false)
@@ -200,10 +203,10 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <div className="flex border-3 border-brutal-fg overflow-hidden mb-8">
-        {['branding', 'automations', 'security'].map(function(tab) {
+        {['branding', 'sms', 'automations', 'security'].map(function(tab) {
           return <button key={tab} onClick={function() { setActiveTab(tab) }}
             className={'px-6 py-3 font-bold text-sm uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ' + (activeTab === tab ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg')}>
-            {tab === 'branding' ? 'Branding' : tab === 'automations' ? 'Automations' : 'Security'}
+            {tab === 'branding' ? 'Branding' : tab === 'sms' ? 'SMS' : tab === 'automations' ? 'Automations' : 'Security'}
           </button>
         })}
       </div>
@@ -484,6 +487,86 @@ export default function SettingsPage() {
               >
                 {testSending ? 'Testing...' : 'Test Provider'}
               </Btn>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SMS Tab */}
+      {activeTab === 'sms' && (
+        <div className="space-y-8">
+          <div className="border-3 border-brutal-fg bg-white p-8">
+            <h3 className="font-heading text-2xl uppercase tracking-wide mb-6">📱 SMS Provider</h3>
+            <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider mb-6">
+              Connect a Twilio account to send SMS and RCS campaigns.
+            </p>
+
+            <div className="space-y-5 max-w-md">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Twilio Account SID</label>
+                <input
+                  type="text"
+                  value={branding.twilio_account_sid || ''}
+                  onChange={e => setBranding({ ...branding, twilio_account_sid: e.target.value })}
+                  placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                  className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Twilio Auth Token</label>
+                <div className="relative">
+                  <input
+                    type={showSecretKey ? 'text' : 'password'}
+                    value={branding.twilio_auth_token || ''}
+                    onChange={e => setBranding({ ...branding, twilio_auth_token: e.target.value })}
+                    placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-mono pr-10 focus:outline-none focus:bg-brutal-yellow/10"
+                  />
+                  <button onClick={() => setShowSecretKey(!showSecretKey)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:opacity-60" aria-label={showSecretKey ? 'Hide' : 'Show'}>
+                    {showSecretKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Twilio Phone Number</label>
+                <input
+                  type="text"
+                  value={branding.twilio_phone_number || ''}
+                  onChange={e => setBranding({ ...branding, twilio_phone_number: e.target.value })}
+                  placeholder="+15125550199"
+                  className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Btn variant="primary" size="md" onClick={saveBranding} loading={loading}>
+                  Save SMS Settings
+                </Btn>
+                {branding.twilio_account_sid && branding.twilio_auth_token && branding.twilio_phone_number && (
+                  <Btn variant="secondary" size="md" onClick={async () => {
+                    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+                    setTestSending(true)
+                    try {
+                      const res = await fetch(
+                        `${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/sms/test`,
+                        {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                          body: JSON.stringify({ to: branding.twilio_phone_number }),
+                        }
+                      )
+                      const data = await res.json()
+                      if (res.ok) toast.addToast('Test SMS sent! Check your phone.', 'success')
+                      else toast.addToast(data.error || 'Failed to send test', 'error')
+                    } catch { toast.addToast('Failed to send test', 'error') }
+                    finally { setTestSending(false) }
+                  }} loading={testSending}>
+                    Send Test SMS
+                  </Btn>
+                )}
+              </div>
             </div>
           </div>
         </div>
