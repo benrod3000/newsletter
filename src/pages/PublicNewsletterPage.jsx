@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import DOMPurify from 'dompurify'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
@@ -72,7 +73,7 @@ export default function PublicNewsletterPage() {
           </Link>
         </div>
         {html ? (
-          <article className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: html }} />
+          <article className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }} />
         ) : (
           <div className="animate-pulse space-y-4">
             <div className="h-6 bg-gray-200 rounded w-3/4" />

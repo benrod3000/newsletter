@@ -4,6 +4,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
 import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
+import DOMPurify from 'dompurify'
 
 const MERGE_TAGS = [
   { tag: '{{first_name}}', label: 'First Name' },
@@ -304,7 +305,7 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
             <div className="border-b-2 border-brutal-fg/20 bg-brutal-surface px-3 py-1">
               <span className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">📱 Preview</span>
             </div>
-            <div className="p-4 prose prose-sm max-w-none text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: editor?.getHTML() || '' }} />
+            <div className="p-4 prose prose-sm max-w-none text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(editor?.getHTML() || '') }} />
           </div>
         </div>
       ) : (

@@ -83,7 +83,7 @@ export default function SettingsPage() {
   async function runSmartTagsNow() {
     setSmartTagsRunning(true)
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/admin/automations/smart-tags/run`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/automations/smart-tags/run`, {
         headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token}` }
       })
       const data = await res.json()
