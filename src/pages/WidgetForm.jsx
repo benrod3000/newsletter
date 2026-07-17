@@ -111,7 +111,7 @@ export default function WidgetFormPage() {
   const sizeCls = sizeClasses[widget.size] || 'max-w-md'
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: styles.bg_color || '#f5f5f0' }}>
+    <div className="min-h-screen flex items-center justify-center p-6 animate-fade-up" style={{ backgroundColor: styles.bg_color || '#f5f5f0' }}>
       <div className={`w-full ${sizeCls}`}>
         <div className="border-3 shadow-brutal" style={{ borderColor: styles.border_color || '#0a0a0a', backgroundColor: '#fff' }}>
           {/* Header */}

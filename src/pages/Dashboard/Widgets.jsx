@@ -607,6 +607,10 @@ export default function WidgetsPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
+                        <a href={`/w/${w.slug}`} target="_blank" rel="noopener noreferrer"
+                          className="px-3 py-1.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition inline-block">
+                          View Live
+                        </a>
                         <button
                           onClick={() => setShowEmbed(w.id)}
                           className="px-3 py-1.5 border-3 border-brutal-fg bg-brutal-fg text-white font-bold text-xs uppercase tracking-wider hover:bg-brutal-fg/80 transition"
