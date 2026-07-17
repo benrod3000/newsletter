@@ -61,6 +61,7 @@ export default function SubscribersPage() {
 
   // Audience segments
   const [segments, setSegments] = useState([])
+  const [segmentsLoading, setSegmentsLoading] = useState(true)
   const [segmentName, setSegmentName] = useState('')
   const [savingSegment, setSavingSegment] = useState(false)
   const [page, setPage] = useState(1)
@@ -80,9 +81,10 @@ export default function SubscribersPage() {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(d => setSubscriberLists(d.lists || d || [])).catch(() => {})
     // Load saved segments
+    setSegmentsLoading(true)
     fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/segments`, {
       headers: { Authorization: `Bearer ${token}` }
-    }).then(r => r.json()).then(d => setSegments(d.segments || [])).catch(() => {})
+    }).then(r => r.json()).then(d => { setSegments(d.segments || []); setSegmentsLoading(false) }).catch(() => setSegmentsLoading(false))
   }, [workspaceId])
 
   async function loadSubscribers() {
@@ -452,7 +454,13 @@ export default function SubscribersPage() {
       )}
 
       {/* Saved segments */}
-      {segments.length > 0 && (
+      {segmentsLoading ? (
+        <div className="flex gap-2">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="w-20 h-6 border-2 border-brutal-fg/10 bg-brutal-surface/50 animate-pulse" />
+          ))}
+        </div>
+      ) : segments.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {segments.map(s => (
             <button

@@ -56,7 +56,7 @@ export default function AnalyticsPage() {
     fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/analytics/heatmap`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(r => r.json()).then(d => setHeatmap(d)).catch(() => {})
-    fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/campaigns/sms`, {
+    fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/analytics/sms`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(r => r.json()).then(d => setSmsStats(d)).catch(() => {})
   }, [workspaceId])
