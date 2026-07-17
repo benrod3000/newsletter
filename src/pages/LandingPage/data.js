@@ -6,17 +6,17 @@ export const NAV_ITEMS = [
 ]
 
 export const STATS = [
-  { value: '100+', label: 'Businesses', desc: 'Using Veloce to own their audience.' },
-  { value: '847', label: 'Campaigns Sent', desc: 'Across email, SMS, and RCS channels.' },
-  { value: '47%', label: 'Avg Open Rate', desc: 'Real engagement from real subscribers.' },
-  { value: '6', label: 'Automations', desc: 'Welcome drips, smart tags, auto-clean, and more.' },
+  { value: '12,453', label: 'Subscribers', desc: 'Across email, SMS, and RCS channels.' },
+  { value: '847', label: 'Campaigns Sent', desc: 'With 47% average open rate.' },
+  { value: '47%', label: 'Avg Open Rate', desc: 'Real people. Real engagement.' },
+  { value: '6', label: 'Automations Live', desc: 'Welcome drips, smart tags, auto-clean, and more.' },
 ]
 
 export const TRUST_METRICS = [
-  { value: '12,453', label: 'Subscribers' },
-  { value: '847', label: 'Campaigns Sent' },
+  { value: '12,453', label: 'Subscribers Managed' },
+  { value: '2,847', label: 'Emails Sent Today' },
   { value: '47%', label: 'Avg Open Rate' },
-  { value: '6', label: 'Automations Running' },
+  { value: '147', label: 'Businesses' },
 ]
 
 export const TESTIMONIALS = [
@@ -42,7 +42,8 @@ export const PILLARS = [
     id: 'target',
     number: '01',
     icon: Target,
-    title: 'Target Your Neighborhood',
+    title: 'Target',
+    subtitle: 'Know exactly where your audience lives.',
     body: 'Send to subscribers within 1, 5, 10, or 100 miles of any ZIP code. Perfect for restaurants, events, retail, and local marketing.',
     cta: { label: 'Try the radius filter', to: '/demo' },
     annotation: '📍 Radius targeting · live subscriber map · ZIP resolution',
@@ -51,8 +52,9 @@ export const PILLARS = [
     id: 'grow',
     number: '02',
     icon: Share2,
-    title: 'Collect Subscribers Anywhere',
-    body: 'Embed a widget on any website. Every signup includes location data: city, state, ZIP, lat/lng. No extra fields. No CSV uploads.',
+    title: 'Grow',
+    subtitle: 'Collect subscribers with location data built in.',
+    body: 'Embed a widget on any website. Every signup includes city, state, ZIP, and lat/lng. No extra fields. No CSV uploads.',
     cta: { label: 'See the form in action', to: '/demo' },
     annotation: 'Embed one line · auto-enriched location · no CSV',
   },
@@ -60,7 +62,8 @@ export const PILLARS = [
     id: 'reach',
     number: '03',
     icon: Globe,
-    title: 'Reach Them Everywhere',
+    title: 'Reach',
+    subtitle: 'Email, SMS, RCS — every channel, one audience.',
     body: 'Email, SMS, RCS, and soon social audience matching. One audience. Many destinations. Every channel respects subscriber consent.',
     cta: { label: 'See all channels', to: '/demo' },
     annotation: 'Email · SMS · RCS · Social matching (coming soon)',
@@ -69,7 +72,8 @@ export const PILLARS = [
     id: 'automate',
     number: '04',
     icon: Zap,
-    title: 'Automations That Build Relationships',
+    title: 'Automate',
+    subtitle: 'Relationships that run on their own.',
     body: 'Welcome drips, re-engagement campaigns, smart auto-tagging, and auto-clean for cold subscribers. Toggle on. They run daily.',
     cta: { label: 'See automations', to: '/demo' },
     annotation: 'welcome drip · smart-tag batching · auto-clean cold subs',

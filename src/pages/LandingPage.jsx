@@ -26,7 +26,7 @@ import {
    ═══════════════════════════════════════════════════════ */
 
 export default function LandingPage() {
-  useEffect(() => { document.title = 'Veloce · A simple newsletter platform for your audience' }, [])
+  useEffect(() => { document.title = 'Veloce · Own your audience. Reach them anywhere.' }, [])
   const [mobileOpen, setMobileOpen] = useState(false)
   const heroRef = useRef(null)
   const statRef = useRef(null)
@@ -63,7 +63,7 @@ export default function LandingPage() {
             ))}
             <span className="w-px h-5 bg-brutal-fg/15" aria-hidden="true" />
             <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors" role="menuitem">Sign In</Link>
-            <Btn variant="primary" size="md" onClick={() => window.location.href = '/signup'} role="menuitem">Get Started</Btn>
+            <Btn variant="primary" size="md" onClick={() => window.location.href = '/signup'} role="menuitem">Create Free Account</Btn>
           </div>
 
           {/* Mobile hamburger */}
@@ -80,44 +80,44 @@ export default function LandingPage() {
             ))}
             <hr className="border-brutal-fg/15" />
             <Link to="/login" onClick={() => setMobileOpen(false)} className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg">Sign In</Link>
-            <Btn variant="primary" size="md" fullWidth onClick={() => { window.location.href = '/signup'; setMobileOpen(false); }}>Get Started</Btn>
+            <Btn variant="primary" size="md" fullWidth onClick={() => { window.location.href = '/signup'; setMobileOpen(false); }}>Create Free Account</Btn>
           </div>
         )}
       </nav>
 
       {/* ═══ HERO ═══ */}
-      <Section className="bg-dots-light pt-24 sm:pt-32" id="main-content">
+      <Section className="bg-dots-light pt-28 sm:pt-36" id="main-content">
         <div ref={heroRef} className="max-w-5xl mx-auto space-y-10 sm:space-y-12">
-          <Badge variant="yellow">For local businesses, creators & communities</Badge>
+          <Badge variant="yellow">Email + SMS + RCS + geo-targeting + automations</Badge>
 
           <h1 className="text-display leading-[0.85]">
-            Own Your{' '}
-            <span className="text-brutal-green">Audience.</span>
+            Stop Renting{' '}
+            <span className="text-brutal-green">Your Audience.</span>
           </h1>
 
           <div className="h-2 w-24 bg-brutal-yellow border-2 border-brutal-fg" aria-hidden="true" />
 
           <p className="text-lg sm:text-xl text-brutal-fg/80 leading-relaxed max-w-2xl font-medium">
-            Build direct relationships across email, SMS, and RCS. Your audience. Your data. No algorithms.
+            Email, SMS, RCS, automation, geo-targeting, and subscriber intelligence // one platform.
           </p>
 
-          <Annotation>own your audience · BYO SendGrid/SES · free to start · no credit card</Annotation>
+          <Annotation>audience ownership · byo email/SMS provider · free to start · no credit card</Annotation>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-            <span className="flex items-center gap-1 text-[10px] font-bold text-brutal-green uppercase tracking-wider"><CheckCircle size={12} aria-hidden="true" /> Built on Supabase</span>
+            <span className="flex items-center gap-1 text-[10px] font-bold text-brutal-green uppercase tracking-wider"><CheckCircle size={12} aria-hidden="true" /> No per-contact fees</span>
             <span className="flex items-center gap-1 text-[10px] font-bold text-brutal-green uppercase tracking-wider"><CheckCircle size={12} aria-hidden="true" /> TLS 1.3 encrypted</span>
             <span className="flex items-center gap-1 text-[10px] font-bold text-brutal-green uppercase tracking-wider"><CheckCircle size={12} aria-hidden="true" /> Radius geo targeting</span>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 items-start">
             <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
-              Start Owning Your Audience
+              Create Free Account
             </Btn>
             <Btn variant="secondary" size="lg" onClick={() => window.location.href = '/demo'}>
-              Explore Live Demo
+              Watch Demo
             </Btn>
           </div>
-          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · Free to start · Cancel anytime</p>
+          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · No time limit · Bring your own SendGrid or SES</p>
         </div>
       </Section>
 
@@ -126,12 +126,12 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <Badge variant="red">The Problem</Badge>
           <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none">
-            Email marketing is broken.{' '}
-            <span className="text-brutal-green">Social media rents your audience.</span>
+            Most platforms rent you your audience.{' '}
+            <span className="text-brutal-green">Veloce gives you the keys.</span>
           </h2>
           <p className="text-base text-brutal-fg/70 max-w-2xl mx-auto leading-relaxed">
             You don't own your followers. Algorithms decide who sees your posts. 
-            And most email tools charge per contact, charge for basic features, and lock you into their ecosystem.
+            Email tools charge per contact, lock you in, and trap your data behind paywalls.
           </p>
           <div className="grid sm:grid-cols-3 gap-4 text-left max-w-3xl mx-auto">
             {[
@@ -189,13 +189,15 @@ export default function LandingPage() {
               {/* KPI row */}
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: 'Subscribers', value: '1,892', change: '+12%', color: 'text-brutal-green' },
-                  { label: 'Open Rate', value: '47%', change: '+3%', color: 'text-brutal-green' },
-                  { label: 'Active Campaigns', value: '3', change: '--', color: 'text-brutal-fg' },
+                  { label: 'Subscribers', value: 1892, change: '+12%', color: 'text-brutal-green' },
+                  { label: 'Open Rate', value: 47, suffix: '%', change: '+3%', color: 'text-brutal-green' },
+                  { label: 'Active Campaigns', value: 3, change: '--', color: 'text-brutal-fg' },
                 ].map((kpi) => (
                   <div key={kpi.label} className="border-2 border-brutal-fg p-3">
                     <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">{kpi.label}</p>
-                    <p className={`text-xl font-heading ${kpi.color}`}>{kpi.value}</p>
+                    <p className={`text-xl font-heading ${kpi.color}`}>
+                      {typeof kpi.value === 'number' ? <><CountUp value={kpi.value} />{kpi.suffix || ''}</> : kpi.value}
+                    </p>
                     <p className="text-[9px] font-bold text-brutal-green">{kpi.change}</p>
                   </div>
                 ))}
@@ -354,6 +356,7 @@ export default function LandingPage() {
                     <Icon size={24} className="text-brutal-green" />
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading uppercase tracking-tight leading-none">{pillar.title}</h2>
                   </div>
+                  {pillar.subtitle && <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">{pillar.subtitle}</p>}
                   <p className="text-sm text-brutal-fg/70 leading-relaxed max-w-md">{pillar.body}</p>
                   <Btn variant="primary" size="lg" icon={<ArrowRight size={14} />} onClick={() => window.location.href = pillar.cta.to}>
                     {pillar.cta.label}
@@ -494,10 +497,10 @@ export default function LandingPage() {
       <Section className="border-t-3 border-brutal-fg bg-brutal-fg text-brutal-bg">
         <div className="text-center space-y-6 sm:space-y-8 max-w-3xl mx-auto">
           <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
-            Ready to <span className="text-brutal-yellow">take control</span>?
+            Ready to <span className="text-brutal-yellow">own your audience</span>?
           </h2>
           <p className="text-sm sm:text-base opacity-60 max-w-lg mx-auto leading-relaxed">
-            No monthly fees. No platform lock-in. Just a smarter way to send emails that reach the right people, wherever they are.
+            No monthly fees. No per-contact charges. No algorithms deciding who sees your content. Just your audience, your data, your rules.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
