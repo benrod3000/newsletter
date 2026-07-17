@@ -12,7 +12,6 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
-  const [resetLink, setResetLink] = useState('')
   const [error, setError] = useState('')
   const [turnstileToken, setTurnstileToken] = useState('')
 
@@ -22,9 +21,8 @@ export default function ForgotPasswordPage() {
     if (!turnstileToken) { setError('Please complete the security check.'); return }
     setLoading(true)
     try {
-      const { data } = await axios.post(`${API_URL}/api/auth/forgot-password`, { email })
+      await axios.post(`${API_URL}/api/auth/forgot-password`, { email })
       setSent(true)
-      if (data.reset_url) setResetLink(data.reset_url)
     } catch (err) {
       const apiErr = err?.response?.data?.error
       setError(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Something went wrong.')
@@ -52,18 +50,9 @@ export default function ForgotPasswordPage() {
         {sent ? (
           <div className="space-y-4">
             <div className="border-3 border-brutal-fg bg-brutal-green/10 p-4">
-              <p className="text-xs font-bold uppercase tracking-wider text-brutal-green">✓ Reset link generated</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-brutal-green">✓ Reset link sent</p>
+              <p className="text-xs text-brutal-fg/70 mt-1">Check your email. The link expires in 1 hour.</p>
             </div>
-            {resetLink && (
-              <div className="border-3 border-brutal-fg bg-brutal-yellow/20 p-4 space-y-2">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">
-                  Reset link (in production this would be emailed):
-                </p>
-                <a href={resetLink} className="block text-xs font-bold text-brutal-green underline break-all">
-                  {resetLink}
-                </a>
-              </div>
-            )}
             <Btn variant="primary" fullWidth size="lg" onClick={() => window.location.href = '/login'}>
               Back to Sign In
             </Btn>
