@@ -5,9 +5,10 @@ export default function CountUp({ value, suffix = '', duration = 1500 }) {
   useEffect(() => {
     const el = ref.current
     if (!el) return
+    const str = String(value)
     const start = performance.now()
-    const target = parseInt(value.replace(/[^0-9]/g, ''), 10)
-    if (isNaN(target)) { el.textContent = value; return }
+    const target = parseInt(str.replace(/[^0-9]/g, ''), 10)
+    if (isNaN(target)) { el.textContent = str; return }
     const frame = (now) => {
       const pct = Math.min((now - start) / duration, 1)
       el.textContent = Math.floor(pct * target).toLocaleString() + suffix
