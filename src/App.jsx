@@ -91,8 +91,16 @@ function App() {
   // Auto-recover from stale code-split chunks after deployment
   useEffect(() => {
     function handleChunkError(e) {
-      const isChunk = e.target?.src?.includes('/assets/') || e.reason?.message?.includes('Failed to fetch dynamically imported module')
-      if (isChunk) window.location.reload()
+      // Check script/link error events
+      const srcMatch = e.target?.src?.includes('/assets/')
+      // Check unhandled rejections (e.reason may be string or Error)
+      const reasonStr = typeof e.reason === 'string' ? e.reason : e.reason?.message || ''
+      const reasonMatch = reasonStr.includes('Failed to fetch dynamically imported module')
+      // Check error event message (e.g. script error on fallback paths)
+      const msgMatch = typeof e.message === 'string' && e.message.includes('Failed to fetch dynamically imported module')
+      if (srcMatch || reasonMatch || msgMatch) {
+        window.location.reload()
+      }
     }
     window.addEventListener('error', handleChunkError)
     window.addEventListener('unhandledrejection', handleChunkError)

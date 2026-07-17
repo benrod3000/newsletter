@@ -3,6 +3,14 @@ import EmptyState from './ux/EmptyState'
 
 import Btn from '../components/ui/Button'
 
+/** Detect stale code-split chunks (after deploy) */
+function isChunkError(error) {
+  const msg = typeof error === 'string' ? error : error?.message || ''
+  return msg.includes('Failed to fetch dynamically imported module')
+    || msg.includes('Importing a module script failed')
+    || msg.includes('Loading chunk')
+}
+
 export default class ErrorBoundary extends Component {
   constructor(props) {
     super(props)
@@ -15,6 +23,10 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('ErrorBoundary caught:', error, errorInfo)
+    // Auto-recover on stale chunk errors
+    if (isChunkError(error)) {
+      window.location.reload()
+    }
     this.props.onError?.(error, errorInfo)
   }
 
