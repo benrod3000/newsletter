@@ -156,9 +156,10 @@ export default function WidgetsPage() {
     } finally { setRemovingId(null) }
   }
 
-  function copyEmbed(slug) {
-    const heights = { small: 280, medium: 420, large: 600 }
-    const h = heights[form.size] || 420
+  function copyEmbed(slug, widgetSize, fieldCount) {
+    const fieldH = Math.max(1, fieldCount || 1) * 60 + 200
+    const heights = { small: Math.max(fieldH, 280), medium: Math.max(fieldH, 360), large: Math.max(fieldH, 500) }
+    const h = heights[widgetSize] || heights.medium
     const code = `<iframe src="${EMBED_BASE}/${slug}"\n  width="100%" height="${h}"\n  frameborder="0"\n  style="border:3px solid #0a0a0a">\n</iframe>`
     navigator.clipboard.writeText(code)
     setCopiedId(slug)
@@ -581,7 +582,7 @@ export default function WidgetsPage() {
           {widgets.length === 0 ? (
             <EmptyState
               title="No widgets yet"
-              description="Create an embeddable signup form to collect emails in exchange for a download."
+              description="Create an embeddable signup form to collect emails. Add it to your site in under a minute."
               action={{ label: 'Create Widget', onClick: openNew }}
             />
           ) : (
@@ -644,7 +645,11 @@ export default function WidgetsPage() {
                         <p className="text-xs font-bold uppercase tracking-wider">Embed Code</p>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => copyEmbed(w.slug)}
+                            onClick={() => {
+                              const fields = w.fields || { email: { required: true } }
+                              const count = Object.keys(fields).length
+                              copyEmbed(w.slug, w.size, count)
+                            }}
                             className="px-3 py-1 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition"
                           >
                             {copiedId === w.slug ? 'Copied!' : 'Copy Code'}
@@ -661,13 +666,19 @@ export default function WidgetsPage() {
 {`<iframe
   src="${EMBED_BASE}/${w.slug}"
   width="100%"
-  height="420"
+  height="${(() => {
+    const fields = w.fields || { email: { required: true } }
+    const count = Object.keys(fields).length
+    const fieldH = Math.max(1, count) * 60 + 200
+    const heights = { small: Math.max(fieldH, 280), medium: Math.max(fieldH, 360), large: Math.max(fieldH, 500) }
+    return heights[w.size] || heights.medium
+  })()}"
   frameborder="0"
   style="border:3px solid #0a0a0a">
 </iframe>`}
                       </pre>
                       <p className="text-[10px] font-bold text-brutal-muted uppercase">
-                        Paste this anywhere on your site. The form auto-resizes.
+                        Paste this anywhere on your site. Height adjusts based on selected fields.
                       </p>
                       <p className="text-[10px] font-bold text-brutal-green uppercase">
                         📍 This widget collects location data so you can target campaigns by radius.
