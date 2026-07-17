@@ -89,8 +89,8 @@ export default function SubscribersPage() {
       if (dateFrom) params.joined_after = dateFrom
       if (dateTo) params.joined_before = dateTo
       if (geoFilter) {
-        params.near_lat = geoFilter.lat
-        params.near_lng = geoFilter.lng
+        params.near_lat = geoFilter.locations[0].lat
+        params.near_lng = geoFilter.locations[0].lng
         params.radius = geoFilter.radius
       }
       if (search.trim()) params.search = search.trim()
