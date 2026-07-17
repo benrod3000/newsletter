@@ -8,6 +8,14 @@ import { ShieldCheck } from 'lucide-react'
 
 export default function LoginPage() {
   useEffect(() => { document.title = 'Sign In | Veloce' }, [])
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    const params = new URLSearchParams(hash);
+    if (params.get('requires_totp') === 'true') {
+      setTotpRequired(true);
+      setPartialToken(params.get('partial_token') || '');
+    }
+  }, [])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [workspaceId, setWorkspaceId] = useState('')
