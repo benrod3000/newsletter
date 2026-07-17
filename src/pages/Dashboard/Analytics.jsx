@@ -151,7 +151,7 @@ export default function AnalyticsPage() {
           ) : (
             <EmptyState
               title="No growth data yet"
-              description="Subscriber growth will appear here once you have history to show."
+              description="Subscriber growth appears here once you welcome your first subscribers."
             />
           )}
 
@@ -207,7 +207,7 @@ export default function AnalyticsPage() {
             </div>
             {topCampaigns.length === 0 ? (
               <div className="p-6 text-center text-sm font-bold text-brutal-muted">
-                No campaign performance data yet
+                No campaign performance data yet. Send your first newsletter to see stats here.
               </div>
             ) : (
               <table className="w-full text-sm border-collapse">

@@ -587,6 +587,7 @@ export default function SubscribersPage() {
                 onChange={(e) => setNewSubscriber({ ...newSubscriber, email: e.target.value })}
                 placeholder="subscriber@example.com"
                 className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                autoFocus
               />
             </div>
             <div>
