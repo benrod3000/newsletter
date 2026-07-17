@@ -6,6 +6,7 @@ import L from 'leaflet'
 
 const PRESETS = [1, 5, 10, 25, 50, 100]
 const CIRCLE_COLORS = ['#2f7f5f', '#f5e642', '#e03131', '#4a9e7a', '#d4c82e']
+const MAX_LOCATIONS = 5
 
 /**
  * GeoFilter — multi-ZIP radius filter with GSAP-driven animations.
@@ -40,10 +41,17 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     if (!panelRef.current) return
     if (open) {
       panelRef.current.style.height = 'auto'
+      panelRef.current.style.overflow = 'hidden'
       const h = panelRef.current.offsetHeight
       panelRef.current.style.height = '0px'
-      gsap.to(panelRef.current, { height: h, duration: 0.3, ease: 'power3.out' })
+      gsap.to(panelRef.current, { height: h, duration: 0.3, ease: 'power3.out',
+        onComplete: () => {
+          panelRef.current.style.height = 'auto'
+          panelRef.current.style.overflow = 'visible'
+        }
+      })
     } else {
+      panelRef.current.style.overflow = 'hidden'
       gsap.to(panelRef.current, { height: 0, duration: 0.25, ease: 'power2.in' })
     }
   }, [open])
@@ -120,7 +128,13 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   // ─── Add a pending location ───
   function addLocation() {
     if (!pending) return
+    if (locations.length >= MAX_LOCATIONS) return
     if (locations.some(l => l.zip === pending.zip)) {
+      // Flash the existing chip
+      const idx = locations.findIndex(l => l.zip === pending.zip)
+      if (chipsRef.current[idx]) {
+        gsap.fromTo(chipsRef.current[idx], { scale: 1 }, { scale: 1.1, duration: 0.1, yoyo: true, repeat: 1 })
+      }
       setZip('')
       setPending(null)
       return
@@ -129,6 +143,14 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     setZip('')
     setPending(null)
     setLocations(prev => [...prev, newLoc])
+  }
+
+  // Press Enter to add
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && pending) {
+      e.preventDefault()
+      addLocation()
+    }
   }
 
   // ─── Remove a location with GSAP exit (guard against double-remove) ───
@@ -285,7 +307,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
         addSubscriberPins(g)
         g.addTo(map)
         subscriberLayerRef.current = g
-      }, 300)
+      }, 150)
       return // update path handles subsequent location changes
     }
 
@@ -398,7 +420,9 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
                 type="text"
                 value={zip}
                 onChange={e => handleZipChange(e.target.value)}
-                placeholder="e.g. 78701"
+                onKeyDown={handleKeyDown}
+                disabled={locations.length >= MAX_LOCATIONS}
+                placeholder={locations.length >= MAX_LOCATIONS ? `Max ${MAX_LOCATIONS} locations` : "e.g. 78701"}
                 maxLength={10}
                 className="flex-1 px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
               />
@@ -431,7 +455,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
 
           {/* Location chips */}
           {locations.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 items-center">
               {locations.map((loc, i) => {
                 const color = CIRCLE_COLORS[i % CIRCLE_COLORS.length]
                 return (
@@ -453,24 +477,30 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
                   </div>
                 )
               })}
+              {locations.length > 1 && (
+                <button onClick={() => { setLocations([]); setZip('') }}
+                  className="px-2 py-1.5 border-2 border-brutal-fg text-[9px] font-bold uppercase tracking-wider text-brutal-red hover:bg-brutal-red/10 transition">
+                  Clear all
+                </button>
+              )}
             </div>
           )}
 
           {/* Live map */}
           {locations.length > 0 && (
             <div className="border-3 border-brutal-fg overflow-hidden">
-              <div className="bg-brutal-fg text-white px-3 py-1.5 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
+              <div className="bg-brutal-fg text-white px-3 py-1.5 flex flex-wrap items-center justify-between text-[10px] font-bold uppercase tracking-wider gap-x-3 gap-y-1">
                 <span>{locations.length} location{locations.length > 1 ? 's' : ''}</span>
                 {subscribers.some(s => s.latitude && s.longitude) && (
-                  <span className="flex items-center gap-2">
+                  <span className="hidden sm:flex items-center gap-2">
                     <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#2f7f5f'}} /> Active</span>
                     <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#f5e642'}} /> Risk</span>
                     <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#e03131'}} /> Cold</span>
                   </span>
                 )}
-                <span className="text-white/60">☌ {totalInRange} in range · {radius} mi radius</span>
+                <span className="text-white/60 whitespace-nowrap">☌ {totalInRange} in range · {radius} mi radius</span>
               </div>
-              <div id="geo-filter-map" style={{ height: '220px', width: '100%', background: '#e8e8e0', touchAction: 'auto' }} />
+              <div id="geo-filter-map" className="h-[220px] sm:h-[260px]" style={{ width: '100%', background: '#e8e8e0', touchAction: 'auto' }} />
             </div>
           )}
 
