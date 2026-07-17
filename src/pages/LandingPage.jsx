@@ -59,7 +59,7 @@ export default function LandingPage() {
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6" role="menubar">
             {NAV_ITEMS.map((item) => (
-              <Link key={item.label} to={item.href} className="text-xs font-bold uppercase tracking-wider text-brutal-fg/60 hover:text-brutal-fg transition-colors" role="menuitem">{item.label}</Link>
+              <Link key={item.label} to={item.href} onClick={(e) => { if (item.href.startsWith('/#')) { e.preventDefault(); document.getElementById(item.href.slice(2))?.scrollIntoView({ behavior: 'smooth' }) } }} className="text-xs font-bold uppercase tracking-wider text-brutal-fg/60 hover:text-brutal-fg transition-colors" role="menuitem">{item.label}</Link>
             ))}
             <span className="w-px h-5 bg-brutal-fg/15" aria-hidden="true" />
             <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors" role="menuitem">Sign In</Link>
@@ -76,7 +76,7 @@ export default function LandingPage() {
         {mobileOpen && (
           <div className="md:hidden border-t-3 border-brutal-fg bg-brutal-bg px-4 py-4 space-y-3 animate-fade-in">
             {NAV_ITEMS.map((item) => (
-              <Link key={item.label} to={item.href} onClick={() => setMobileOpen(false)} className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/70 hover:text-brutal-fg">{item.label}</Link>
+              <Link key={item.label} to={item.href} onClick={(e) => { setMobileOpen(false); if (item.href.startsWith('/#')) { e.preventDefault(); document.getElementById(item.href.slice(2))?.scrollIntoView({ behavior: 'smooth' }) } }} className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/70 hover:text-brutal-fg">{item.label}</Link>
             ))}
             <hr className="border-brutal-fg/15" />
             <Link to="/login" onClick={() => setMobileOpen(false)} className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg">Sign In</Link>
