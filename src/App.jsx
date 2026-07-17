@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { ToastProvider } from './components/Toast'
 
 import CommandPalette from './components/CommandPalette'
@@ -88,6 +88,20 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
+  // Auto-recover from stale code-split chunks after deployment
+  useEffect(() => {
+    function handleChunkError(e) {
+      const isChunk = e.target?.src?.includes('/assets/') || e.reason?.message?.includes('Failed to fetch dynamically imported module')
+      if (isChunk) window.location.reload()
+    }
+    window.addEventListener('error', handleChunkError)
+    window.addEventListener('unhandledrejection', handleChunkError)
+    return () => {
+      window.removeEventListener('error', handleChunkError)
+      window.removeEventListener('unhandledrejection', handleChunkError)
+    }
+  }, [])
+
   return (
     <ToastProvider>
       <SpeedInsights />
