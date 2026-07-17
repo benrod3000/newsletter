@@ -132,12 +132,14 @@ export default function LoginPage() {
                   id="login-email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white border-3 border-brutal-fg px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
+                  onChange={(e) => { setEmail(e.target.value); if (fieldErrors.email) setFieldErrors({}) }}
+                  className={`w-full bg-white border-3 px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition ${fieldErrors.email ? 'border-brutal-red' : 'border-brutal-fg'}`}
                   placeholder="you@example.com"
                   required
+                  autoFocus
                   aria-describedby={error ? 'login-error' : undefined}
                 />
+                {fieldErrors.email && <p className="mt-1 text-[9px] font-bold text-brutal-red uppercase tracking-wider">{fieldErrors.email}</p>}
               </div>
 
               <div>
