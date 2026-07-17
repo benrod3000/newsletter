@@ -343,25 +343,38 @@ export default function CampaignsPage() {
             <span className="text-[10px] text-brutal-muted font-bold">{smsMessage.length}/320</span>
           </div>
           {smsPreview && smsMessage && (
-            <div className="grid grid-cols-2 gap-3">
-              {/* RCS Preview (Android) */}
-              <div className="border-2 border-brutal-green p-3 bg-white">
-                <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-green mb-1">RCS (Android)</p>
-                <div className="bg-gray-100 p-3 rounded max-w-[200px] text-xs">
-                  <p className="font-bold text-xs mb-1">Your Business</p>
-                  <p>{smsMessage.slice(0, 160)}</p>
-                  {smsMessage.length > 0 && (
-                    <button className="mt-2 px-3 py-1 bg-brutal-green text-white text-[10px] font-bold border border-brutal-fg">CTA Button</button>
-                  )}
+            <div className="space-y-3">
+              {/* If RCS images provided, show RCS preview; otherwise show SMS-only preview */}
+              {smsImages.trim() ? (
+                <div className="border-2 border-brutal-green p-3 bg-white">
+                  <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-green mb-1">📱 RCS (Android — rich media supported)</p>
+                  <div className="bg-gray-100 p-3 rounded max-w-[280px] text-xs">
+                    <p className="font-bold text-xs mb-1">Your Business</p>
+                    <p>{smsMessage.slice(0, 160)}</p>
+                    <div className="flex gap-2 mt-2">
+                      {smsImages.split(',').slice(0, 3).map((url, i) => (
+                        <div key={i} className="w-16 h-16 bg-gray-300 border border-gray-400 flex items-center justify-center text-[8px] text-gray-500 font-bold uppercase">
+                          {i === 0 ? 'Img 1' : i === 1 ? 'Img 2' : 'Img 3'}
+                        </div>
+                      ))}
+                    </div>
+                    <button className="mt-2 px-3 py-1 bg-brutal-green text-white text-[10px] font-bold border border-brutal-fg">Reply Button</button>
+                  </div>
                 </div>
-              </div>
-              {/* SMS Preview (iOS) */}
-              <div className="border-2 border-brutal-fg/30 p-3 bg-white">
-                <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-muted mb-1">SMS (iOS)</p>
-                <div className="bg-gray-100 p-3 rounded max-w-[200px] text-[11px]">
-                  <p>{smsMessage.slice(0, 160)}</p>
+              ) : (
+                <div className="border-2 border-brutal-fg/30 p-3 bg-white max-w-[280px]">
+                  <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-muted mb-1">📱 SMS Preview</p>
+                  <div className="bg-gray-100 p-3 rounded text-xs">
+                    <p className="text-[10px] text-gray-500 mb-1">+1 (555) 123-4567</p>
+                    <p>{smsMessage.slice(0, 160)}{smsMessage.length > 160 ? '...' : ''}</p>
+                  </div>
                 </div>
-              </div>
+              )}
+              <p className="text-[9px] text-brutal-muted font-bold uppercase tracking-wider">
+                {smsImages.trim()
+                  ? 'RCS enabled — subscribers on Android will see images & buttons. iOS falls back to plain SMS.'
+                  : 'Plain SMS — add image URLs above to upgrade to RCS (Android).'}
+              </p>
             </div>
           )}
           <div className="flex items-center justify-between flex-wrap gap-3">

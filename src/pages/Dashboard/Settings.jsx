@@ -18,6 +18,7 @@ export default function SettingsPage() {
     sender_name: '',
     sender_email: '',
     email_provider: 'sendgrid',
+    sendgrid_api_key: '',
     ses_region: 'us-east-1',
     ses_access_key: '',
     ses_secret_key: '',
@@ -307,15 +308,58 @@ export default function SettingsPage() {
                   }
                   className="w-full sm:w-64 px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-bold focus:outline-none"
                 >
-                  <option value="sendgrid">SendGrid (default)</option>
+                  <option value="sendgrid">SendGrid (bring your own API key)</option>
                   <option value="ses">Amazon SES ($1/10K emails)</option>
                 </select>
                 <p className="text-xs font-bold text-brutal-muted mt-1.5 uppercase tracking-wider">
                   {branding.email_provider === 'ses'
-                    ? 'Amazon SES costs ~$1 per 10,000 emails sent'
-                    : 'SendGrid free tier: 100 emails/day'}
+                    ? 'Amazon SES costs ~$1 per 10,000 emails sent — requires AWS credentials below'
+                    : 'SendGrid free tier: 100 emails/day — requires a SendGrid API key below. Sign up at sendgrid.com.'}
                 </p>
               </div>
+
+              {branding.email_provider === 'sendgrid' && (
+                <div className="mb-5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                    SendGrid API Key
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type={showAccessKey ? 'text' : 'password'}
+                      value={branding.sendgrid_api_key || ''}
+                      onChange={(e) =>
+                        setBranding({ ...branding, sendgrid_api_key: e.target.value })
+                      }
+                      placeholder="SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      className="flex-1 px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowAccessKey(!showAccessKey)}
+                      className="px-3 border-3 border-brutal-fg bg-white hover:bg-brutal-yellow transition"
+                      aria-label={showAccessKey ? 'Hide key' : 'Show key'}
+                    >
+                      {showAccessKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  <p className="text-xs font-bold text-brutal-muted mt-1.5 uppercase tracking-wider">
+                    Create a SendGrid account at sendgrid.com, generate an API key with <strong>Full Access</strong>, and paste it here. Free tier: 100 emails/day.
+                  </p>
+                </div>
+              )}
+
+              {branding.email_provider === 'sendgrid' && (
+                <div className="border border-brutal-fg bg-brutal-yellow/20 p-4 mb-5">
+                  <p className="text-xs font-bold uppercase tracking-wider mb-2">📋 SendGrid Setup (takes ~5 minutes)</p>
+                  <ol className="text-sm text-brutal-fg/80 space-y-1 list-decimal list-inside">
+                    <li>Sign up at <a href="https://sendgrid.com" target="_blank" rel="noopener" className="underline font-bold">sendgrid.com</a> (free tier: 100 emails/day)</li>
+                    <li>Go to Settings → API Keys → Create API Key</li>
+                    <li>Choose <strong>Full Access</strong> and copy the key (starts with <strong>SG.</strong>)</li>
+                    <li>Verify a sender email in SendGrid → Settings → Sender Authentication</li>
+                    <li>Paste the API key above and click <strong>Save Branding</strong></li>
+                  </ol>
+                </div>
+              )}
 
               {branding.email_provider === 'ses' && (
                 <>

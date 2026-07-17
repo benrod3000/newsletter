@@ -296,6 +296,65 @@ export default function SubscribersPage() {
       {showImport && (
         <div className="border-3 border-brutal-fg bg-white p-8 space-y-6">
           <h4 className="font-heading text-xl uppercase tracking-wide">Import Subscribers (CSV)</h4>
+
+          {/* Visual CSV template */}
+          <div className="border-2 border-brutal-fg/20 bg-brutal-bg overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-2 border-b-2 border-brutal-fg/20 bg-brutal-surface">
+              <p className="text-[9px] font-bold uppercase tracking-wider">📄 template.csv</p>
+              <button
+                onClick={() => {
+                  const csv = 'email,first_name,last_name,phone_number,country,region,city,timezone\njane@example.com,Jane,Doe,+15125550199,US,California,Los Angeles,America/Los_Angeles\njohn@example.com,John,Smith,+12125550199,US,New York,New York,America/New_York'
+                  const blob = new Blob([csv], { type: 'text/csv' })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url; a.download = 'subscribers-template.csv'; a.click()
+                  URL.revokeObjectURL(url)
+                }}
+                className="text-[9px] font-bold uppercase tracking-wider px-2 py-1 border border-brutal-fg bg-white hover:bg-brutal-yellow/20 transition"
+              >
+                ⬇ Download Template
+              </button>
+            </div>
+            <div className="p-4 overflow-x-auto">
+              <table className="w-full text-[10px] font-mono border-collapse">
+                <thead>
+                  <tr className="border-b border-brutal-fg/20">
+                    <th className="text-left font-bold px-2 py-1 text-brutal-green">email *</th>
+                    <th className="text-left font-bold px-2 py-1 text-brutal-muted">first_name</th>
+                    <th className="text-left font-bold px-2 py-1 text-brutal-muted">last_name</th>
+                    <th className="text-left font-bold px-2 py-1 text-brutal-muted">phone_number</th>
+                    <th className="text-left font-bold px-2 py-1 text-brutal-muted">country</th>
+                    <th className="text-left font-bold px-2 py-1 text-brutal-muted">region</th>
+                    <th className="text-left font-bold px-2 py-1 text-brutal-muted">city</th>
+                    <th className="text-left font-bold px-2 py-1 text-brutal-muted">timezone</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-brutal-fg/10">
+                    <td className="px-2 py-1.5">jane@example.com</td>
+                    <td className="px-2 py-1.5">Jane</td>
+                    <td className="px-2 py-1.5">Doe</td>
+                    <td className="px-2 py-1.5">+15125550199</td>
+                    <td className="px-2 py-1.5">US</td>
+                    <td className="px-2 py-1.5">California</td>
+                    <td className="px-2 py-1.5">Los Angeles</td>
+                    <td className="px-2 py-1.5">America/Los_Angeles</td>
+                  </tr>
+                  <tr>
+                    <td className="px-2 py-1.5">john@example.com</td>
+                    <td className="px-2 py-1.5">John</td>
+                    <td className="px-2 py-1.5">Smith</td>
+                    <td className="px-2 py-1.5">+12125550199</td>
+                    <td className="px-2 py-1.5">US</td>
+                    <td className="px-2 py-1.5">New York</td>
+                    <td className="px-2 py-1.5">New York</td>
+                    <td className="px-2 py-1.5">America/New_York</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">
             Paste CSV or drag a .csv file. Must include an <strong>email</strong> column. Optional: first_name, last_name, phone_number (10 digits), country, region, city, timezone
           </p>

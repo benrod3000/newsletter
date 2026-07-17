@@ -20,7 +20,7 @@ const DEFAULT_FORM = {
   success_message: 'Check your inbox! The download link is on its way.',
   placeholder: 'you@example.com',
   fields: { email: { required: true } },
-  styles: { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#ffffff' },
+  styles: { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#0a0a0a' },
 }
 
 const WIDGET_TYPES = [
@@ -100,7 +100,7 @@ export default function WidgetsPage() {
       success_message: w.success_message || 'Check your inbox!',
       placeholder: w.placeholder || 'you@example.com',
       fields: w.fields || { email: { required: true } },
-      styles: w.styles || { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#ffffff' },
+      styles: w.styles || { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#0a0a0a' },
     })
     setEditingId(w.id)
     setErrors({})
@@ -508,9 +508,9 @@ export default function WidgetsPage() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Quick Themes</label>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { label: '🎨 Brutalist', s: { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#ffffff' } },
-                      { label: '☀️ Minimal', s: { primary_color: '#2563eb', bg_color: '#ffffff', text_color: '#1a1a1a', border_color: '#e5e7eb', button_text_color: '#ffffff' } },
-                      { label: '🌙 Dark', s: { primary_color: '#6366f1', bg_color: '#1a1a1a', text_color: '#f5f5f5', border_color: '#333333', button_text_color: '#ffffff' } },
+                      { label: '🎨 Veloce', s: { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#0a0a0a' } },
+                      { label: '☀️ Clean', s: { primary_color: '#2563eb', bg_color: '#ffffff', text_color: '#1a1a1a', border_color: '#e5e7eb', button_text_color: '#ffffff' } },
+                      { label: '🌙 Midnight', s: { primary_color: '#6366f1', bg_color: '#1a1a1a', text_color: '#f5f5f5', border_color: '#333333', button_text_color: '#ffffff' } },
                     ].map(t => (
                       <button key={t.label} type="button"
                         onClick={() => updateField('styles', t.s)}
@@ -549,7 +549,7 @@ export default function WidgetsPage() {
               {/* Right: Live Preview */}
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted mb-3">Live Preview · <span className="text-brutal-green">{form.size}</span></p>
-                <div className={`border-3 shadow-brutal transition-all duration-200 ${form.size === 'small' ? 'max-w-sm' : form.size === 'large' ? 'max-w-lg' : 'max-w-md'}`} style={{ borderColor: form.styles?.border_color || '#0a0a0a' }}>
+                <div className={`border-3 shadow-brutal transition-all duration-200 ${form.size === 'small' ? 'max-w-xs' : form.size === 'large' ? 'max-w-xl' : 'max-w-md'}`} style={{ borderColor: form.styles?.border_color || '#0a0a0a' }}>
                   <div className="border-b-3 px-5 py-3" style={{ backgroundColor: form.styles?.primary_color || '#f5e642', borderColor: form.styles?.border_color || '#0a0a0a' }}>
                     <p className="font-heading text-lg uppercase leading-none" style={{ color: form.styles?.text_color || '#0a0a0a' }}>{formPreview.headline || 'Your Headline'}</p>
                   </div>
