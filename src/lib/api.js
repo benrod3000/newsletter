@@ -33,7 +33,7 @@ export const authAPI = {
 // list/create existed already. remove() calls the new
 // DELETE /api/clients/{workspaceId}/subscribers/{id} route added to
 // newsletter-core today. (Unsubscribing is a separate, public,
-// token-based flow — /api/unsubscribe — not this.)
+// token-based flow // /api/unsubscribe // not this.)
 export const subscribersAPI = {
   list: (workspaceId, params) =>
     api.get(`/api/clients/${workspaceId}/subscribers`, { params }),
@@ -55,7 +55,7 @@ export const subscribersAPI = {
 // list/create existed already. update()/remove() call the new
 // PATCH and DELETE /api/clients/{workspaceId}/campaigns/{id} routes.
 // Both only work on campaigns still in "draft" status. schedule() is a thin
-// wrapper around update() for the common "send now" action — it flips the
+// wrapper around update() for the common "send now" action // it flips the
 // campaign to status=scheduled with scheduled_for=now. Actual delivery is
 // still handled by the backend's admin sweep job
 // (app/api/admin/campaigns/process), which needs to run on a schedule.
@@ -105,7 +105,7 @@ export const brandingAPI = {
     api.get(`/api/clients/${workspaceId}/provider-status`),
 }
 
-// This route didn't exist in newsletter-core before today — added at
+// This route didn't exist in newsletter-core before today // added at
 // app/api/clients/[workspaceId]/analytics/route.ts (JWT-authenticated,
 // same pattern as the other client routes). See that file for the exact
 // response shape.

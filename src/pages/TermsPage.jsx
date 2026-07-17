@@ -25,17 +25,22 @@ export default function TermsPage() {
           <p>You are responsible for maintaining the confidentiality of your login credentials and for all activity under your account. You must notify us immediately of any unauthorized use.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">4. Your Obligations</h2>
-          <p>When sending emails through Veloce, you agree to:</p>
+          <p>When sending through Veloce, you agree to:</p>
           <ul className="list-disc list-inside space-y-1">
-            <li>Obtain proper consent from every subscriber</li>
+            <li>Obtain proper consent from every email subscriber</li>
+            <li>Obtain prior express written consent from SMS subscribers per TCPA requirements</li>
             <li>Include a working unsubscribe link in every email</li>
-            <li>Identify yourself as the sender</li>
-            <li>Comply with CAN-SPAM, California's anti-spam law (B&P Code § 17529), and all applicable laws</li>
-            <li>Maintain your own sending infrastructure with your chosen provider</li>
+            <li>Include clear opt-out instructions ("Reply STOP to unsubscribe") in every SMS</li>
+            <li>Identify yourself as the sender in all communications</li>
+            <li>Comply with CAN-SPAM, TCPA, CTIA guidelines, California B&P Code § 17529, and all applicable laws</li>
+            <li>Maintain your own sending infrastructure // SendGrid or SES for email, Twilio for SMS</li>
           </ul>
 
           <h2 className="font-heading text-2xl uppercase mt-8">5. Acceptable Use</h2>
-          <p>You may not use Veloce for spam, phishing, fraud, harassment, hate speech, malware distribution, or any illegal activity. We reserve the right to suspend or terminate accounts that violate these terms, at our sole discretion.</p>
+          <p>You may not use Veloce for spam, phishing, fraud, harassment, hate speech, unsolicited SMS, malware distribution, or any illegal activity. We reserve the right to suspend or terminate accounts that violate these terms.</p>
+
+          <h2 className="font-heading text-2xl uppercase mt-8">5. SMS/MMS/RCS & 10DLC Compliance</h2>
+          <p>Veloce provides the platform for SMS and RCS campaigns. You are responsible for registering your brand and campaign with The Campaign Registry (TCR) through your Twilio account. You must comply with all CTIA messaging guidelines, 10DLC requirements, and carrier regulations. Veloce is not responsible for carrier filtering, message blocking, or delivery failures due to non-compliance.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">6. Data Processing</h2>
           <p>Veloce acts as a data processor for subscriber information you collect. You are the data controller. We process data only in accordance with your instructions as the controller. By using Veloce, you enter into this Data Processing Agreement. You are responsible for providing your own privacy notice to your subscribers.</p>

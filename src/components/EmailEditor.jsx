@@ -87,11 +87,11 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
   const toggleHtmlMode = useCallback(() => {
     if (!editor) return
     if (!htmlMode) {
-      // Entering HTML mode — capture current content, exit preview
+      // Entering HTML mode // capture current content, exit preview
       setHtmlValue(editor.getHTML())
       setPreviewMode(null)
     } else {
-      // Exiting HTML mode — apply HTML back to editor
+      // Exiting HTML mode // apply HTML back to editor
       editor.commands.setContent(htmlValue)
       onChange?.(htmlValue)
     }

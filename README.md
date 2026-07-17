@@ -10,23 +10,23 @@ A newsletter platform. No rounding. No gradients. Just 3px borders and a yellow 
 
 I got tired of email tools that charge by subscriber, hide basic features behind plans, and make you fight the UI to send a simple email. So I built the opposite.
 
-Every workspace is completely isolated — subscribers, campaigns, automations, branding. Nothing leaks between them.
+Every workspace is completely isolated // subscribers, campaigns, automations, branding. Nothing leaks between them.
 
 ---
 
 ## What you can do
 
-**Manage subscribers** — add them, import a CSV, or embed a signup form on your site. Filter by status, date, or search. Health scores (active / at risk / cold) recalculate daily. Bulk select, bulk delete, export — all there.
+**Manage subscribers** // add them, import a CSV, or embed a signup form on your site. Filter by status, date, or search. Health scores (active / at risk / cold) recalculate daily. Bulk select, bulk delete, export // all there.
 
-**Write and send campaigns** — TipTap editor with merge tags, link embedding, image support. Subject line suggestions. Test emails before you send. Schedule for later. Opens and clicks tracked automatically.
+**Write and send campaigns** // TipTap editor with merge tags, link embedding, image support. Subject line suggestions. Test emails before you send. Schedule for later. Opens and clicks tracked automatically.
 
-**Turn on automations** and forget about them — confirm-remind for unconfirmed subs, auto-clean for cold ones after 90 days, smart tags that label engaged vs slipping subscribers. More coming.
+**Turn on automations** and forget about them // confirm-remind for unconfirmed subs, auto-clean for cold ones after 90 days, smart tags that label engaged vs slipping subscribers. More coming.
 
-**Segment your audience** — lists, health scores, date ranges, smart tags. All without uploading spreadsheets.
+**Segment your audience** // lists, health scores, date ranges, smart tags. All without uploading spreadsheets.
 
-**Brand per workspace** — sender name, email, colors, domain. Connect SendGrid or SES. Widget forms you can embed anywhere. Three sizes. Customizable text and colors.
+**Brand per workspace** // sender name, email, colors, domain. Connect SendGrid or SES. Widget forms you can embed anywhere. Three sizes. Customizable text and colors.
 
-**UX stuff that matters** — Cmd+K command palette, keyboard shortcuts (press `?`), page titles everywhere, relative timestamps, sticky bulk action bar, empty states that actually help, responsive tables that don't break on mobile.
+**UX stuff that matters** // Cmd+K command palette, keyboard shortcuts (press `?`), page titles everywhere, relative timestamps, sticky bulk action bar, empty states that actually help, responsive tables that don't break on mobile.
 
 ---
 

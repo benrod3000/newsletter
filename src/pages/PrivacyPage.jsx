@@ -19,16 +19,16 @@ export default function PrivacyPage() {
           <p>Veloce is an email newsletter platform operated in California. This policy explains how we handle personal information when you use our platform, whether you are a workspace operator or a newsletter subscriber.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">2. Information We Collect</h2>
-          <p><strong>Account information:</strong> When you create an account, we collect your email address and workspace name. Passwords are hashed and never stored in plain text.</p>
-          <p><strong>Subscriber information:</strong> When someone subscribes to a newsletter, we collect their email address and, with consent, approximate location (city, region, postal code derived from IP address). Optional fields include first name, last name, and phone number.</p>
-          <p><strong>Usage data:</strong> Email opens, link clicks, and campaign engagement metrics.</p>
+          <p><strong>Account information:</strong> When you create an account, we collect your email address and workspace name. Passwords are hashed and never stored in plain text. A welcome email is sent to your address after signup.</p>
+          <p><strong>Subscriber information:</strong> When someone subscribes to a newsletter, we collect their email address and, with consent, approximate location (city, region, postal code derived from IP address). Optional fields include first name, last name, and phone number for SMS campaigns.</p>
+          <p><strong>Usage data:</strong> Email opens, link clicks, SMS delivery status, and campaign engagement metrics.</p>
           <p><strong>Device data:</strong> IP address, browser type, and operating system for analytics and abuse prevention.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">3. How We Use Information</h2>
           <ul className="list-disc list-inside space-y-1">
             <li>Deliver newsletters and manage subscriptions</li>
+            <li>Enable SMS and RCS campaigns via Twilio (when configured by the workspace operator)</li>
             <li>Enable geo-targeted campaigns based on subscriber location</li>
-            <li>Provide analytics to workspace operators</li>
             <li>Prevent abuse and enforce our terms</li>
             <li>Improve the platform</li>
           </ul>
@@ -53,24 +53,27 @@ export default function PrivacyPage() {
           <p>We share data only with:</p>
           <ul className="list-disc list-inside space-y-1">
           <li><strong>Supabase</strong> (database hosting), our infrastructure provider</li>
+          <li><strong>Twilio</strong> // SMS and RCS message delivery (when enabled by workspace operator)</li>
           <li><strong>SendGrid or AWS SES</strong>, your chosen email delivery provider</li>
-          <li><strong>Vercel</strong>, hosting provider</li>
           </ul>
           <p>We require all third parties to maintain appropriate data protection standards.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">7. Cookies & Tracking</h2>
+          <h2 className="font-heading text-2xl uppercase mt-8">7. SMS & RCS Messaging</h2>
+          <p>When a workspace operator enables SMS/RCS campaigns, subscribers who have provided a phone number may receive text messages via Twilio. Phone numbers are only collected with explicit consent through our widget forms or CSV import. Standard message and data rates may apply. Subscribers can reply STOP to opt out of SMS messages at any time. Carriers are not liable for delayed or undelivered messages.</p>
+
+          <h2 className="font-heading text-2xl uppercase mt-8">8. Cookies & Tracking</h2>
           <p>We use email tracking pixels (opens and clicks) to provide analytics to workspace operators. Widget forms use a single session cookie for spam prevention. We do not use third-party tracking cookies, advertising cookies, or cross-site tracking.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">8. Security</h2>
+          <h2 className="font-heading text-2xl uppercase mt-8">9. Security</h2>
           <p>We implement reasonable security measures including encryption in transit (TLS 1.3), encryption at rest, PBKDF2 password hashing, JWT authentication, and rate limiting. No method of transmission over the internet is 100% secure.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">9. Your Choices</h2>
+          <h2 className="font-heading text-2xl uppercase mt-8">10. Your Choices</h2>
           <p>Subscribers can unsubscribe at any time using the link in every email. Workspace operators can export or delete subscriber data from the dashboard. You may request full account deletion by emailing support@veloce.app.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">10. Changes to This Policy</h2>
+          <h2 className="font-heading text-2xl uppercase mt-8">11. Changes to This Policy</h2>
           <p>We will notify workspace operators of material changes via email. Subscribers will be notified via the newsletter operator. Continued use after changes constitutes acceptance.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">11. Contact</h2>
+          <h2 className="font-heading text-2xl uppercase mt-8">12. Contact</h2>
           <p>Privacy inquiries: support@veloce.app<br />Veloce is operated in California, USA.<br />Response time: within 45 days as required by California law.</p>
         </div>
         <Btn variant="primary" size="lg" onClick={() => window.location.href = '/'}>← Back to Home</Btn>

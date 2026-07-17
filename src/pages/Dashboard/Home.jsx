@@ -97,7 +97,7 @@ export default function DashboardHome() {
         </div>
       )}
 
-      {/* Next Best Action — shown when user has activity but hasn't sent recently */}
+      {/* Next Best Action // shown when user has activity but hasn't sent recently */}
       {stats && stats.total_subscribers > 0 && stats.campaigns_sent === 0 && (
         <Card padding="p-6" className="flex items-start gap-4 shadow-brutal">
           <div className="w-10 h-10 border-3 border-brutal-fg bg-brutal-yellow flex items-center justify-center shrink-0">
@@ -111,7 +111,7 @@ export default function DashboardHome() {
         </Card>
       )}
 
-      {/* Next Best Action — no subscribers yet */}
+      {/* Next Best Action // no subscribers yet */}
       {stats && stats.total_subscribers === 0 && (
         <Card padding="p-6" className="flex items-start gap-4 shadow-brutal">
           <div className="w-10 h-10 border-3 border-brutal-fg bg-brutal-green flex items-center justify-center shrink-0">
@@ -130,7 +130,7 @@ export default function DashboardHome() {
         </Card>
       )}
 
-      {/* Onboarding Checklist — show when workspace is empty */}
+      {/* Onboarding Checklist // show when workspace is empty */}
       {stats && stats.total_subscribers === 0 && stats.campaigns_sent === 0 && (
         <Card padding="p-6" className="shadow-brutal">
           <h3 className="font-heading text-xl uppercase tracking-wide mb-4">🚀 Get Started in 3 Steps</h3>

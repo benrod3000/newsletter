@@ -303,7 +303,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto text-center space-y-8 sm:space-y-10">
           <Badge variant="green">Growing Audiences</Badge>
 
-          {/* Trust metrics — big numbers */}
+          {/* Trust metrics // big numbers */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {TRUST_METRICS.map((m) => (
               <Card key={m.label} hover padding="p-5">

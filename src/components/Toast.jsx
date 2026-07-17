@@ -42,7 +42,7 @@ export function ToastProvider({ children }) {
     const id = nextId.current++
 
     setToasts((prev) => {
-      // Group identical toasts — increment counter on the last match
+      // Group identical toasts // increment counter on the last match
       const last = prev[prev.length - 1]
       if (last && last.message === message && last.type === type) {
         const count = (last.count || 1) + 1

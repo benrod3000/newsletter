@@ -13,7 +13,7 @@ import { Analytics } from '@vercel/analytics/react'
 import Btn from './components/ui/Button'
 import './App.css'
 
-// Pages — code-split dashboard for faster initial load
+// Pages // code-split dashboard for faster initial load
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
@@ -54,7 +54,7 @@ export { useReveal, useScrollReveal, useTerminalReveal, PageTransition } from '.
 function PublicLayout({ children }) {
   return (
     <div className="min-h-screen bg-brutal-bg text-brutal-fg flex flex-col">
-      {/* Top nav — matching landing page style */}
+      {/* Top nav // matching landing page style */}
       <div className="sticky top-0 z-50 border-b-3 border-brutal-fg bg-white/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between">
           <Link to="/" className="font-heading text-2xl uppercase tracking-wider leading-none hover:text-brutal-green transition-colors" aria-label="Veloce home">Veloce</Link>
@@ -207,10 +207,10 @@ function App() {
             <Route path="widgets" element={<ErrorBoundary><WidgetsPage /></ErrorBoundary>} />
           </Route>
 
-          {/* Public widget form — no layout wrapper */}
+          {/* Public widget form // no layout wrapper */}
           <Route path="/w/:slug" element={<ErrorBoundary><WidgetFormPage /></ErrorBoundary>} />
 
-          {/* Public newsletter archive — no layout wrapper */}
+          {/* Public newsletter archive // no layout wrapper */}
           <Route path="/newsletter/:slug" element={<ErrorBoundary><PublicNewsletterPage /></ErrorBoundary>} />
           <Route path="/oauth/callback" element={<ErrorBoundary><OAuthCallbackPage /></ErrorBoundary>} />
 
@@ -236,7 +236,7 @@ function App() {
             <Route path="api/campaigns" element={<DocsIntro />} />
           </Route>
 
-          {/* 404 catch-all — must be last */}
+          {/* 404 catch-all // must be last */}
           <Route path="*" element={
             <main className="min-h-[80vh] flex items-center justify-center">
               <div className="text-center space-y-4 max-w-sm">

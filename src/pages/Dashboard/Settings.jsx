@@ -331,8 +331,8 @@ export default function SettingsPage() {
                 </select>
                 <p className="text-xs font-bold text-brutal-muted mt-1.5 uppercase tracking-wider">
                   {branding.email_provider === 'ses'
-                    ? 'Amazon SES costs ~$1 per 10,000 emails sent — requires AWS credentials below'
-                    : 'SendGrid free tier: 100 emails/day — requires a SendGrid API key below. Sign up at sendgrid.com.'}
+                    ? 'Amazon SES costs ~$1 per 10,000 emails sent // requires AWS credentials below'
+                    : 'SendGrid free tier: 100 emails/day // requires a SendGrid API key below. Sign up at sendgrid.com.'}
                 </p>
               </div>
 

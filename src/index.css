@@ -77,19 +77,19 @@
 }
 
 /* =============================================
-   Transitions — consistent timing
+   Transitions // consistent timing
    ============================================= */
 
 a, button {
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Global disabled state — cursor feedback everywhere */
+/* Global disabled state // cursor feedback everywhere */
 button:disabled, input:disabled, select:disabled, textarea:disabled, [disabled] {
   cursor: not-allowed;
 }
 
-/* Hover lift — cards that rise on hover */
+/* Hover lift // cards that rise on hover */
 .lift-on-hover {
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
               box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -100,7 +100,7 @@ button:disabled, input:disabled, select:disabled, textarea:disabled, [disabled] 
 }
 
 /* =============================================
-   Scrollbar — brutalist thin
+   Scrollbar // brutalist thin
    ============================================= */
 
 ::-webkit-scrollbar {

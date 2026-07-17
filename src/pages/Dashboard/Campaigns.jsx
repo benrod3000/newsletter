@@ -346,7 +346,7 @@ export default function CampaignsPage() {
               {/* If RCS images provided, show RCS preview; otherwise show SMS-only preview */}
               {smsImages.trim() ? (
                 <div className="border-2 border-brutal-green p-3 bg-white max-w-[320px]">
-                  <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-green mb-1">📱 RCS Preview — rich cards with images & a tappable button</p>
+                  <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-green mb-1">📱 RCS Preview // rich cards with images & a tappable button</p>
                   <div className="bg-gray-100 p-3 rounded-lg text-xs">
                     <p className="font-bold text-xs mb-1">Your Business</p>
                     <p>{smsMessage.slice(0, 160)}</p>
@@ -423,7 +423,7 @@ export default function CampaignsPage() {
               disabled={smsSending || !smsMessage.trim()}
               className="px-5 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition disabled:opacity-50"
             >
-              {smsSending ? 'Sending...' : `Send to ${smsCount} contacts — $${(smsCount * 0.0079).toFixed(2)}`}
+              {smsSending ? 'Sending...' : `Send to ${smsCount} contacts // $${(smsCount * 0.0079).toFixed(2)}`}
             </button>
           </div>
         </div>

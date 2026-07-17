@@ -12,7 +12,7 @@ function StatCard({ label, value }) {
   )
 }
 
-// Simple CSS bar chart — no charting library needed for a single series.
+// Simple CSS bar chart // no charting library needed for a single series.
 function GrowthChart({ points }) {
   const max = Math.max(...points.map((p) => p.count), 1)
   return (

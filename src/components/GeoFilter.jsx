@@ -9,13 +9,13 @@ const CIRCLE_COLORS = ['#2f7f5f', '#f5e642', '#e03131', '#4a9e7a', '#d4c82e']
 const MAX_LOCATIONS = 5
 
 /**
- * GeoFilter — multi-ZIP radius filter with GSAP-driven animations.
+ * GeoFilter // multi-ZIP radius filter with GSAP-driven animations.
  *
  * Props:
  *   onChange({ locations: [{lat,lng,city,state,zip}], radius }): called when user applies
  *   onClear(): called when user clears the filter
- *   loading?: boolean — shows spinner on apply button
- *   active?: boolean — highlights the toggle when filter is active
+ *   loading?: boolean // shows spinner on apply button
+ *   active?: boolean // highlights the toggle when filter is active
  */
 export default function GeoFilter({ onChange, onClear, loading = false, active = false, subscribers = [] }) {
   const [open, setOpen] = useState(false)
@@ -255,7 +255,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     const mapEl = document.getElementById('geo-filter-map')
     if (!mapEl) return
 
-    // First time — schedule map creation (container needs to finish open animation)
+    // First time // schedule map creation (container needs to finish open animation)
     if (!mapRef.current) {
       setTimeout(() => {
         const el = document.getElementById('geo-filter-map')
@@ -311,7 +311,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       return // update path handles subsequent location changes
     }
 
-    // Map exists — update circles, marker, pins in place
+    // Map exists // update circles, marker, pins in place
     const map = mapRef.current
     rebuildCircles(map)
 

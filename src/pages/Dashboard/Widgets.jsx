@@ -207,7 +207,7 @@ export default function WidgetsPage() {
         )}
       </div>
 
-      {/* ======== WIZARD: Step 1 — Widget Details ======== */}
+      {/* ======== WIZARD: Step 1 // Widget Details ======== */}
       {step === 1 && (
         <div className="border-3 border-brutal-fg bg-white">
           {/* Wizard progress bar */}
@@ -376,7 +376,7 @@ export default function WidgetsPage() {
         </div>
       )}
 
-      {/* ======== WIZARD: Step 2 — Form Content + Preview ======== */}
+      {/* ======== WIZARD: Step 2 // Form Content + Preview ======== */}
       {step === 2 && (
         <div className="border-3 border-brutal-fg bg-white">
           <div className="flex border-b-3 border-brutal-fg">

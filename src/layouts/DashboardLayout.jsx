@@ -108,7 +108,7 @@ export default function DashboardLayout() {
       {/* Top Bar */}
       <header className="border-b-3 border-brutal-fg bg-white px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-4">
-          {/* Mobile hamburger — visible on screens < lg */}
+          {/* Mobile hamburger // visible on screens < lg */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="lg:hidden p-1.5 border-3 border-brutal-fg bg-brutal-bg hover:shadow-brutal active:translate-y-0.5 transition"
@@ -117,7 +117,7 @@ export default function DashboardLayout() {
             {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
 
-          {/* Desktop sidebar toggle — visible on lg+ */}
+          {/* Desktop sidebar toggle // visible on lg+ */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="hidden lg:flex p-1.5 border-3 border-brutal-fg bg-brutal-bg hover:shadow-brutal active:translate-y-0.5 transition"
