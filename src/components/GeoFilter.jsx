@@ -26,6 +26,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   const mapRef = useRef(null)
   const markerRef = useRef(null)
   const circleRef = useRef(null)
+  const subscriberLayerRef = useRef(null)
 
   // GSAP open/close animation
   useEffect(() => {
@@ -80,28 +81,101 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     }, 600)
   }, [])
 
-  // Initialize/reset the map when ZIP resolves
-  useEffect(() => {
-    if (!resolved || !open) return
-    const mapEl = document.getElementById(`map-${zip}`)
-    if (!mapEl) return
+  // Helper: add subscriber pins to a Leaflet layer (layer group or map)
+  function addSubscriberPins(layer) {
+    subscribers.forEach(s => {
+      if (!s.latitude || !s.longitude) return
+      const colors = { active: '#2f7f5f', at_risk: '#f5e642', cold: '#e03131' }
+      const sizes = { active: 7, at_risk: 5, cold: 3 }
+      L.circleMarker([s.latitude, s.longitude], {
+        radius: sizes[s.health_score] || 4, color: '#0a0a0a',
+        fillColor: colors[s.health_score] || '#a8a49a', fillOpacity: 1, weight: 2,
+      }).addTo(layer)
+    })
+  }
 
-    // Destroy previous instance
-    if (mapRef.current) {
-      mapRef.current.remove()
-      mapRef.current = null
-      markerRef.current = null
-      circleRef.current = null
+  // Initialize map when panel opens; update in place when ZIP resolves (no rebuild)
+  useEffect(() => {
+    if (!open) {
+      if (mapRef.current) {
+        mapRef.current.remove()
+        mapRef.current = null
+        markerRef.current = null
+        circleRef.current = null
+        subscriberLayerRef.current = null
+      }
+      return
     }
 
-    const timer = setTimeout(() => {
-      const center = [resolved.lat, resolved.lng]
+    // Keep old map visible while resolving new ZIP
+    if (!resolved) return
 
+    const mapEl = document.getElementById('geo-filter-map')
+    if (!mapEl) return
+
+    const center = [resolved.lat, resolved.lng]
+
+    // Map exists — smooth update (no flicker)
+    if (mapRef.current) {
+      mapRef.current.setView(center, 11)
+
+      // Update or create marker
+      if (markerRef.current) {
+        markerRef.current.setLatLng(center)
+      } else {
+        const marker = L.marker(center, {
+          draggable: true,
+          icon: L.divIcon({
+            className: '',
+            html: '<div style="width:16px;height:16px;background:#f5e642;border:3px solid #0a0a0a;border-radius:50%;cursor:grab;"></div>',
+            iconSize: [16, 16],
+            iconAnchor: [8, 8],
+          }),
+        }).addTo(mapRef.current)
+
+        marker.on('dragend', async (e) => {
+          const pos = e.target.getLatLng()
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}&zoom=10`)
+            const data = await res.json()
+            const postalCode = data.address?.postcode || ''
+            const city = data.address?.city || data.address?.town || data.address?.village || ''
+            const state = data.address?.state || ''
+            if (postalCode) setZip(postalCode)
+            setResolved({ lat: pos.lat, lng: pos.lng, city, state })
+          } catch {
+            setResolved(prev => prev ? { ...prev, lat: pos.lat, lng: pos.lng } : null)
+          }
+        })
+
+        markerRef.current = marker
+      }
+
+      // Rebuild circle
+      if (circleRef.current) mapRef.current.removeLayer(circleRef.current)
+      const circle = L.circle(center, {
+        radius: radius * 1609.34, color: '#2f7f5f', weight: 3, fillOpacity: 0, dashArray: '6, 8',
+      }).addTo(mapRef.current)
+      circleRef.current = circle
+      mapRef.current.fitBounds(circle.getBounds(), { padding: [30, 30] })
+
+      // Rebuild subscriber pins
+      if (subscriberLayerRef.current) mapRef.current.removeLayer(subscriberLayerRef.current)
+      const group = L.layerGroup()
+      addSubscriberPins(group)
+      group.addTo(mapRef.current)
+      subscriberLayerRef.current = group
+
+      return
+    }
+
+    // First-time init
+    const timer = setTimeout(() => {
       const map = L.map(mapEl, {
         center,
         zoom: 11,
         zoomControl: true,
-        attributionControl: false,
+        attributionControl: true,
       })
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -109,7 +183,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
       }).addTo(map)
 
-      // Draggable center marker — enables two-way interaction
+      // Draggable center marker
       const marker = L.marker(center, {
         draggable: true,
         icon: L.divIcon({
@@ -143,41 +217,26 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       }).addTo(map)
       circleRef.current = circle
 
-      // Auto-zoom to fit the full radius circle
+      // Auto-zoom
       map.fitBounds(circle.getBounds(), { padding: [30, 30] })
 
       // Subscriber pins
-      subscribers.forEach(s => {
-        if (!s.latitude || !s.longitude) return
-        const colors = { active: '#2f7f5f', at_risk: '#f5e642', cold: '#e03131' }
-        const sizes = { active: 7, at_risk: 5, cold: 3 }
-        L.circleMarker([s.latitude, s.longitude], {
-          radius: sizes[s.health_score] || 4, color: '#0a0a0a',
-          fillColor: colors[s.health_score] || '#a8a49a', fillOpacity: 1, weight: 2,
-        }).addTo(map)
-      })
+      const group = L.layerGroup()
+      addSubscriberPins(group)
+      group.addTo(map)
+      subscriberLayerRef.current = group
 
       mapRef.current = map
       setTimeout(() => map.invalidateSize(), 100)
     }, 100)
+  }, [open, resolved])
 
-    return () => {
-      clearTimeout(timer)
-      if (mapRef.current) {
-        mapRef.current.remove()
-        mapRef.current = null
-        markerRef.current = null
-        circleRef.current = null
-      }
-    }
-  }, [resolved, open])
-
-  // Update radius circle + auto-zoom when radius changes
+  // Update radius circle + auto-zoom when radius changes (no dependency on resolved)
   useEffect(() => {
-    if (!mapRef.current || !resolved) return
+    if (!mapRef.current || !resolved || !circleRef.current) return
     const map = mapRef.current
 
-    if (circleRef.current) map.removeLayer(circleRef.current)
+    map.removeLayer(circleRef.current)
 
     const circle = L.circle([resolved.lat, resolved.lng], {
       radius: radius * 1609.34, color: '#2f7f5f', weight: 3, fillOpacity: 0, dashArray: '6, 8',
@@ -186,7 +245,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
 
     // Auto-zoom so the full circle is visible
     map.fitBounds(circle.getBounds(), { padding: [30, 30] })
-  }, [radius, resolved])
+  }, [radius])
 
   function applyFilter() {
     if (!resolved) return
@@ -271,30 +330,18 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
             <div className="border-3 border-brutal-fg overflow-hidden">
               <div className="bg-brutal-fg text-white px-3 py-1.5 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
                 <span>{resolved.city}, {resolved.state}</span>
-                <span className="text-brutal-fg/60">{radius} mi radius</span>
+                {subscribers.some(s => s.latitude && s.longitude) && (
+                  <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#2f7f5f'}} /> Active</span>
+                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#f5e642'}} /> Risk</span>
+                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#e03131'}} /> Cold</span>
+                  </span>
+                )}
+                <span className="text-white/60">{radius} mi radius</span>
               </div>
-              <div id={`map-${zip}`} style={{ height: '220px', width: '100%', background: '#e8e8e0' }} />
+              <div id="geo-filter-map" style={{ height: '220px', width: '100%', background: '#e8e8e0' }} />
             </div>
           )}
-
-          {/* Radar display */}
-          <div className="flex justify-center">
-            <div className="relative w-28 h-28 flex items-center justify-center">
-              {/* Concentric rings */}
-              <div className="absolute inset-0 rounded-full border border-brutal-fg/15" />
-              <div className="absolute inset-[15%] rounded-full border border-dashed border-brutal-fg/20" />
-              <div className="absolute inset-[35%] rounded-full border border-dashed border-brutal-fg/25" />
-              <div className="absolute inset-[55%] rounded-full border border-dashed border-brutal-fg/30" />
-
-              {/* Animated radar pulses */}
-              <div className="absolute inset-0 rounded-full border-3 border-brutal-green/40 animate-radar-1" />
-              <div className="absolute inset-0 rounded-full border-3 border-brutal-green/30 animate-radar-2" />
-              <div className="absolute inset-0 rounded-full border-3 border-brutal-green/20 animate-radar-3" />
-
-              {/* Center dot */}
-              <div className="relative z-10 w-4 h-4 bg-brutal-green rounded-full border-2 border-brutal-fg shadow-brutal" />
-            </div>
-          </div>
 
           {/* Radius slider */}
           <div>
