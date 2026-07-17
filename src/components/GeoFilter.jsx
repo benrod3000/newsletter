@@ -152,6 +152,22 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     gsapTweens.current.push(tw)
   }
 
+  // ─── Count subscribers within radius range (Haversine) ───
+  const totalInRange = locations.length > 0 ? (() => {
+    const set = new Set()
+    const r = 3959
+    locations.forEach(loc => {
+      subscribers.forEach(s => {
+        if (!s.id || !s.latitude || !s.longitude) return
+        const dLat = (s.latitude - loc.lat) * Math.PI / 180
+        const dLng = (s.longitude - loc.lng) * Math.PI / 180
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(loc.lat * Math.PI / 180) * Math.cos(s.latitude * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+        if (2 * r * Math.asin(Math.sqrt(a)) <= radius) set.add(s.id)
+      })
+    })
+    return set.size
+  })() : 0
+
   // ─── Helper: add subscriber pins to a Leaflet layer ───
   function addSubscriberPins(layer) {
     subscribers.forEach(s => {
@@ -452,7 +468,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
                     <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#e03131'}} /> Cold</span>
                   </span>
                 )}
-                <span className="text-white/60">{radius} mi radius</span>
+                <span className="text-white/60">☌ {totalInRange} in range · {radius} mi radius</span>
               </div>
               <div id="geo-filter-map" style={{ height: '220px', width: '100%', background: '#e8e8e0' }} />
             </div>
