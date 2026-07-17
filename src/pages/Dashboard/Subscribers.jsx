@@ -441,25 +441,6 @@ export default function SubscribersPage() {
         <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
           className="px-3 py-2 bg-white border-3 border-brutal-fg text-xs font-bold focus:outline-none"
           title="Joined before" />
-        <div className="flex gap-2 items-center">
-          {[
-            { value: 'active', label: '🟢 Active', cls: 'border-brutal-green text-brutal-green' },
-            { value: 'at_risk', label: '🟡 At Risk', cls: 'border-brutal-yellow text-brutal-fg' },
-            { value: 'cold', label: '🔴 Cold', cls: 'border-brutal-red text-brutal-red' },
-          ].map(chip => (
-            <button
-              key={chip.value}
-              onClick={() => setStatusFilter(statusFilter === chip.value ? '' : chip.value)}
-              className={`px-3 py-1.5 border-2 text-[10px] font-bold uppercase tracking-wider transition ${
-                statusFilter === chip.value
-                  ? `${chip.cls} bg-white`
-                  : 'border-brutal-fg/20 text-brutal-muted hover:border-brutal-fg'
-              }`}
-            >
-              {chip.label}
-            </button>
-          ))}
-        </div>
         <input
           type="text"
           value={search}

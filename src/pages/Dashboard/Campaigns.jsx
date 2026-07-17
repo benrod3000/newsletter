@@ -346,19 +346,26 @@ export default function CampaignsPage() {
             <div className="space-y-3">
               {/* If RCS images provided, show RCS preview; otherwise show SMS-only preview */}
               {smsImages.trim() ? (
-                <div className="border-2 border-brutal-green p-3 bg-white">
-                  <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-green mb-1">📱 RCS (Android — rich media supported)</p>
-                  <div className="bg-gray-100 p-3 rounded max-w-[280px] text-xs">
+                <div className="border-2 border-brutal-green p-3 bg-white max-w-[320px]">
+                  <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-green mb-1">📱 RCS Preview — rich cards with images & a tappable button</p>
+                  <div className="bg-gray-100 p-3 rounded-lg text-xs">
                     <p className="font-bold text-xs mb-1">Your Business</p>
                     <p>{smsMessage.slice(0, 160)}</p>
                     <div className="flex gap-2 mt-2">
                       {smsImages.split(',').slice(0, 3).map((url, i) => (
-                        <div key={i} className="w-16 h-16 bg-gray-300 border border-gray-400 flex items-center justify-center text-[8px] text-gray-500 font-bold uppercase">
-                          {i === 0 ? 'Img 1' : i === 1 ? 'Img 2' : 'Img 3'}
-                        </div>
+                        <img
+                          key={i}
+                          src={url.trim()}
+                          alt={`RCS image ${i + 1}`}
+                          className="w-16 h-16 object-cover border border-gray-400 bg-gray-200"
+                          onError={(e) => { e.target.style.display = 'none' }}
+                        />
                       ))}
                     </div>
-                    <button className="mt-2 px-3 py-1 bg-brutal-green text-white text-[10px] font-bold border border-brutal-fg">Reply Button</button>
+                    <div className="mt-2 px-4 py-2 bg-white text-brutal-fg text-[11px] font-bold border-2 border-brutal-fg text-center rounded">
+                      Shop Now →
+                    </div>
+                    <p className="text-[8px] text-gray-400 mt-1">Button text is auto-generated. Custom buttons coming soon.</p>
                   </div>
                 </div>
               ) : (
@@ -372,17 +379,17 @@ export default function CampaignsPage() {
               )}
               <p className="text-[9px] text-brutal-muted font-bold uppercase tracking-wider">
                 {smsImages.trim()
-                  ? 'RCS enabled — subscribers on Android will see images & buttons. iOS falls back to plain SMS.'
-                  : 'Plain SMS — add image URLs above to upgrade to RCS (Android).'}
+                  ? '📱 Android users see a rich card with images & button. iPhone users get the message as plain SMS.'
+                  : '📱 Plain text message. Add image URLs above to upgrade to rich RCS cards on Android.'}
               </p>
             </div>
           )}
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <span className="text-[10px] text-brutal-muted font-bold">{smsMessage.length}/320</span>
-              <label className="flex items-center gap-1.5 cursor-pointer">
+              <label className="flex items-center gap-1.5 cursor-pointer group" title="Only sends to subscribers within your GeoFilter area. Set up in Subscribers → Geo Filter.">
                 <input type="checkbox" checked={geoTrigger} onChange={e => setGeoTrigger(e.target.checked)} className="w-3 h-3 border border-brutal-fg accent-brutal-green" />
-                <span className="text-[9px] font-bold text-brutal-muted uppercase">📍 Trigger on location</span>
+                <span className="text-[9px] font-bold text-brutal-muted uppercase group-hover:text-brutal-fg transition-colors">📍 Trigger on location</span>
               </label>
             </div>
             <button
@@ -402,6 +409,7 @@ export default function CampaignsPage() {
                         body: JSON.stringify({
                           message: smsMessage.trim(),
                           image_urls: smsImages.trim() ? smsImages.split(',').map(u => u.trim()).filter(Boolean) : undefined,
+                          geo_filter: geoTrigger ? true : undefined,
                         }),
                       })
                       const data = await res.json()
