@@ -98,7 +98,7 @@ export default function LandingPage() {
           <div className="h-2 w-24 bg-brutal-yellow border-2 border-brutal-fg" aria-hidden="true" />
 
           <p className="text-lg sm:text-xl text-brutal-fg/80 leading-relaxed max-w-2xl font-medium">
-            Email marketing without algorithms. Reach your subscribers on email, SMS, and RCS -- starting with a simple newsletter.
+            Build direct relationships across email, SMS, and RCS -- your audience, your data, no algorithms.
           </p>
 
           <Annotation>own your audience · BYO SendGrid/SES · free to start · no credit card</Annotation>
@@ -111,7 +111,7 @@ export default function LandingPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 items-start">
             <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
-              Create Free Account
+              Start Owning Your Audience
             </Btn>
             <Btn variant="secondary" size="lg" onClick={() => window.location.href = '/demo'}>
               Explore Live Demo
@@ -228,6 +228,32 @@ export default function LandingPage() {
           </div>
         </div>
       </div>
+
+      {/* ═══ CHANNELS ═══ */}
+      <Section>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-8">
+            <Badge variant="yellow">Reach</Badge>
+            <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none mt-4">
+              One audience.{' '}
+              <span className="text-brutal-green">Every channel.</span>
+            </h2>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {[
+              { icon: Mail, title: 'Email', desc: 'Send campaigns with your own SendGrid or SES account. Full control over deliverability, branding, and analytics.' },
+              { icon: Smartphone, title: 'SMS', desc: 'Reach subscribers instantly with text campaigns. Perfect for time-sensitive offers, reminders, and alerts.' },
+              { icon: Radio, title: 'RCS', desc: 'Rich messaging with images, buttons, and interactivity. The next generation of business messaging, built in.' },
+            ].map((ch) => (
+              <Card key={ch.title} padding="p-6" hover className="text-center">
+                <ch.icon size={28} className="text-brutal-green mx-auto mb-3" />
+                <h3 className="font-heading text-xl uppercase tracking-wide">{ch.title}</h3>
+                <p className="text-xs text-brutal-muted mt-2 leading-relaxed">{ch.desc}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </Section>
 
       {/* ═══ PROBLEM STATEMENT ═══ */}
       <Section className="bg-brutal-surface/40 -mt-12">
