@@ -549,23 +549,24 @@ export default function WidgetsPage() {
               {/* Right: Live Preview */}
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted mb-3">Live Preview · <span className="text-brutal-green">{form.size}</span></p>
-                <div className={`border-3 border-brutal-fg shadow-brutal transition-all duration-200 ${form.size === 'small' ? 'max-w-sm' : form.size === 'large' ? 'max-w-lg' : 'max-w-md'}`}>
-                  <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-5 py-3">
-                    <p className="font-heading text-lg uppercase leading-none">{formPreview.headline || 'Your Headline'}</p>
+                <div className={`border-3 shadow-brutal transition-all duration-200 ${form.size === 'small' ? 'max-w-sm' : form.size === 'large' ? 'max-w-lg' : 'max-w-md'}`} style={{ borderColor: form.styles?.border_color || '#0a0a0a' }}>
+                  <div className="border-b-3 px-5 py-3" style={{ backgroundColor: form.styles?.primary_color || '#f5e642', borderColor: form.styles?.border_color || '#0a0a0a' }}>
+                    <p className="font-heading text-lg uppercase leading-none" style={{ color: form.styles?.text_color || '#0a0a0a' }}>{formPreview.headline || 'Your Headline'}</p>
                   </div>
-                  <div className="p-5 space-y-4">
-                    <p className="text-xs text-brutal-fg/70 leading-relaxed">
+                  <div className="p-5 space-y-4" style={{ backgroundColor: '#fff' }}>
+                    <p className="text-xs leading-relaxed" style={{ color: form.styles?.text_color || 'inherit' }}>
                       {formPreview.description || 'Your description here.'}
                     </p>
-                    <div className="w-full px-4 py-3 bg-white border-3 border-brutal-fg text-xs text-brutal-muted">
+                    <div className="w-full px-4 py-3 bg-white border-3 text-xs text-brutal-muted" style={{ borderColor: form.styles?.border_color || '#0a0a0a' }}>
                       {formPreview.placeholder || 'you@example.com'}
                     </div>
-                    <div className="w-full border-3 border-brutal-fg bg-brutal-fg text-white font-bold py-3 text-xs uppercase tracking-wider text-center">
+                    <div className="w-full border-3 font-bold py-3 text-xs uppercase tracking-wider text-center"
+                      style={{ backgroundColor: form.styles?.primary_color || '#0a0a0a', borderColor: form.styles?.border_color || '#0a0a0a', color: form.styles?.button_text_color || '#ffffff' }}>
                       {formPreview.button_text || 'Button'}
                     </div>
                   </div>
-                  <div className="border-t-3 border-brutal-fg px-5 py-2.5">
-                    <p className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider text-center">
+                  <div className="border-t-3 px-5 py-2.5 text-center" style={{ borderColor: form.styles?.border_color || '#0a0a0a' }}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: form.styles?.text_color || '#a8a49a' }}>
                       No spam. Unsubscribe anytime.
                     </p>
                   </div>
