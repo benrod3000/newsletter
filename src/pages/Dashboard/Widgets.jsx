@@ -20,7 +20,7 @@ const DEFAULT_FORM = {
   success_message: 'Check your inbox! The download link is on its way.',
   placeholder: 'you@example.com',
   fields: { email: { required: true } },
-  styles: { primary_color: '#f5e642', font_size: 'medium' },
+  styles: { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#ffffff' },
 }
 
 const WIDGET_TYPES = [
@@ -100,7 +100,7 @@ export default function WidgetsPage() {
       success_message: w.success_message || 'Check your inbox!',
       placeholder: w.placeholder || 'you@example.com',
       fields: w.fields || { email: { required: true } },
-      styles: w.styles || { primary_color: '#f5e642', font_size: 'medium' },
+      styles: w.styles || { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#ffffff' },
     })
     setEditingId(w.id)
     setErrors({})
@@ -452,6 +452,71 @@ export default function WidgetsPage() {
                       onChange={e => updateField('styles', { ...form.styles, primary_color: e.target.value })}
                       className="flex-1 px-3 py-2 bg-white border-3 border-brutal-fg text-xs font-mono focus:outline-none"
                     />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Background</label>
+                    <div className="flex gap-2">
+                      <input type="color" value={form.styles?.bg_color || '#f5f5f0'}
+                        onChange={e => updateField('styles', { ...form.styles, bg_color: e.target.value })}
+                        className="w-10 h-9 border-3 border-brutal-fg cursor-pointer" />
+                      <input type="text" value={form.styles?.bg_color || '#f5f5f0'}
+                        onChange={e => updateField('styles', { ...form.styles, bg_color: e.target.value })}
+                        className="flex-1 px-2 py-2 bg-white border-3 border-brutal-fg text-[10px] font-mono focus:outline-none" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Text Color</label>
+                    <div className="flex gap-2">
+                      <input type="color" value={form.styles?.text_color || '#0a0a0a'}
+                        onChange={e => updateField('styles', { ...form.styles, text_color: e.target.value })}
+                        className="w-10 h-9 border-3 border-brutal-fg cursor-pointer" />
+                      <input type="text" value={form.styles?.text_color || '#0a0a0a'}
+                        onChange={e => updateField('styles', { ...form.styles, text_color: e.target.value })}
+                        className="flex-1 px-2 py-2 bg-white border-3 border-brutal-fg text-[10px] font-mono focus:outline-none" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Border Color</label>
+                    <div className="flex gap-2">
+                      <input type="color" value={form.styles?.border_color || '#0a0a0a'}
+                        onChange={e => updateField('styles', { ...form.styles, border_color: e.target.value })}
+                        className="w-10 h-9 border-3 border-brutal-fg cursor-pointer" />
+                      <input type="text" value={form.styles?.border_color || '#0a0a0a'}
+                        onChange={e => updateField('styles', { ...form.styles, border_color: e.target.value })}
+                        className="flex-1 px-2 py-2 bg-white border-3 border-brutal-fg text-[10px] font-mono focus:outline-none" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Button Text</label>
+                    <div className="flex gap-2">
+                      <input type="color" value={form.styles?.button_text_color || '#ffffff'}
+                        onChange={e => updateField('styles', { ...form.styles, button_text_color: e.target.value })}
+                        className="w-10 h-9 border-3 border-brutal-fg cursor-pointer" />
+                      <input type="text" value={form.styles?.button_text_color || '#ffffff'}
+                        onChange={e => updateField('styles', { ...form.styles, button_text_color: e.target.value })}
+                        className="flex-1 px-2 py-2 bg-white border-3 border-brutal-fg text-[10px] font-mono focus:outline-none" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Theme Presets */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Quick Themes</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: '🎨 Brutalist', s: { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#ffffff' } },
+                      { label: '☀️ Minimal', s: { primary_color: '#2563eb', bg_color: '#ffffff', text_color: '#1a1a1a', border_color: '#e5e7eb', button_text_color: '#ffffff' } },
+                      { label: '🌙 Dark', s: { primary_color: '#6366f1', bg_color: '#1a1a1a', text_color: '#f5f5f5', border_color: '#333333', button_text_color: '#ffffff' } },
+                    ].map(t => (
+                      <button key={t.label} type="button"
+                        onClick={() => updateField('styles', t.s)}
+                        className="px-3 py-1.5 border-2 border-brutal-fg text-[10px] font-bold uppercase tracking-wider bg-white hover:bg-brutal-yellow/20 transition">
+                        {t.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
 

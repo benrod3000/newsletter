@@ -111,11 +111,11 @@ export default function WidgetFormPage() {
   const sizeCls = sizeClasses[widget.size] || 'max-w-md'
 
   return (
-    <div className="min-h-screen bg-brutal-bg flex items-center justify-center p-6">
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: styles.bg_color || '#f5f5f0' }}>
       <div className={`w-full ${sizeCls}`}>
-        <div className="border-3 border-brutal-fg bg-white shadow-brutal">
+        <div className="border-3 shadow-brutal" style={{ borderColor: styles.border_color || '#0a0a0a', backgroundColor: '#fff' }}>
           {/* Header */}
-          <div className="border-b-3 border-brutal-fg px-6 py-4" style={{ backgroundColor: styles.primary_color || '#f5e642' }}>
+          <div className="border-b-3 px-6 py-4" style={{ backgroundColor: styles.primary_color || '#f5e642', borderColor: styles.border_color || '#0a0a0a' }}>
             <h1 className="font-heading text-2xl sm:text-3xl uppercase tracking-tight leading-none">
               {widget.headline}
             </h1>
@@ -135,7 +135,7 @@ export default function WidgetFormPage() {
               </div>
             ) : (
               <>
-                <p className="text-sm text-brutal-fg/70 leading-relaxed">
+                <p className="text-sm leading-relaxed" style={{ color: styles.text_color || 'inherit' }}>
                   {widget.description}
                 </p>
 
@@ -232,7 +232,8 @@ export default function WidgetFormPage() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full border-3 border-brutal-fg bg-brutal-fg text-white font-bold py-3 text-sm uppercase tracking-wider hover:bg-brutal-fg/80 hover:shadow-brutal disabled:opacity-50 transition active:translate-y-0.5"
+                    className="w-full border-3 text-white font-bold py-3 text-sm uppercase tracking-wider hover:shadow-brutal disabled:opacity-50 transition active:translate-y-0.5"
+                    style={{ backgroundColor: styles.primary_color || '#0a0a0a', borderColor: styles.border_color || '#0a0a0a', color: styles.button_text_color || '#ffffff' }}
                   >
                     {submitting ? 'Sending...' : widget.button_text}
                   </button>
@@ -242,7 +243,7 @@ export default function WidgetFormPage() {
           </div>
 
           {/* Footer */}
-          <div className="border-t-3 border-brutal-fg px-6 py-3">
+          <div className="px-6 py-3 border-t-3" style={{ borderColor: styles.border_color || '#0a0a0a' }}>
             <p className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider text-center">
               No spam. Unsubscribe anytime. &nbsp;·&nbsp; 📍 Location data may be collected for personalization.
             </p>
