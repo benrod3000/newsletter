@@ -25,7 +25,7 @@ const navGroups = [
     label: 'Audience',
     items: [
       { path: '/dashboard/subscribers', label: 'Subscribers', icon: Users },
-      { path: '/dashboard/lists', label: 'Segments', icon: Layers },
+      { path: '/dashboard/lists', label: 'Lists', icon: Layers },
     ],
   },
   {

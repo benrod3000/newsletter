@@ -492,10 +492,6 @@ export default function CampaignsPage() {
                 <span className={`text-[10px] font-bold uppercase tracking-wider ${autosaving ? 'text-brutal-yellow' : 'text-brutal-green'}`}>
                   {autosaving ? '● Saving...' : '● Saved'}
                 </span>
-                <label className="flex items-center gap-1.5 cursor-pointer">
-                  <input type="checkbox" checked={twoChannel} onChange={e => setTwoChannel(e.target.checked)} className="w-3.5 h-3.5 border-2 border-brutal-fg accent-brutal-green" />
-                  <span className="text-[9px] font-bold text-brutal-muted uppercase tracking-wider">📱 Also text subscribers</span>
-                </label>
               </div>
               <div className="flex gap-2">
                 {editingId !== 'new' && (
