@@ -114,12 +114,12 @@ export default function AnalyticsPage() {
                   <p className="text-2xl font-heading text-brutal-green">{smsStats.reachable}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Sent (est.)</p>
-                  <p className="text-2xl font-heading">--</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Sent</p>
+                  <p className="text-2xl font-heading">{smsStats.sent ?? '--'}</p>
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Response Rate</p>
-                  <p className="text-2xl font-heading text-brutal-muted">--</p>
+                  <p className="text-2xl font-heading text-brutal-muted">{smsStats.responseRate ?? '--'}</p>
                 </div>
               </div>
               <p className="text-[9px] text-brutal-muted mt-2">{smsStats.message}</p>

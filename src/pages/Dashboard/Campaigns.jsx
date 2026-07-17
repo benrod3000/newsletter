@@ -21,8 +21,8 @@ export default function CampaignsPage() {
   const [busyId, setBusyId] = useState(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [viewMode, setViewMode] = useState('calendar')
-  const [calendarMonth, setCalendarMonth] = useState(() => new Date().getMonth())
-  const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear())
+  const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth())
+  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear())
   const [editingId, setEditingId] = useState(null)
   const [editCampaign, setEditCampaign] = useState(null)
   const [editContent, setEditContent] = useState('')
@@ -373,28 +373,37 @@ export default function CampaignsPage() {
               </label>
             </div>
             <button
-              onClick={async () => {
+              onClick={() => {
                 if (!smsMessage.trim()) { toast.addToast('Enter a message', 'warning'); return }
-                setSmsSending(true)
-                try {
-                  const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
-                  const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/campaigns/sms`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                    body: JSON.stringify({
-                      message: smsMessage.trim(),
-                      image_urls: smsImages.trim() ? smsImages.split(',').map(u => u.trim()).filter(Boolean) : undefined,
-                    }),
-                  })
-                  const data = await res.json()
-                  if (data.sent > 0) toast.addToast(`SMS sent to ${data.sent} recipients${data.failed > 0 ? `, ${data.failed} failed` : ''}`, data.failed > 0 ? 'warning' : 'success')
-                  else toast.addToast(data.error || 'Failed to send', 'error')
-                } catch { toast.addToast('Failed to send', 'error') }
-                finally { setSmsSending(false) }
+                const cost = (smsCount * 0.0079).toFixed(2)
+                setConfirmAction({
+                  title: 'Send SMS Campaign?',
+                  message: `"${smsMessage.trim().slice(0, 50)}${smsMessage.length > 50 ? '...' : ''}" will be sent to ${smsCount} contacts. Estimated cost: $${cost} via Twilio.`,
+                  onConfirm: async () => {
+                    setConfirmAction(null)
+                    setSmsSending(true)
+                    try {
+                      const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+                      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/campaigns/sms`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({
+                          message: smsMessage.trim(),
+                          image_urls: smsImages.trim() ? smsImages.split(',').map(u => u.trim()).filter(Boolean) : undefined,
+                        }),
+                      })
+                      const data = await res.json()
+                      if (data.sent > 0) toast.addToast(`SMS sent to ${data.sent} recipients${data.failed > 0 ? `, ${data.failed} failed` : ''}`, data.failed > 0 ? 'warning' : 'success')
+                      else toast.addToast(data.error || 'Failed to send', 'error')
+                    } catch { toast.addToast('Failed to send', 'error') }
+                    finally { setSmsSending(false) }
+                  },
+                  onCancel: () => setConfirmAction(null),
+                })
               }}
               disabled={smsSending || !smsMessage.trim()}
               className="px-5 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition disabled:opacity-50"
             >
-              {smsSending ? 'Sending...' : `Send to ${smsCount} contacts`}
+              {smsSending ? 'Sending...' : `Send to ${smsCount} contacts — $${(smsCount * 0.0079).toFixed(2)}`}
             </button>
           </div>
         </div>
