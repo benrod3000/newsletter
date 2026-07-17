@@ -90,13 +90,13 @@ button:disabled, input:disabled, select:disabled, textarea:disabled, [disabled] 
 }
 
 /* Hover lift — cards that rise on hover */
-.hover-lift {
+.lift-on-hover {
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
               box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.hover-lift:hover {
+.lift-on-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 6px 6px 0px #0a0a0a;
+  box-shadow: var(--shadow-brutal);
 }
 
 /* =============================================
@@ -122,11 +122,6 @@ button:disabled, input:disabled, select:disabled, textarea:disabled, [disabled] 
    Animations
    ============================================= */
 
-@keyframes brutal-in {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
 @keyframes slide-in {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
@@ -145,10 +140,6 @@ button:disabled, input:disabled, select:disabled, textarea:disabled, [disabled] 
 @keyframes scale-in {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
-}
-
-.animate-brutal-in {
-  animation: brutal-in 0.3s ease-out;
 }
 
 .animate-slide-in {
@@ -172,71 +163,9 @@ button:disabled, input:disabled, select:disabled, textarea:disabled, [disabled] 
    ============================================= */
 
 .skeleton {
-  background: #e8e8e0;
-  border: 2px solid #0a0a0a;
+  background: var(--color-brutal-surface);
+  border: 2px solid var(--color-brutal-fg);
   animation: skeleton-pulse 1.5s ease-in-out infinite;
-}
-
-/* =============================================
-   Button states — consistent across all variants
-   ============================================= */
-
-.btn-brutal {
-  border: 3px solid #0a0a0a;
-  font-weight: 700;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.btn-brutal:hover {
-  box-shadow: 4px 4px 0px #0a0a0a;
-}
-.btn-brutal:active {
-  transform: translateY(2px);
-  box-shadow: none;
-}
-.btn-brutal:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.btn-brutal:disabled:hover {
-  box-shadow: none;
-  transform: none;
-}
-
-/* =============================================
-   Card states
-   ============================================= */
-
-.card-brutal {
-  border: 3px solid #0a0a0a;
-  background: #fff;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-.card-brutal:hover {
-  box-shadow: 4px 4px 0px #0a0a0a;
-}
-.card-brutal-interactive {
-  cursor: pointer;
-}
-.card-brutal-interactive:hover {
-  transform: translateY(-2px);
-  box-shadow: 6px 6px 0px #0a0a0a;
-}
-
-/* =============================================
-   Stat card — for dashboard metrics
-   ============================================= */
-
-.stat-card {
-  border: 3px solid #0a0a0a;
-  background: #fff;
-  padding: 1.25rem;
-  border-top-width: 6px;
-}
-.stat-card:hover {
-  box-shadow: 4px 4px 0px #0a0a0a;
 }
 
 /* =============================================
@@ -268,28 +197,6 @@ button:disabled, input:disabled, select:disabled, textarea:disabled, [disabled] 
     linear-gradient(to right, rgba(10, 10, 10, 0.06) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(10, 10, 10, 0.06) 1px, transparent 1px);
   background-size: 24px 24px;
-}
-
-.bg-crosshatch {
-  background-image:
-    repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(10, 10, 10, 0.04) 2px, rgba(10, 10, 10, 0.04) 4px),
-    repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(10, 10, 10, 0.04) 2px, rgba(10, 10, 10, 0.04) 4px);
-}
-
-/* =============================================
-   Gradient accents — subtle color bands
-   ============================================= */
-
-.bg-yellow-stripe {
-  background: linear-gradient(180deg, #f5e642 0%, #f5e642 6px, #fff 6px);
-}
-
-.bg-green-accent {
-  border-left: 6px solid #2f7f5f;
-}
-
-.bg-red-accent {
-  border-left: 6px solid #e03131;
 }
 
 /* =============================================
