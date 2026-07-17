@@ -37,6 +37,8 @@ export default function SettingsPage() {
   const [showAccessKey, setShowAccessKey] = useState(false)
   const [showSecretKey, setShowSecretKey] = useState(false)
   const [testSending, setTestSending] = useState(false)
+  const [providerStatus, setProviderStatus] = useState(null)
+  const [providerStatusLoading, setProviderStatusLoading] = useState(false)
 
   // Smart tag history
   const [smartTags, setSmartTags] = useState([])
@@ -65,6 +67,7 @@ export default function SettingsPage() {
     if (workspaceId) {
     document.title = 'Settings | Veloce'
       loadBranding()
+      loadProviderStatus()
       loadAutomations()
       loadSmartTagHistory()
       loadActivityLog()
@@ -132,6 +135,15 @@ export default function SettingsPage() {
     }
   }
 
+  async function loadProviderStatus() {
+    setProviderStatusLoading(true)
+    try {
+      const { data } = await brandingAPI.providerStatus(workspaceId)
+      setProviderStatus(data)
+    } catch { setProviderStatus(null) }
+    finally { setProviderStatusLoading(false) }
+  }
+
   async function loadAutomations() {
     try {
       const { data } = await automationsAPI.list(workspaceId)
@@ -146,6 +158,7 @@ export default function SettingsPage() {
     try {
       const { data } = await brandingAPI.update(workspaceId, branding)
       setBranding(data)
+      loadProviderStatus()
       toast.addToast('Branding updated successfully!', 'success')
     } catch (error) {
       console.error('Failed to update branding:', error)
@@ -317,6 +330,40 @@ export default function SettingsPage() {
                     : 'SendGrid free tier: 100 emails/day — requires a SendGrid API key below. Sign up at sendgrid.com.'}
                 </p>
               </div>
+
+              {/* Provider Status */}
+              {providerStatusLoading ? (
+                <div className="mb-5 border-2 border-brutal-fg/20 p-3 animate-pulse">
+                  <div className="h-4 bg-brutal-fg/10 w-24 mb-2" />
+                  <div className="h-3 bg-brutal-fg/10 w-48" />
+                </div>
+              ) : providerStatus && (
+                <div className={`mb-5 border-2 p-3 ${providerStatus.configured && providerStatus.key_valid !== false ? 'border-brutal-green bg-brutal-green/5' : 'border-brutal-red bg-brutal-red/5'}`}>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className={`text-xs font-bold uppercase tracking-wider ${providerStatus.configured && providerStatus.key_valid !== false ? 'text-brutal-green' : 'text-brutal-red'}`}>
+                      {providerStatus.configured && providerStatus.key_valid !== false ? '✓ Connected' : '✗ Not Connected'}
+                    </span>
+                    <button
+                      onClick={loadProviderStatus}
+                      className="ml-auto text-[8px] font-bold uppercase tracking-wider text-brutal-muted hover:text-brutal-fg transition"
+                      title="Refresh status"
+                    >
+                      ↻ Refresh
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-brutal-fg/70">{providerStatus.details}</p>
+                  {providerStatus.missing_fields?.length > 0 && (
+                    <p className="text-[9px] text-brutal-red font-bold mt-1 uppercase tracking-wider">
+                      Missing: {providerStatus.missing_fields.join(', ')}
+                    </p>
+                  )}
+                  {providerStatus.key_valid === true && (
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className="text-[9px] text-brutal-green font-bold uppercase tracking-wider">🔑 Key Valid</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {branding.email_provider === 'sendgrid' && (
                 <div className="mb-5">

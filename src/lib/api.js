@@ -101,6 +101,8 @@ export const brandingAPI = {
     api.put(`/api/clients/${workspaceId}/branding`, data),
   testProvider: (workspaceId) =>
     api.post(`/api/clients/${workspaceId}/test-provider`),
+  providerStatus: (workspaceId) =>
+    api.get(`/api/clients/${workspaceId}/provider-status`),
 }
 
 // This route didn't exist in newsletter-core before today — added at
