@@ -383,8 +383,8 @@ export default function CampaignsPage() {
                     body: JSON.stringify({ message: smsMessage.trim() }),
                   })
                   const data = await res.json()
-                  if (data.scheduled) toast.addToast(`SMS scheduled for ${data.scheduled} recipients`, 'success')
-                  else toast.addToast(data.error || 'Failed', 'error')
+                  if (data.sent > 0) toast.addToast(`SMS sent to ${data.sent} recipients${data.failed > 0 ? `, ${data.failed} failed` : ''}`, data.failed > 0 ? 'warning' : 'success')
+                  else toast.addToast(data.error || 'Failed to send', 'error')
                 } catch { toast.addToast('Failed to send', 'error') }
                 finally { setSmsSending(false) }
               }}
