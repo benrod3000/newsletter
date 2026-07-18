@@ -15,6 +15,7 @@ export default function WidgetFormPage() {
   const [phone, setPhone] = useState('')
   const [smsConsent, setSmsConsent] = useState(false)
   const [postal, setPostal] = useState('')
+  const [message, setMessage] = useState('')
   const [geoCoords, setGeoCoords] = useState(null)
   const [geoLoading, setGeoLoading] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -67,6 +68,8 @@ export default function WidgetFormPage() {
       if (lastName.trim()) payload.last_name = lastName.trim();
       if (phone.trim()) { payload.phone = phone.trim(); payload.sms_consent = smsConsent; }
       if (postal.trim()) payload.postal_code = postal.trim();
+      if (message.trim()) payload.message = message.trim();
+      if (widgetType === 'sms_list') payload.sms_consent = true;
       if (geoCoords) {
         payload.browser_latitude = geoCoords.latitude;
         payload.browser_longitude = geoCoords.longitude;
@@ -125,12 +128,25 @@ export default function WidgetFormPage() {
           <div className="p-6 space-y-5">
             {submitted ? (
               <div className="space-y-3">
-                <div className="h-1 w-12 bg-brutal-green" />
-                <p className="text-sm font-bold uppercase tracking-wider text-brutal-green">
+                <div className="h-1 w-12" style={{ backgroundColor: widgetType === 'coupon' ? '#f5e642' : '#2f7f5f' }} />
+                <p className="text-sm font-bold uppercase tracking-wider" style={{ color: widgetType === 'coupon' ? '#b8860b' : '#2f7f5f' }}>
                   {widget.success_message}
                 </p>
+                {widgetType === 'coupon' && widget.download_url && (
+                  <div className="border-3 border-brutal-fg bg-brutal-yellow p-4 text-center">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">Your Coupon Code</p>
+                    <p className="font-heading text-2xl uppercase tracking-wide text-brutal-fg">{widget.download_url}</p>
+                  </div>
+                )}
+                {widgetType === 'lead_magnet' && widget.download_url && (
+                  <a href={widget.download_url}
+                    className="inline-block border-3 border-brutal-fg bg-brutal-green text-white font-bold px-6 py-2.5 text-xs uppercase tracking-wider hover:shadow-brutal transition"
+                    target="_blank" rel="noopener noreferrer">
+                    Download Now
+                  </a>
+                )}
                 <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">
-                  Didn't get it? Check your spam folder.
+                  {widgetType === 'feedback' ? 'Thanks for your feedback!' : "Didn't get it? Check your spam folder."}
                 </p>
               </div>
             ) : (
@@ -185,15 +201,17 @@ export default function WidgetFormPage() {
                       {phone.length > 0 && phone.length < 10 && (
                         <p className="text-[9px] text-brutal-muted font-bold">Enter 10-digit number e.g. 5125550199</p>
                       )}
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={smsConsent}
-                          onChange={e => setSmsConsent(e.target.checked)}
-                          className="w-4 h-4 border-3 border-brutal-fg accent-brutal-green"
-                        />
-                        <span className="text-[10px] font-bold text-brutal-fg/70 uppercase tracking-wider">📱 Text me about events & offers</span>
-                      </label>
+                      {widgetType !== 'sms_list' && (
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={smsConsent}
+                            onChange={e => setSmsConsent(e.target.checked)}
+                            className="w-4 h-4 border-3 border-brutal-fg accent-brutal-green"
+                          />
+                          <span className="text-[10px] font-bold text-brutal-fg/70 uppercase tracking-wider">📱 Text me about events & offers</span>
+                        </label>
+                      )}
                     </div>
                   )}
                   {fields.postal_code?.required && (
@@ -207,23 +225,36 @@ export default function WidgetFormPage() {
                       />
                     </div>
                   )}
-                  <div>
-                    <button
-                      type="button"
-                      onClick={requestGeolocation}
-                      disabled={geoLoading || !!geoCoords}
-                      className={`w-full border-3 text-xs font-bold uppercase tracking-wider py-2.5 transition ${
-                        geoCoords
-                          ? 'border-brutal-green bg-brutal-green text-white'
-                          : 'border-brutal-fg bg-white text-brutal-fg hover:bg-brutal-yellow/20'
-                      } disabled:opacity-50`}
-                    >
-                      {geoLoading ? '📍 Locating...' : geoCoords ? '📍 Location shared' : '📍 Use my location'}
-                    </button>
-                    <p className="text-[9px] text-brutal-muted font-bold uppercase tracking-wider mt-1 text-center">
-                      {geoCoords ? 'Content will be personalized near you' : 'Optional: personalize content near you'}
-                    </p>
-                  </div>
+                  {widgetType === 'feedback' && (
+                    <div>
+                      <textarea
+                        value={message}
+                        onChange={e => setMessage(e.target.value)}
+                        placeholder="Your feedback..."
+                        rows={3}
+                        className="w-full px-4 py-3 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition resize-y"
+                      />
+                    </div>
+                  )}
+                  {widget.collect_location !== false && (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={requestGeolocation}
+                        disabled={geoLoading || !!geoCoords}
+                        className={`w-full border-3 text-xs font-bold uppercase tracking-wider py-2.5 transition ${
+                          geoCoords
+                            ? 'border-brutal-green bg-brutal-green text-white'
+                            : 'border-brutal-fg bg-white text-brutal-fg hover:bg-brutal-yellow/20'
+                        } disabled:opacity-50`}
+                      >
+                        {geoLoading ? '📍 Locating...' : geoCoords ? '📍 Location shared' : '📍 Use my location'}
+                      </button>
+                      <p className="text-[9px] text-brutal-muted font-bold uppercase tracking-wider mt-1 text-center">
+                        {geoCoords ? 'Content will be personalized near you' : 'Optional: personalize content near you'}
+                      </p>
+                    </div>
+                  )}
 
                   {error && (
                     <p className="text-[10px] font-bold text-brutal-red uppercase tracking-wider">{error}</p>

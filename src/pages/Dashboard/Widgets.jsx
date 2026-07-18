@@ -4,6 +4,7 @@ import { widgetsAPI, listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
 import Btn from '../../components/ui/Button'
+import ConfirmModal from '../../components/ConfirmModal'
 
 const EMBED_BASE = 'https://newsletter.brod3000.com/w'
 
@@ -21,6 +22,8 @@ const DEFAULT_FORM = {
   placeholder: 'you@example.com',
   fields: { email: { required: true } },
   styles: { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#0a0a0a' },
+  collect_location: true,
+  feedback_message: '',
 }
 
 const WIDGET_TYPES = [
@@ -46,6 +49,8 @@ export default function WidgetsPage() {
   const [showEmbed, setShowEmbed] = useState(null) // widget id whose embed modal is open
   const [form, setForm] = useState({ ...DEFAULT_FORM })
   const [errors, setErrors] = useState({})
+  const [isDirty, setIsDirty] = useState(false)
+  const [confirmDiscard, setConfirmDiscard] = useState(null) // 'cancel' or 'back'
 
   useEffect(() => {
     if (workspaceId) {
@@ -79,11 +84,16 @@ export default function WidgetsPage() {
     setForm({ ...DEFAULT_FORM })
     setEditingId(null)
     setErrors({})
-    setStep(1)
+    setIsDirty(false)
+    setStep(0)
   }
 
   function openNew() {
-    resetForm()
+    setForm({ ...DEFAULT_FORM })
+    setEditingId(null)
+    setErrors({})
+    setIsDirty(false)
+    setStep(1)
   }
 
   function openEdit(w) {
@@ -101,9 +111,12 @@ export default function WidgetsPage() {
       placeholder: w.placeholder || 'you@example.com',
       fields: w.fields || { email: { required: true } },
       styles: w.styles || { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#0a0a0a' },
+      collect_location: w.collect_location !== false,
+      feedback_message: w.feedback_message || '',
     })
     setEditingId(w.id)
     setErrors({})
+    setIsDirty(false)
     setStep(1)
   }
 
@@ -113,7 +126,7 @@ export default function WidgetsPage() {
       if (!form.name.trim()) errs.name = 'Required'
       if (!form.slug.trim()) errs.slug = 'Required'
       if (!form.list_id) errs.list_id = 'Select a list'
-      if (!form.download_url.trim()) errs.download_url = 'Required'
+      if (form.type === 'lead_magnet' && !form.download_url.trim()) errs.download_url = 'Required'
     }
     setErrors(errs)
     return Object.keys(errs).length === 0
@@ -174,11 +187,13 @@ export default function WidgetsPage() {
   function updateName(name) {
     const slug = editingId ? form.slug : generateSlug(name)
     setForm(prev => ({ ...prev, name, slug }))
+    setIsDirty(true)
     if (errors.name) setErrors(prev => ({ ...prev, name: undefined }))
   }
 
   function updateField(field, value) {
     setForm(prev => ({ ...prev, [field]: value }))
+    setIsDirty(true)
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }))
   }
 
@@ -271,18 +286,20 @@ export default function WidgetsPage() {
                 </select>
                 {errors.list_id && <p className="text-xs font-bold text-brutal-red mt-1">{errors.list_id}</p>}
               </div>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
-                  Download URL
-                </label>
-                <input
-                  value={form.download_url}
-                  onChange={e => updateField('download_url', e.target.value)}
-                  className={`w-full px-4 py-2.5 bg-white border-3 text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted ${errors.download_url ? 'border-brutal-red' : 'border-brutal-fg'}`}
-                  placeholder="https://example.com/my-guide.pdf"
-                />
-                {errors.download_url && <p className="text-xs font-bold text-brutal-red mt-1">{errors.download_url}</p>}
-              </div>
+              {form.type === 'lead_magnet' && (
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                    Download URL
+                  </label>
+                  <input
+                    value={form.download_url}
+                    onChange={e => updateField('download_url', e.target.value)}
+                    className={`w-full px-4 py-2.5 bg-white border-3 text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted ${errors.download_url ? 'border-brutal-red' : 'border-brutal-fg'}`}
+                    placeholder="https://example.com/my-guide.pdf"
+                  />
+                  {errors.download_url && <p className="text-xs font-bold text-brutal-red mt-1">{errors.download_url}</p>}
+                </div>
+              )}
             </div>
 
             <div>
@@ -311,23 +328,31 @@ export default function WidgetsPage() {
                   { key: 'last_name', label: 'Last Name' },
                   { key: 'phone', label: 'Phone' },
                   { key: 'postal_code', label: 'ZIP Code' },
+                  { key: 'collect_location', label: '📍 Location', toggle: true },
                 ].map((f) => {
-                  const enabled = form.fields?.[f.key]?.required === true || (f.key !== 'email' && form.fields?.[f.key]?.required !== undefined)
+                  const isLocationToggle = f.key === 'collect_location'
+                  const enabled = isLocationToggle
+                    ? form.collect_location
+                    : form.fields?.[f.key]?.required === true || (f.key !== 'email' && form.fields?.[f.key]?.required !== undefined)
                   return (
                     <button
                       key={f.key}
                       type="button"
                       disabled={f.required}
                       onClick={() => {
-                        const newFields = { ...form.fields }
-                        if (newFields[f.key]?.required) {
-                          delete newFields[f.key]
+                        if (isLocationToggle) {
+                          updateField('collect_location', !form.collect_location)
                         } else {
-                          newFields[f.key] = { required: true }
+                          const newFields = { ...form.fields }
+                          if (newFields[f.key]?.required) {
+                            delete newFields[f.key]
+                          } else {
+                            newFields[f.key] = { required: true }
+                          }
+                          updateField('fields', newFields)
                         }
-                        updateField('fields', newFields)
                       }}
-                      className={`px-3 py-1.5 border-2 text-xs font-bold uppercase tracking-wider transition ${f.required || (form.fields?.[f.key]?.required) ? 'border-brutal-fg bg-brutal-green text-white' : 'border-brutal-fg/20 bg-white text-brutal-muted hover:border-brutal-fg'}`}
+                      className={`px-3 py-1.5 border-2 text-xs font-bold uppercase tracking-wider transition ${f.required || enabled ? 'border-brutal-fg bg-brutal-green text-white' : 'border-brutal-fg/20 bg-white text-brutal-muted hover:border-brutal-fg'}`}
                     >
                       {f.label}{f.required ? ' *' : ''}
                     </button>
@@ -366,7 +391,7 @@ export default function WidgetsPage() {
               </button>
               <button
                 type="button"
-                onClick={() => { setStep(0); resetForm() }}
+                onClick={() => { if (isDirty) setConfirmDiscard('cancel'); else { setStep(0); resetForm() } }}
                 className="px-4 py-2.5 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-sm uppercase tracking-wider hover:opacity-80 transition"
               >
                 Cancel
@@ -531,14 +556,14 @@ export default function WidgetsPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStep(1)}
+                    onClick={() => { if (isDirty) setConfirmDiscard('back'); else setStep(1) }}
                     className="px-4 py-2.5 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-sm uppercase tracking-wider hover:bg-brutal-yellow transition"
                   >
                     ← Back
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setStep(0); resetForm() }}
+                    onClick={() => { if (isDirty) setConfirmDiscard('cancel'); else { setStep(0); resetForm() } }}
                     className="px-4 py-2.5 border-3 border-brutal-fg bg-white text-brutal-muted font-bold text-sm uppercase tracking-wider hover:text-brutal-red transition"
                   >
                     Cancel
@@ -601,11 +626,13 @@ export default function WidgetsPage() {
                         </div>
                         <p className="text-sm text-brutal-fg/60 mb-1">{w.headline}</p>
                         <p className="text-xs text-brutal-muted uppercase tracking-wider">
-                          List: {listName(w.list_id)} · Submissions: {w.submission_count || 0}
+                          List: {listName(w.list_id)} · Submissions: {w.submission_count || 0} · {WIDGET_TYPES.find(t => t.value === w.type)?.label || w.type}
                         </p>
-                        <p className="text-[10px] font-bold text-brutal-green uppercase tracking-wider mt-1">
-                          📍 Location data collected for geo-targeting
-                        </p>
+                        {w.collect_location !== false && (
+                          <p className="text-[10px] font-bold text-brutal-green uppercase tracking-wider mt-1">
+                            📍 Location data collected for geo-targeting
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <a href={`/w/${w.slug}`} target="_blank" rel="noopener noreferrer"
@@ -696,6 +723,22 @@ export default function WidgetsPage() {
           )}
         </>
       )}
+
+      {/* Confirm discard when dirty */}
+      <ConfirmModal
+        open={confirmDiscard !== null}
+        title="Discard changes?"
+        message="You have unsaved changes. Are you sure you want to discard them?"
+        confirmLabel="Discard"
+        cancelLabel="Keep Editing"
+        onConfirm={() => {
+          if (confirmDiscard === 'back') { setStep(1); resetForm() }
+          else { setStep(0); resetForm() }
+          setConfirmDiscard(null)
+        }}
+        onCancel={() => setConfirmDiscard(null)}
+        danger
+      />
     </div>
   )
 }
