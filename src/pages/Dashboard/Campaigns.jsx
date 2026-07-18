@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import { campaignsAPI, listsAPI, templatesAPI } from '../../lib/api'
+import { campaignsAPI, listsAPI, templatesAPI, getAuthToken } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import Btn from '../../components/ui/Button'
 import { useToast } from '../../components/Toast'
@@ -292,7 +292,7 @@ export default function CampaignsPage() {
               setSmsOpen(!smsOpen)
               if (!smsOpen) {
                 try {
-                  const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+                  const token = getAuthToken()
                   const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/campaigns/sms`, { headers: { Authorization: `Bearer ${token}` } })
                   const data = await res.json()
                   setSmsCount(data.reachable || 0)
@@ -402,7 +402,7 @@ export default function CampaignsPage() {
                     setConfirmAction(null)
                     setSmsSending(true)
                     try {
-                      const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+                      const token = getAuthToken()
                       const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/campaigns/sms`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                         body: JSON.stringify({

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import { analyticsAPI } from '../../lib/api'
+import { analyticsAPI, getAuthToken } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 
 function StatCard({ label, value }) {
@@ -51,7 +51,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     if (!workspaceId) return
-    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+    const token = getAuthToken()
     // Load heatmap + SMS stats
     fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/analytics/heatmap`, {
       headers: { Authorization: `Bearer ${token}` },

@@ -5,6 +5,7 @@ import Link from '@tiptap/extension-link'
 import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
 import DOMPurify from 'dompurify'
+import { getAuthToken } from '../lib/api'
 
 const MERGE_TAGS = [
   { tag: '{{first_name}}', label: 'First Name' },
@@ -108,7 +109,7 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
     setCheckingLinks(true)
     setLinkResults(null)
     try {
-      const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+      const token = getAuthToken()
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/admin/validate-links`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import { brandingAPI, automationsAPI } from '../../lib/api'
+import { brandingAPI, automationsAPI, getAuthToken } from '../../lib/api'
 import { useToast } from '../../components/Toast'
 import { Eye, EyeOff, ShieldCheck, Copy, Check } from 'lucide-react'
 import Btn from '../../components/ui/Button'
@@ -80,7 +80,7 @@ export default function SettingsPage() {
     setSmartTagsLoading(true)
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/automations/smart-tags/history`, {
-        headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token}` }
+        headers: { Authorization: `Bearer ${getAuthToken()}` }
       })
       const data = await res.json()
       setSmartTags(data.tags || [])
@@ -92,7 +92,7 @@ export default function SettingsPage() {
     setSmartTagsRunning(true)
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/automations/smart-tags/run`, {
-        headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token}` }
+        headers: { Authorization: `Bearer ${getAuthToken()}` }
       })
       const data = await res.json()
       if (data.error) {
@@ -109,7 +109,7 @@ export default function SettingsPage() {
     setActivityLogLoading(true)
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/automations/activity-log`, {
-        headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token}` }
+        headers: { Authorization: `Bearer ${getAuthToken()}` }
       })
       const data = await res.json()
       setActivityLog(data.runs || [])
@@ -120,7 +120,7 @@ export default function SettingsPage() {
   async function loadAuditLogs() {
     setAuditLogLoading(true)
     try {
-      const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+      const token = getAuthToken()
       const base = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
       const res = await fetch(base + '/api/clients/' + workspaceId + '/audit-logs?limit=10', {
         headers: { Authorization: 'Bearer ' + token },
@@ -646,7 +646,7 @@ export default function SettingsPage() {
                 </Btn>
                 {branding.twilio_account_sid && branding.twilio_auth_token && branding.twilio_phone_number && (
                   <Btn variant="secondary" size="md" onClick={async () => {
-                    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+                    const token = getAuthToken()
                     setTestSending(true)
                     try {
                       const res = await fetch(
@@ -954,10 +954,7 @@ export default function SettingsPage() {
             <Btn variant="primary" size="sm" onClick={async function() {
               setTotpSettingUp(true)
               try {
-                var token = JSON.parse(localStorage.getItem('auth-storage') || '{}')
-                if (token && token.state && token.state.token) {
-                  token = token.state.token
-                } else { token = null }
+                var token = getAuthToken()
                 var base = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
                 var res = await fetch(base + '/api/auth/totp/setup', {
                   method: 'POST',
@@ -997,10 +994,7 @@ export default function SettingsPage() {
                   onClick={async function() {
                     setTotpEnabling(true)
                     try {
-                      var token = JSON.parse(localStorage.getItem('auth-storage') || '{}')
-                      if (token && token.state && token.state.token) {
-                        token = token.state.token
-                      } else { token = null }
+                      var token = getAuthToken()
                       var base = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
                       var res = await fetch(base + '/api/auth/totp/enable', {
                         method: 'POST',

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { getAuthToken } from '../lib/api'
 
 export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, onToggleList }) {
   if (!subscriber) return null
@@ -20,7 +21,7 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
 
   useEffect(() => {
     if (!subscriber?.id || !workspaceId) return
-    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+    const token = getAuthToken()
     fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/notes`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(d => { setNotes(d.notes || []); setTags(d.tags || []) }).catch(() => {})
@@ -33,7 +34,7 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
 
   async function addNote() {
     if (!newNote.trim()) return
-    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+    const token = getAuthToken()
     const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/notes`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ note: newNote })
@@ -44,7 +45,7 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
 
   async function addTag() {
     if (!newTag.trim()) return
-    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+    const token = getAuthToken()
     await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/notes`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ tag: newTag.trim().toLowerCase() })
@@ -54,7 +55,7 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
   }
 
   async function saveName() {
-    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+    const token = getAuthToken()
     await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ first_name: editFirst, last_name: editLast })

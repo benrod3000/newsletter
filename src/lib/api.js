@@ -1,6 +1,13 @@
 import axios from 'axios'
 
+import { useAuthStore } from '../stores/authStore'
+
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+
+/** Centralized auth token reader — single source of truth for JWT retrieval. */
+export function getAuthToken() {
+  return useAuthStore.getState().token
+}
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -8,16 +15,9 @@ const api = axios.create({
 
 // Add token to requests
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth-storage')
+  const token = getAuthToken()
   if (token) {
-    try {
-      const auth = JSON.parse(token).state
-      if (auth.token) {
-        config.headers.Authorization = `Bearer ${auth.token}`
-      }
-    } catch {
-      // Token not found or invalid
-    }
+    config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })

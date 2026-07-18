@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import { subscribersAPI } from '../../lib/api'
+import { subscribersAPI, getAuthToken } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
 import SubscriberDetailPanel from '../../components/SubscriberDetailPanel'
@@ -76,7 +76,7 @@ export default function SubscribersPage() {
 
   useEffect(() => {
     if (!workspaceId) return
-    const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+    const token = getAuthToken()
     fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscriber-lists`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(d => setSubscriberLists(d.lists || d || [])).catch(() => {})
@@ -201,7 +201,7 @@ export default function SubscribersPage() {
     if (!segmentName.trim()) return
     setSavingSegment(true)
     try {
-      const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+      const token = getAuthToken()
       const filters = {}
       if (statusFilter) filters.status = statusFilter
       if (search.trim()) filters.search = search.trim()
@@ -548,7 +548,7 @@ export default function SubscribersPage() {
                       setShowListPicker(false)
                       setBulkMoving(true)
                       try {
-                        const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+                        const token = getAuthToken()
                         await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscriber-lists/${list.id}/members`, {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -574,7 +574,7 @@ export default function SubscribersPage() {
               if (!tag) return
               setBulkTagging(true)
               try {
-                const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token
+                const token = getAuthToken()
                 const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/tags/bulk`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
