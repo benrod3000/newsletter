@@ -345,7 +345,7 @@ export default function LandingPage() {
                 <p className="text-[9px] font-bold uppercase tracking-wider">Email Newsletter</p>
               </div>
               <p className="text-lg font-heading uppercase">Big News</p>
-              <p className="text-xs text-brutal-muted mt-1 leading-relaxed">Hey Alex, your event at South Congress is coming up. We've got 47 subscribers within 5 miles ready to hear about it.</p>
+              <p className="text-xs text-brutal-muted mt-1 leading-relaxed">Hey Ben, your event at South Congress is coming up. We've got 47 subscribers within 5 miles ready to hear about it.</p>
               <div className="mt-3 border-2 border-brutal-fg bg-brutal-yellow px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-center">Learn More</div>
             </div>
             {/* Phone on right */}
@@ -363,7 +363,7 @@ export default function LandingPage() {
                       <p className="text-[7px] text-brutal-muted">Now</p>
                     </div>
                   </div>
-                  <p className="text-[10px] leading-relaxed">Hey Alex! Your event South Congress starts tomorrow. 47 locals are invited. See you there!</p>
+                  <p className="text-[10px] leading-relaxed">Hey Ben! Your event South Congress starts tomorrow. 47 locals are invited. See you there!</p>
                 </div>
                 <div className="text-center">
                   <div className="inline-block border-2 border-brutal-fg bg-white px-4 py-1.5 text-[8px] font-bold uppercase tracking-wider">Tap to Reply</div>
@@ -417,10 +417,10 @@ export default function LandingPage() {
             {/* Profile card */}
             <div className="border-3 border-brutal-fg bg-white p-5 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 border-2 border-brutal-fg bg-brutal-yellow flex items-center justify-center font-heading text-lg font-bold uppercase">A</div>
+                <div className="w-10 h-10 border-2 border-brutal-fg bg-brutal-yellow flex items-center justify-center font-heading text-lg font-bold uppercase">B</div>
                 <div>
-                  <p className="font-heading text-lg uppercase">Alex Chen</p>
-                  <p className="text-[9px] text-brutal-muted uppercase tracking-wider">alex@example.com</p>
+                  <p className="font-heading text-lg uppercase">Ben Rodriguez</p>
+                  <p className="text-[9px] text-brutal-muted uppercase tracking-wider">ben@example.com</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-[9px]">
@@ -631,7 +631,7 @@ export default function LandingPage() {
                         </span>
                       </div>
                       <div className="p-4 sm:p-5 min-h-[130px]">
-                        <p className="text-xl sm:text-2xl font-bold">Hey <span className="text-brutal-green" id="merge-demo">Alex</span>! 👋</p>
+                        <p className="text-xl sm:text-2xl font-bold">Hey <span className="text-brutal-green" id="merge-demo">Ben</span>! 👋</p>
                         <p className="text-sm text-brutal-muted mt-2">Your event at <strong id="location-demo">South Congress</strong> is coming up. We've got <strong id="count-demo">47</strong> subscribers within 5 miles ready to hear about it.</p>
                         <div className="mt-3 flex flex-wrap gap-2">
                           <span className="text-[10px] font-bold text-brutal-green border-2 border-brutal-green px-2 py-0.5 flex items-center gap-1"><CheckCircle size={10} /> {'{{first_name}}'}</span>

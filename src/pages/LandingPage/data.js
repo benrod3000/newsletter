@@ -22,7 +22,7 @@ export const TRUST_METRICS = [
 export const TESTIMONIALS = [
   {
     quote: 'We went from exporting CSVs every week to sending geo-targeted campaigns in one click. Veloce saved us hours of manual work every month.',
-    author: 'Alex Chen',
+    author: 'Ben Rodriguez',
     role: 'Event Organizer, Austin Music Fest',
   },
   {

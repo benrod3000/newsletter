@@ -27,7 +27,7 @@ const mockSubscribers = [
   { email: 'sarah.chen@example.com', location: 'San Francisco, US', joined: 'Mar 15, 2026', opens: 42, clicks: 8 },
   { email: 'james.wilson@example.com', location: 'London, UK', joined: 'Mar 12, 2026', opens: 18, clicks: 3 },
   { email: 'maria.garcia@example.com', location: 'Barcelona, ES', joined: 'Mar 10, 2026', opens: 31, clicks: 12 },
-  { email: 'alex.kim@example.com', location: 'Seoul, KR', joined: 'Mar 8, 2026', opens: 55, clicks: 15 },
+  { email: 'ben@example.com', location: 'Austin, TX', joined: 'Mar 8, 2026', opens: 55, clicks: 15 },
   { email: 'emma.brown@example.com', location: 'Melbourne, AU', joined: 'Mar 5, 2026', opens: 8, clicks: 1 },
   { email: 'david.nguyen@example.com', location: 'Toronto, CA', joined: 'Mar 1, 2026', opens: 27, clicks: 6 },
   { email: 'lisa.patel@example.com', location: 'Mumbai, IN', joined: 'Feb 28, 2026', opens: 14, clicks: 2 },
