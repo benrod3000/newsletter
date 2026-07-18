@@ -7,6 +7,7 @@ import L from 'leaflet'
 const PRESETS = [1, 5, 10, 25, 50, 100]
 const CIRCLE_COLORS = ['#2f7f5f', '#f5e642', '#e03131', '#4a9e7a', '#d4c82e']
 const MAX_LOCATIONS = 5
+const GEO_FILTER_KEY = 'geo-filter-state'
 
 /**
  * GeoFilter // multi-ZIP radius filter with GSAP-driven animations.
@@ -22,19 +23,34 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   const [zip, setZip] = useState('')
   const [pending, setPending] = useState(null) // { lat, lng, city, state, zip }
   const [resolving, setResolving] = useState(false)
-  const [locations, setLocations] = useState([]) // [{ lat, lng, city, state, zip }]
+  const [locations, setLocations] = useState([])
   const [radius, setRadius] = useState(10)
   const [applied, setApplied] = useState(false)
   const panelRef = useRef(null)
   const resolveTimer = useRef(null)
   const mapRef = useRef(null)
-  const markerRef = useRef(null)
+  const markersRef = useRef([])
   const circlesRef = useRef([])
   const subscriberLayerRef = useRef(null)
   const chipsRef = useRef([])
   const addBtnRef = useRef(null)
   const pendingPulse = useRef(null)
   const gsapTweens = useRef([])
+
+  // ─── Rehydrate filter state from localStorage (survives refresh) ───
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(GEO_FILTER_KEY)
+      if (saved) {
+        const { locations: locs, radius: rad, applied: wasApplied } = JSON.parse(saved)
+        if (locs?.length && wasApplied) {
+          setLocations(locs)
+          setRadius(rad || 10)
+          setApplied(true)
+        }
+      }
+    } catch {}
+  }, [])
 
   // ─── Panel open/close (GSAP) ───
   useEffect(() => {
@@ -237,6 +253,54 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     try { map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 }) } catch {}
   }
 
+// ─── Helper: create a draggable marker at a location ───
+  function createMarker(map, loc, index, onDragEnd) {
+    const color = CIRCLE_COLORS[index % CIRCLE_COLORS.length]
+    const marker = L.marker([loc.lat, loc.lng], {
+      draggable: true,
+      icon: L.divIcon({
+        className: '',
+        html: `<div style="width:16px;height:16px;background:${color};border:3px solid #0a0a0a;border-radius:50%;cursor:grab;"></div>`,
+        iconSize: [16, 16], iconAnchor: [8, 8],
+      }),
+    }).addTo(map)
+    marker.on('dragend', async (e) => {
+      const pos = e.target.getLatLng()
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}&zoom=10`, {
+          headers: { 'User-Agent': 'VeloceNewsletter/1.0' }
+        })
+        const data = await res.json()
+        const pc = data.address?.postcode || ''
+        const city = data.address?.city || data.address?.town || data.address?.village || ''
+        const state = data.address?.state || ''
+        if (pc) setZip(pc)
+        onDragEnd(index, { lat: pos.lat, lng: pos.lng, city, state, zip: pc })
+      } catch {
+        onDragEnd(index, { lat: pos.lat, lng: pos.lng })
+      }
+    })
+    return marker
+  }
+
+  // ─── Rebuild all markers on the map ───
+  function rebuildMarkers(map, locs) {
+    // Remove old markers
+    markersRef.current.forEach(m => { try { map.removeLayer(m) } catch {} })
+    markersRef.current = []
+
+    locs.forEach((loc, i) => {
+      const m = createMarker(map, loc, i, (idx, updated) => {
+        setLocations(prev => {
+          const n = [...prev]
+          if (n[idx]) n[idx] = { ...n[idx], ...updated }
+          return n
+        })
+      })
+      markersRef.current.push(m)
+    })
+  }
+
   // ─── Map init & update ───
   useEffect(() => {
     if (!open) {
@@ -245,7 +309,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
         gsapTweens.current = []
         mapRef.current.remove()
         mapRef.current = null
-        markerRef.current = null
+        markersRef.current = []
         circlesRef.current = []
         subscriberLayerRef.current = null
       }
@@ -255,15 +319,14 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     const mapEl = document.getElementById('geo-filter-map')
     if (!mapEl) return
 
-    // First time // schedule map creation (container needs to finish open animation)
     if (!mapRef.current) {
       setTimeout(() => {
         const el = document.getElementById('geo-filter-map')
         if (!el || mapRef.current) return
 
-        const dc = locations.length > 0 ? [locations[0].lat, locations[0].lng] : [39.8283, -98.5795]
+        const center = locations.length > 0 ? [locations[0].lat, locations[0].lng] : [39.8283, -98.5795]
         const map = L.map(el, {
-          center: dc, zoom: 4, zoomControl: true, attributionControl: true, scrollWheelZoom: false,
+          center, zoom: locations.length > 0 ? 10 : 4, zoomControl: true, attributionControl: true, scrollWheelZoom: false,
         })
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
           maxZoom: 18,
@@ -272,85 +335,49 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
         mapRef.current = map
         map.invalidateSize()
 
-        // Draw circles, marker, pins immediately
-        rebuildCircles(map)
-
-        if (locations.length > 0) {
-          const fc = [locations[0].lat, locations[0].lng]
-          const marker = L.marker(fc, {
-            draggable: true,
-            icon: L.divIcon({
-              className: '',
-              html: '<div style="width:16px;height:16px;background:#f5e642;border:3px solid #0a0a0a;border-radius:50%;cursor:grab;"></div>',
-              iconSize: [16, 16], iconAnchor: [8, 8],
-            }),
-          }).addTo(map)
-
-          marker.on('dragend', async (e) => {
-            const pos = e.target.getLatLng()
-            try {
-              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}&zoom=10`)
-              const data = await res.json()
-              const pc = data.address?.postcode || ''
-              const city = data.address?.city || data.address?.town || data.address?.village || ''
-              const state = data.address?.state || ''
-              if (pc) setZip(pc)
-              setLocations(prev => { const n = [...prev]; n[0] = { ...n[0], lat: pos.lat, lng: pos.lng, city, state }; return n })
-            } catch {
-              setLocations(prev => { const n = [...prev]; n[0] = { ...n[0], lat: pos.lat, lng: pos.lng }; return n })
+        // Click-to-place: reverse geocode click and add as pending
+        map.on('click', async (e) => {
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}&zoom=10`, {
+              headers: { 'User-Agent': 'VeloceNewsletter/1.0' }
+            })
+            const data = await res.json()
+            const pc = data.address?.postcode || ''
+            const city = data.address?.city || data.address?.town || data.address?.village || ''
+            const state = data.address?.state || ''
+            const loc = { lat: e.latlng.lat, lng: e.latlng.lng, city, state, zip: pc }
+            if (locations.length < MAX_LOCATIONS) {
+              setLocations(prev => [...prev, loc])
+            } else {
+              setPending(loc)
             }
-          })
-          markerRef.current = marker
-        }
+          } catch {
+            const loc = { lat: e.latlng.lat, lng: e.latlng.lng, city: '', state: '', zip: '' }
+            if (locations.length < MAX_LOCATIONS) {
+              setLocations(prev => [...prev, loc])
+            } else {
+              setPending(loc)
+            }
+          }
+        })
+
+        // Draw circles, markers, pins
+        rebuildCircles(map)
+        rebuildMarkers(map, locations)
 
         const g = L.layerGroup()
         addSubscriberPins(g)
         g.addTo(map)
         subscriberLayerRef.current = g
       }, 150)
-      return // update path handles subsequent location changes
+      return
     }
 
-    // Map exists // update circles, marker, pins in place
+    // Map exists — update circles, markers, pins
     const map = mapRef.current
     rebuildCircles(map)
+    rebuildMarkers(map, locations)
 
-    // Draggable marker on the first location
-    if (locations.length > 0) {
-      const fc = [locations[0].lat, locations[0].lng]
-      if (markerRef.current) {
-        markerRef.current.setLatLng(fc)
-      } else {
-        const marker = L.marker(fc, {
-          draggable: true,
-          icon: L.divIcon({
-            className: '',
-            html: '<div style="width:16px;height:16px;background:#f5e642;border:3px solid #0a0a0a;border-radius:50%;cursor:grab;"></div>',
-            iconSize: [16, 16], iconAnchor: [8, 8],
-          }),
-        }).addTo(map)
-
-        marker.on('dragend', async (e) => {
-          const pos = e.target.getLatLng()
-          try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}&zoom=10`)
-            const data = await res.json()
-            const pc = data.address?.postcode || ''
-            const city = data.address?.city || data.address?.town || data.address?.village || ''
-            const state = data.address?.state || ''
-            if (pc) setZip(pc)
-            setLocations(prev => { const n = [...prev]; n[0] = { ...n[0], lat: pos.lat, lng: pos.lng, city, state }; return n })
-          } catch {
-            setLocations(prev => { const n = [...prev]; n[0] = { ...n[0], lat: pos.lat, lng: pos.lng }; return n })
-          }
-        })
-        markerRef.current = marker
-      }
-    } else {
-      if (markerRef.current) { map.removeLayer(markerRef.current); markerRef.current = null }
-    }
-
-    // Subscriber pins
     if (subscriberLayerRef.current) map.removeLayer(subscriberLayerRef.current)
     const g = L.layerGroup()
     addSubscriberPins(g)
@@ -381,12 +408,14 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     if (locations.length === 0) return
     setApplied(true)
     onChange({ locations, radius })
+    try { localStorage.setItem(GEO_FILTER_KEY, JSON.stringify({ locations, radius, applied: true })) } catch {}
   }
 
   function clearFilter() {
     setZip(''); setPending(null); setLocations([]); setRadius(10)
     setApplied(false); setOpen(false)
     onClear?.()
+    try { localStorage.removeItem(GEO_FILTER_KEY) } catch {}
   }
 
   // ─── Render ───
@@ -486,12 +515,11 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
             </div>
           )}
 
-          {/* Live map */}
-          {locations.length > 0 && (
-            <div className="border-3 border-brutal-fg overflow-hidden">
-              <div className="bg-brutal-fg text-white px-3 py-1.5 flex flex-wrap items-center justify-between text-[10px] font-bold uppercase tracking-wider gap-x-3 gap-y-1">
-                <span>{locations.length} location{locations.length > 1 ? 's' : ''}</span>
-                {subscribers.some(s => s.latitude && s.longitude) && (
+          {/* Live map — always visible when panel is open */}
+          <div className="border-3 border-brutal-fg overflow-hidden">
+            <div className="bg-brutal-fg text-white px-3 py-1.5 flex flex-wrap items-center justify-between text-[10px] font-bold uppercase tracking-wider gap-x-3 gap-y-1">
+              <span>{locations.length} location{locations.length !== 1 ? 's' : ''}{locations.length === 0 ? ' — click the map to add' : ''}</span>
+              {subscribers.some(s => s.latitude && s.longitude) && (
                   <span className="hidden sm:flex items-center gap-2">
                     <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#2f7f5f'}} /> Active</span>
                     <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#f5e642'}} /> Risk</span>
@@ -502,7 +530,6 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
               </div>
               <div id="geo-filter-map" className="h-[220px] sm:h-[260px]" style={{ width: '100%', background: '#e8e8e0', touchAction: 'auto' }} />
             </div>
-          )}
 
           {/* Radius slider */}
           <div>
