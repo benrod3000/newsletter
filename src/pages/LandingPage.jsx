@@ -18,7 +18,7 @@ import {
   Menu, X, CheckCircle,
   Globe, ArrowRight,
   Share2, Activity, Radio, Smartphone, Clock,
-  FileText,
+  FileText, GitBranch, Monitor, UserCheck,
 } from 'lucide-react'
 
 /* ═══════════════════════════════════════════════════════
@@ -118,6 +118,49 @@ export default function LandingPage() {
             </Btn>
           </div>
           <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · No time limit · Bring your own SendGrid or SES</p>
+        </div>
+      </Section>
+
+      {/* ═══ AUDIENCE OWNERSHIP ═══ */}
+      <Section className="bg-brutal-fg text-brutal-bg">
+        <div className="max-w-4xl mx-auto text-center space-y-8 sm:space-y-10">
+          <Badge variant="yellow">Your audience. Your data. Your rules.</Badge>
+          <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
+            Your audience{' '}
+            <span className="text-brutal-yellow">belongs to you.</span>
+          </h2>
+          <p className="text-sm sm:text-base opacity-60 max-w-xl mx-auto leading-relaxed">
+            Stop rebuilding your business every time an algorithm changes. Collect once. Reach everywhere. Never rent again.
+          </p>
+
+          {/* Flow diagram */}
+          <div className="border-3 border-brutal-yellow bg-brutal-bg text-brutal-fg p-6 sm:p-8 max-w-xl mx-auto">
+            {/* Social platforms row */}
+            <div className="flex justify-center gap-4 sm:gap-6 flex-wrap">
+              {['Facebook', 'Instagram', 'TikTok', 'YouTube'].map((p) => (
+                <div key={p} className="border-2 border-brutal-fg px-3 py-2 text-[9px] font-bold uppercase tracking-wider">{p}</div>
+              ))}
+            </div>
+            {/* Down arrows */}
+            <div className="flex justify-center gap-4 sm:gap-6 mt-3 text-brutal-muted">
+              {[1,2,3,4].map(i => <span key={i} className="text-sm">↓</span>)}
+            </div>
+            {/* Veloce hub */}
+            <div className="border-3 border-brutal-green bg-brutal-green/10 p-4 mt-3">
+              <p className="font-heading text-2xl uppercase tracking-wider">Veloce</p>
+              <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted mt-1">Your audience. Your data. No algorithms.</p>
+            </div>
+            {/* Out arrows */}
+            <div className="flex justify-center gap-4 sm:gap-6 mt-3 text-brutal-green">
+              {[1,2,3,4].map(i => <span key={i} className="text-sm">↓</span>)}
+            </div>
+            {/* Channels row */}
+            <div className="flex justify-center gap-4 sm:gap-6 flex-wrap mt-3">
+              {['Email', 'SMS', 'RCS', 'Website'].map((ch) => (
+                <div key={ch} className="border-2 border-brutal-green bg-brutal-green/10 px-4 py-2 text-[10px] font-bold uppercase tracking-wider">{ch}</div>
+              ))}
+            </div>
+          </div>
         </div>
       </Section>
 
@@ -231,28 +274,102 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* ═══ CHANNELS ═══ */}
+      {/* ═══ AUTOMATION FLOW ═══ */}
+      <Section className="bg-brutal-surface/20">
+        <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
+          <Badge variant="green">Automations</Badge>
+          <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none">
+            Relationships that{' '}
+            <span className="text-brutal-green">run on their own.</span>
+          </h2>
+          <p className="text-sm text-brutal-fg/70 max-w-lg mx-auto leading-relaxed">
+            Set it once. Automations run daily. Build relationships while you sleep.
+          </p>
+          {/* Flow diagram */}
+          <div className="border-3 border-brutal-fg bg-white p-4 sm:p-6 max-w-2xl mx-auto">
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center">
+              <div className="border-2 border-brutal-green bg-brutal-green/10 px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-center min-w-[120px]">
+                <UserCheck size={14} className="mx-auto mb-1" />
+                Subscriber Joins
+              </div>
+              <span className="text-brutal-muted hidden sm:inline">→</span>
+              <span className="text-brutal-muted text-[10px] sm:hidden">↓</span>
+              <div className="border-2 border-brutal-green bg-brutal-green/10 px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-center min-w-[120px]">
+                <Mail size={14} className="mx-auto mb-1" />
+                Welcome Email
+              </div>
+              <span className="text-brutal-muted hidden sm:inline">→</span>
+              <span className="text-brutal-muted text-[10px] sm:hidden">↓</span>
+              <div className="border-2 border-brutal-yellow px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-center min-w-[120px]">
+                <Clock size={14} className="mx-auto mb-1" />
+                Wait 2 Days
+              </div>
+            </div>
+            {/* Branch */}
+            <div className="border-t-2 border-brutal-fg/20 mt-4 pt-4">
+              <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-muted mb-3">Clicked A Link?</p>
+              <div className="flex flex-col sm:flex-row items-center gap-3 justify-center">
+                <div className="border-2 border-brutal-green bg-brutal-green/10 px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-center min-w-[120px]">
+                  <CheckCircle size={14} className="mx-auto mb-1" />
+                  Tag as Engaged
+                </div>
+                <span className="text-brutal-muted text-[10px]">or</span>
+                <div className="border-2 border-brutal-yellow px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-center min-w-[120px]">
+                  <Mail size={14} className="mx-auto mb-1" />
+                  Send Reminder
+                </div>
+              </div>
+            </div>
+          </div>
+          <Btn variant="primary" size="lg" icon={<ArrowRight size={14} />} onClick={() => window.location.href = '/demo'}>
+            See Automations in Action
+          </Btn>
+        </div>
+      </Section>
+
+      {/* ═══ SMS / RCS PHONE MOCKUP ═══ */}
       <Section>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-8">
-            <Badge variant="yellow">Reach</Badge>
+            <Badge variant="yellow">Reach them anywhere</Badge>
             <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none mt-4">
               One audience.{' '}
               <span className="text-brutal-green">Every channel.</span>
             </h2>
           </div>
-          <div className="grid sm:grid-cols-3 gap-4">
-            {[
-              { icon: Mail, title: 'Email', desc: 'Send campaigns with your own SendGrid or SES account. Full control over deliverability, branding, and analytics.' },
-              { icon: Smartphone, title: 'SMS', desc: 'Reach subscribers instantly with text campaigns. Perfect for time-sensitive offers, reminders, and alerts.' },
-              { icon: Radio, title: 'RCS', desc: 'Rich messaging with images, buttons, and interactivity. The next generation of business messaging, built in.' },
-            ].map((ch) => (
-              <Card key={ch.title} padding="p-6" hover className="text-center">
-                <ch.icon size={28} className="text-brutal-green mx-auto mb-3" />
-                <h3 className="font-heading text-xl uppercase tracking-wide">{ch.title}</h3>
-                <p className="text-xs text-brutal-muted mt-2 leading-relaxed">{ch.desc}</p>
-              </Card>
-            ))}
+          <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {/* Email on left */}
+            <div className="border-3 border-brutal-fg bg-white p-5">
+              <div className="border-b-2 border-brutal-fg/20 pb-2 mb-3 flex items-center gap-2">
+                <Mail size={16} className="text-brutal-green" />
+                <p className="text-[9px] font-bold uppercase tracking-wider">Email Newsletter</p>
+              </div>
+              <p className="text-lg font-heading uppercase">Big News</p>
+              <p className="text-xs text-brutal-muted mt-1 leading-relaxed">Hey Alex, your event at South Congress is coming up. We've got 47 subscribers within 5 miles ready to hear about it.</p>
+              <div className="mt-3 border-2 border-brutal-fg bg-brutal-yellow px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-center">Learn More</div>
+            </div>
+            {/* Phone on right */}
+            <div className="border-3 border-brutal-fg bg-brutal-fg p-3">
+              <div className="bg-brutal-bg rounded p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Smartphone size={14} className="text-brutal-green" />
+                  <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-muted">SMS Preview</p>
+                </div>
+                <div className="bg-white border-2 border-brutal-fg p-3 max-w-[200px] mx-auto">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-6 h-6 border-2 border-brutal-fg bg-brutal-green flex items-center justify-center text-[8px] font-bold text-white">V</div>
+                    <div>
+                      <p className="text-[9px] font-bold">Veloce</p>
+                      <p className="text-[7px] text-brutal-muted">Now</p>
+                    </div>
+                  </div>
+                  <p className="text-[10px] leading-relaxed">Hey Alex! Your event South Congress starts tomorrow. 47 locals are invited. See you there!</p>
+                </div>
+                <div className="text-center">
+                  <div className="inline-block border-2 border-brutal-fg bg-white px-4 py-1.5 text-[8px] font-bold uppercase tracking-wider">Tap to Reply</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </Section>
@@ -286,7 +403,73 @@ export default function LandingPage() {
           </Btn>
         </div>
       </Section>
-
+      {/* ═══ SUBSCRIBER INTELLIGENCE ═══ */}
+      <Section>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-8">
+            <Badge variant="green">Know Your Audience</Badge>
+            <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none mt-4">
+              Every subscriber.{' '}
+              <span className="text-brutal-green">A full picture.</span>
+            </h2>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {/* Profile card */}
+            <div className="border-3 border-brutal-fg bg-white p-5 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 border-2 border-brutal-fg bg-brutal-yellow flex items-center justify-center font-heading text-lg font-bold uppercase">A</div>
+                <div>
+                  <p className="font-heading text-lg uppercase">Alex Chen</p>
+                  <p className="text-[9px] text-brutal-muted uppercase tracking-wider">alex@example.com</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[9px]">
+                <div className="border border-brutal-fg/20 p-2">
+                  <p className="font-bold uppercase tracking-wider text-brutal-muted">Location</p>
+                  <p className="font-bold mt-0.5">📍 Austin, TX</p>
+                </div>
+                <div className="border border-brutal-fg/20 p-2">
+                  <p className="font-bold uppercase tracking-wider text-brutal-muted">Status</p>
+                  <p className="text-brutal-green font-bold mt-0.5">🟢 Active</p>
+                </div>
+                <div className="border border-brutal-fg/20 p-2">
+                  <p className="font-bold uppercase tracking-wider text-brutal-muted">Channels</p>
+                  <p className="font-bold mt-0.5">Email + SMS</p>
+                </div>
+                <div className="border border-brutal-fg/20 p-2">
+                  <p className="font-bold uppercase tracking-wider text-brutal-muted">Last Open</p>
+                  <p className="font-bold mt-0.5">3 hours ago</p>
+                </div>
+                <div className="border border-brutal-fg/20 p-2">
+                  <p className="font-bold uppercase tracking-wider text-brutal-muted">Tags</p>
+                  <div className="flex gap-1 mt-0.5 flex-wrap">
+                    <span className="text-[7px] bg-brutal-green/10 border border-brutal-green px-1 py-0.5 font-bold uppercase">engaged</span>
+                    <span className="text-[7px] bg-brutal-yellow/20 border border-brutal-yellow px-1 py-0.5 font-bold uppercase">mobile</span>
+                  </div>
+                </div>
+                <div className="border border-brutal-fg/20 p-2">
+                  <p className="font-bold uppercase tracking-wider text-brutal-muted">Open Rate</p>
+                  <p className="text-brutal-green font-bold mt-0.5">42%</p>
+                </div>
+              </div>
+            </div>
+            {/* What this means */}
+            <div className="flex flex-col justify-center space-y-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Data you can act on</p>
+              <h3 className="text-2xl sm:text-3xl font-heading uppercase tracking-tight leading-none">
+                Know who they are.{' '}
+                <span className="text-brutal-green">Know what they want.</span>
+              </h3>
+              <p className="text-sm text-brutal-fg/70 leading-relaxed">
+                Location, engagement, devices, tags, acquisition source. Every subscriber has a full profile so you can target with precision.
+              </p>
+              <Btn variant="primary" size="md" icon={<ArrowRight size={14} />} onClick={() => window.location.href = '/demo'}>
+                Explore Subscriber Data
+              </Btn>
+            </div>
+          </div>
+        </div>
+      </Section>
       {/* ═══ STATS STRIP ═══ */}
       <Section>
         <div ref={statRef} className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5 max-w-5xl mx-auto">
@@ -511,6 +694,36 @@ export default function LandingPage() {
             </Btn>
           </div>
           <Annotation className="justify-center !text-brutal-bg/50">no credit card · no time limit · BYO SendGrid or SES</Annotation>
+        </div>
+      </Section>
+
+      {/* ═══ INTEGRATIONS ═══ */}
+      <Section className="border-t-3 border-brutal-fg bg-brutal-surface/40">
+        <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
+          <Badge variant="muted">Works with your stack</Badge>
+          <h2 className="text-2xl sm:text-3xl font-heading uppercase tracking-tight leading-none">
+            Connect your tools.{' '}
+            <span className="text-brutal-green">Keep your data.</span>
+          </h2>
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 max-w-xl mx-auto">
+            {[
+              { label: 'SendGrid', icon: Mail },
+              { label: 'AWS SES', icon: Globe },
+              { label: 'Twilio', icon: Smartphone },
+              { label: 'Supabase', icon: BarChart3 },
+              { label: 'CSV Import', icon: FileText },
+              { label: 'Zapier', icon: Zap },
+              { label: 'WordPress', icon: Monitor },
+              { label: 'Shopify', icon: Share2 },
+              { label: 'Custom API', icon: GitBranch },
+            ].map((i) => (
+              <div key={i.label} className="border-2 border-brutal-fg bg-white px-3 py-2 flex items-center gap-1.5 hover:shadow-brutal transition">
+                <i.icon size={14} className="text-brutal-muted" />
+                <span className="text-[9px] font-bold uppercase tracking-wider">{i.label}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">More integrations shipping every month · Custom API for anything else</p>
         </div>
       </Section>
 
