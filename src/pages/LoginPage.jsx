@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { authAPI } from '../lib/api'
+import axios from 'axios'
 import Btn from '../components/ui/Button'
 import Turnstile from '../components/Turnstile'
 import { ShieldCheck } from 'lucide-react'
@@ -48,7 +49,16 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await authAPI.login(email, password, workspaceId || undefined, turnstileToken)
+      // Use demo-specific endpoint for demo account
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
+      const url = email.toLowerCase().trim() === 'demo@veloce.app'
+        ? `${apiUrl}/api/auth/demo-login`
+        : `${apiUrl}/api/auth/token`
+      const response = await axios.post(url, {
+        email, password,
+        workspaceId: workspaceId || undefined,
+        turnstile_token: turnstileToken,
+      })
       const data = response.data
 
       if (data.requires_totp) {
