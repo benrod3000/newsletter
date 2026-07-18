@@ -24,9 +24,13 @@ Every workspace is completely isolated // subscribers, campaigns, automations, b
 
 **Segment your audience** // lists, health scores, date ranges, smart tags. All without uploading spreadsheets.
 
-**Brand per workspace** // sender name, email, colors, domain. Connect SendGrid or SES. Widget forms you can embed anywhere. Three sizes. Customizable text and colors.
+**Brand per workspace** // sender name, email, colors, domain. Connect SendGrid or SES.
 
-**UX stuff that matters** // Cmd+K command palette, keyboard shortcuts (press `?`), page titles everywhere, relative timestamps, sticky bulk action bar, empty states that actually help, responsive tables that don't break on mobile.
+**Widget forms** you can embed anywhere. Pick a type (lead magnet, coupon, feedback, newsletter, event RSVP, SMS-only), choose fields to collect, toggle location collection. Three sizes. Customizable colors with live preview. Widget type actually changes what visitors see.
+
+**Geo radius filter** // multi-ZIP radius targeting with a live map. Click to place pins, drag to adjust. Persists across page refresh. Counts subscribers in range. Preset radius chips.
+
+**UX stuff that matters** // Cmd+K command palette, keyboard shortcuts (press `?`), page titles everywhere, relative timestamps, sticky bulk action bar, empty states that actually help, responsive tables that don't break on mobile, dirty-state confirm modals to prevent accidental data loss.
 
 ---
 

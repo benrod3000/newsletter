@@ -4,6 +4,22 @@ export default function Changelog() {
   useEffect(() => { document.title = 'Changelog | Veloce' }, [])
   const entries = [
     {
+      date: 'July 18, 2026',
+      items: [
+        'Security audit: 7 findings fixed — stored XSS prevention (escapeHtml on all subscriber merge fields), HMAC-signed admin headers for defense-in-depth, CORS scoped to allowed origins, PostCSS advisory patched, token reads centralized into getAuthToken(), migration files renumbered',
+        'Dead code removed: legacy EmbedCodePanel and /embed route (System B) deleted — one widget system',
+        'Widget builder: widget type now drives form behavior (coupon shows code after signup, feedback shows message textarea, lead magnet shows download link)',
+        'Geolocation toggle: new "📍 Location" toggle in widget Fields to Collect — only renders the location button when enabled',
+        'Dirty-state protection: Cancel/Back buttons show a confirm modal when unsaved changes exist',
+        'GeoFilter map always visible when panel opens — click anywhere to place a pin via reverse geocoding',
+        'All location markers are now draggable (not just the first one)',
+        'Geo filter state persists across page refresh via localStorage',
+        'User-Agent header added to all Nominatim API calls',
+        'Demo login: dedicated endpoint with proper password verification, bypasses removed from main login route',
+        'Google OAuth: redirect URI now uses production URL consistently — API_URL env var configured',
+      ],
+    },
+    {
       date: 'July 17, 2026',
       items: [
         'Transactional email system: welcome emails on signup, password reset emails via SendGrid',
