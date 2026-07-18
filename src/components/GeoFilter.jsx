@@ -23,8 +23,8 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   const [zip, setZip] = useState('')
   const [pending, setPending] = useState(null) // { lat, lng, city, state, zip }
   const [resolving, setResolving] = useState(false)
-  const [locations, setLocations] = useState([])
-  const [radius, setRadius] = useState(10)
+  const [locations, setLocations] = useState([]) // each entry: { lat, lng, city, state, zip, radius }
+  const [selectedLocIdx, setSelectedLocIdx] = useState(0)
   const [applied, setApplied] = useState(false)
   const panelRef = useRef(null)
   const resolveTimer = useRef(null)
@@ -42,10 +42,11 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     try {
       const saved = localStorage.getItem(GEO_FILTER_KEY)
       if (saved) {
-        const { locations: locs, radius: rad, applied: wasApplied } = JSON.parse(saved)
+        const { locations: locs, applied: wasApplied } = JSON.parse(saved)
         if (locs?.length && wasApplied) {
-          setLocations(locs)
-          setRadius(rad || 10)
+          // Ensure each location has a radius (backward-compat with old single-radius saves)
+          setLocations(locs.map((l) => ({ ...l, radius: l.radius ?? 10 })))
+          if (locs.length > 0) setSelectedLocIdx(0)
           setApplied(true)
         }
       }
@@ -155,10 +156,11 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       setPending(null)
       return
     }
-    const newLoc = pending
+    const newLoc = { ...pending, radius: 10 }
     setZip('')
     setPending(null)
     setLocations(prev => [...prev, newLoc])
+    setSelectedLocIdx(locations.length)
   }
 
   // Press Enter to add
@@ -190,17 +192,18 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     gsapTweens.current.push(tw)
   }
 
-  // ─── Count subscribers within radius range (Haversine) ───
+  // ─── Count subscribers within any location's radius (Haversine) ───
   const totalInRange = locations.length > 0 ? (() => {
     const set = new Set()
-    const r = 3959
+    const R = 3959
     locations.forEach(loc => {
+      const locRadius = loc.radius ?? 10
       subscribers.forEach(s => {
         if (!s.id || !s.latitude || !s.longitude) return
         const dLat = (s.latitude - loc.lat) * Math.PI / 180
         const dLng = (s.longitude - loc.lng) * Math.PI / 180
         const a = Math.sin(dLat / 2) ** 2 + Math.cos(loc.lat * Math.PI / 180) * Math.cos(s.latitude * Math.PI / 180) * Math.sin(dLng / 2) ** 2
-        if (2 * r * Math.asin(Math.sqrt(a)) <= radius) set.add(s.id)
+        if (2 * R * Math.asin(Math.sqrt(a)) <= locRadius) set.add(s.id)
       })
     })
     return set.size
@@ -230,23 +233,24 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
 
     if (locations.length === 0) return
 
-    // Compute bounds directly from lat/lng + radius (avoids temp circle objects)
+    // Compute bounds from all locations + their max radius
     const lats = locations.map(l => l.lat)
     const lngs = locations.map(l => l.lng)
-    const degOffset = (radius * 1609.34) / 111320
+    const maxDegOffset = Math.max(...locations.map(l => ((l.radius ?? 10) * 1609.34) / 111320))
     const bounds = L.latLngBounds(
-      [Math.min(...lats) - degOffset, Math.min(...lngs) - degOffset],
-      [Math.max(...lats) + degOffset, Math.max(...lngs) + degOffset]
+      [Math.min(...lats) - maxDegOffset, Math.min(...lngs) - maxDegOffset],
+      [Math.max(...lats) + maxDegOffset, Math.max(...lngs) + maxDegOffset]
     )
 
     locations.forEach((loc, i) => {
+      const locRadius = loc.radius ?? 10
       const color = CIRCLE_COLORS[i % CIRCLE_COLORS.length]
       const center = [loc.lat, loc.lng]
       const circle = L.circle(center, {
         radius: 0, color, weight: 3, fillOpacity: 0.08, fillColor: color, dashArray: '6, 8',
       }).addTo(map)
       circlesRef.current.push(circle)
-      animateCircleGrow(circle, radius * 1609.34, 0.5 + i * 0.1)
+      animateCircleGrow(circle, locRadius * 1609.34, 0.5 + i * 0.1)
     })
 
     map.invalidateSize()
@@ -385,34 +389,35 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     subscriberLayerRef.current = g
   }, [open, locations])
 
-  // ─── Radius change: update all circles ───
-  useEffect(() => {
-    if (!mapRef.current || circlesRef.current.length === 0) return
-    const targetR = radius * 1609.34
-    circlesRef.current.forEach(c => animateCircleGrow(c, targetR, 0.35))
-
-    // Calculate bounds from lat/lng + radius (no temp circle objects)
-    const lats = locations.map(l => l.lat)
-    const lngs = locations.map(l => l.lng)
-    const degOffset = (radius * 1609.34) / 111320
-    const bounds = L.latLngBounds(
-      [Math.min(...lats) - degOffset, Math.min(...lngs) - degOffset],
-      [Math.max(...lats) + degOffset, Math.max(...lngs) + degOffset]
-    )
-    mapRef.current.invalidateSize()
-    mapRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 })
-  }, [radius])
+  // ─── Location radius change: update a single circle ───
+  function updateLocationRadius(index, newRadius) {
+    setLocations(prev => {
+      const n = [...prev]
+      if (n[index]) n[index] = { ...n[index], radius: newRadius }
+      return n
+    })
+    // Animate the specific circle
+    if (mapRef.current && circlesRef.current[index]) {
+      const circle = circlesRef.current[index]
+      const proxy = { r: 0 }
+      const tw = gsap.to(proxy, {
+        r: newRadius * 1609.34, duration: 0.35, ease: 'power3.out',
+        onUpdate: () => { try { circle.setRadius(proxy.r) } catch {} },
+      })
+      gsapTweens.current.push(tw)
+    }
+  }
 
   // ─── Actions ───
   function applyFilter() {
     if (locations.length === 0) return
     setApplied(true)
-    onChange({ locations, radius })
-    try { localStorage.setItem(GEO_FILTER_KEY, JSON.stringify({ locations, radius, applied: true })) } catch {}
+    onChange({ locations })
+    try { localStorage.setItem(GEO_FILTER_KEY, JSON.stringify({ locations, applied: true })) } catch {}
   }
 
   function clearFilter() {
-    setZip(''); setPending(null); setLocations([]); setRadius(10)
+    setZip(''); setPending(null); setLocations([])
     setApplied(false); setOpen(false)
     onClear?.()
     try { localStorage.removeItem(GEO_FILTER_KEY) } catch {}
@@ -487,17 +492,25 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
             <div className="flex flex-wrap gap-2 items-center">
               {locations.map((loc, i) => {
                 const color = CIRCLE_COLORS[i % CIRCLE_COLORS.length]
+                const isSelected = i === selectedLocIdx
+                const locRadius = loc.radius ?? 10
                 return (
                   <div
                     key={`${loc.zip}-${i}`}
                     ref={el => { chipsRef.current[i] = el }}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-brutal-fg text-[10px] font-bold uppercase tracking-wider bg-white"
+                    onClick={() => setSelectedLocIdx(i)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 border-2 text-[10px] font-bold uppercase tracking-wider transition cursor-pointer ${
+                      isSelected
+                        ? 'border-brutal-fg bg-brutal-yellow text-brutal-fg'
+                        : 'border-brutal-fg bg-white text-brutal-fg/70 hover:bg-brutal-yellow/20'
+                    }`}
                   >
-                    <span className="inline-block w-2 h-2 rounded-full border border-brutal-fg" style={{ background: color }} />
-                    <span>{loc.city}, {loc.state}</span>
-                    <span className="text-brutal-muted">· {loc.zip}</span>
+                    <span className="inline-block w-2 h-2 rounded-full border border-brutal-fg shrink-0" style={{ background: color }} />
+                    <span>{loc.city || 'Pin'}, {loc.state || '—'}</span>
+                    <span className="text-brutal-muted">· {loc.zip || 'no ZIP'}</span>
+                    <span className="text-brutal-green">· {locRadius}mi</span>
                     <button
-                      onClick={() => removeLocation(i)}
+                      onClick={(e) => { e.stopPropagation(); removeLocation(i) }}
                       className="ml-0.5 p-0.5 hover:bg-brutal-red/10 rounded transition-colors"
                       aria-label={`Remove ${loc.city}`}
                     >
@@ -526,45 +539,51 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
                     <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#e03131'}} /> Cold</span>
                   </span>
                 )}
-                <span className="text-white/60 whitespace-nowrap">☌ {totalInRange} in range · {radius} mi radius</span>
+                <span className="text-white/60 whitespace-nowrap">☌ {totalInRange} in range</span>
               </div>
               <div id="geo-filter-map" className="h-[220px] sm:h-[260px]" style={{ width: '100%', background: '#e8e8e0', touchAction: 'auto' }} />
             </div>
 
-          {/* Radius slider */}
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-fg/60 mb-2">
-              Radius: <span className="text-brutal-green font-heading text-base">{radius} mi</span>
-            </label>
-            <input
-              type="range" min={1} max={100} value={radius}
-              onChange={e => setRadius(Number(e.target.value))}
-              className="w-full h-2 bg-brutal-surface border-2 border-brutal-fg appearance-none cursor-pointer
-                [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
-                [&::-webkit-slider-thumb]:bg-brutal-green [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-brutal-fg
-                [&::-webkit-slider-thumb]:shadow-brutal [&::-webkit-slider-thumb]:cursor-pointer
-                [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:bg-brutal-green
-                [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-brutal-fg [&::-moz-range-thumb]:cursor-pointer"
-              style={{ accentColor: '#2f7f5f' }}
-            />
-          </div>
+          {/* Per-location radius slider */}
+          {locations.length > 0 && locations[selectedLocIdx] && (
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-fg/60 mb-2">
+                Radius {locations.length > 1 ? `(${locations[selectedLocIdx].city || '#'}${selectedLocIdx + 1})` : ''}: <span className="text-brutal-green font-heading text-base">{locations[selectedLocIdx].radius ?? 10} mi</span>
+              </label>
+              <input
+                type="range" min={1} max={100}
+                value={locations[selectedLocIdx].radius ?? 10}
+                onChange={e => updateLocationRadius(selectedLocIdx, Number(e.target.value))}
+                className="w-full h-2 bg-brutal-surface border-2 border-brutal-fg appearance-none cursor-pointer
+                  [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
+                  [&::-webkit-slider-thumb]:bg-brutal-green [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-brutal-fg
+                  [&::-webkit-slider-thumb]:shadow-brutal [&::-webkit-slider-thumb]:cursor-pointer
+                  [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:bg-brutal-green
+                  [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-brutal-fg [&::-moz-range-thumb]:cursor-pointer"
+                style={{ accentColor: '#2f7f5f' }}
+              />
+            </div>
+          )}
 
           {/* Preset chips */}
-          <div className="flex flex-wrap gap-2">
-            {PRESETS.map(mi => (
-              <button
-                key={mi}
-                onClick={() => setRadius(mi)}
-                className={`px-3 py-1 border-2 text-[10px] font-bold uppercase tracking-wider transition ${
-                  radius === mi
-                    ? 'border-brutal-fg bg-brutal-green text-white'
-                    : 'border-brutal-fg/30 text-brutal-muted hover:border-brutal-fg hover:text-brutal-fg'
-                }`}
-              >
-                {mi} mi
-              </button>
-            ))}
-          </div>
+          {locations.length > 0 && locations[selectedLocIdx] && (
+            <div className="flex flex-wrap gap-2">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted self-center">Quick:</span>
+              {PRESETS.map(mi => (
+                <button
+                  key={mi}
+                  onClick={() => updateLocationRadius(selectedLocIdx, mi)}
+                  className={`px-3 py-1 border-2 text-[10px] font-bold uppercase tracking-wider transition ${
+                    (locations[selectedLocIdx].radius ?? 10) === mi
+                      ? 'border-brutal-fg bg-brutal-green text-white'
+                      : 'border-brutal-fg/30 text-brutal-muted hover:border-brutal-fg hover:text-brutal-fg'
+                  }`}
+                >
+                  {mi} mi
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-3 pt-2 border-t border-brutal-fg/20">

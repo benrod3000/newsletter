@@ -8,6 +8,33 @@ import ConfirmModal from '../../components/ConfirmModal'
 
 const EMBED_BASE = 'https://newsletter.brod3000.com/w'
 
+/** WCAG contrast utilities ported from legacy EmbedCodePanel */
+function hexToRgb(hex) {
+  const val = hex.replace('#', '')
+  if (val.length === 3) return { r: parseInt(val[0] + val[0], 16), g: parseInt(val[1] + val[1], 16), b: parseInt(val[2] + val[2], 16) }
+  if (val.length === 6) return { r: parseInt(val.slice(0, 2), 16), g: parseInt(val.slice(2, 4), 16), b: parseInt(val.slice(4, 6), 16) }
+  return { r: 0, g: 0, b: 0 }
+}
+
+function relativeLuminance({ r, g, b }) {
+  const [R, G, B] = [r / 255, g / 255, b / 255].map(c => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+  return 0.2126 * R + 0.7152 * G + 0.0722 * B
+}
+
+function getContrastRatio(hex1, hex2) {
+  const l1 = relativeLuminance(hexToRgb(hex1))
+  const l2 = relativeLuminance(hexToRgb(hex2))
+  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)
+}
+
+function contrastBadge(fg, bg) {
+  const ratio = getContrastRatio(fg, bg)
+  if (ratio >= 7) return { pass: 'AAA', color: '#2f7f5f' }
+  if (ratio >= 4.5) return { pass: 'AA', color: '#2f7f5f' }
+  if (ratio >= 3) return { pass: 'AA-large', color: '#f5e642' }
+  return { pass: 'FAIL', color: '#e03131' }
+}
+
 const DEFAULT_FORM = {
   name: '',
   slug: '',
@@ -464,7 +491,14 @@ export default function WidgetsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Primary Color</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                    Primary Color
+                    {contrastBadge(form.styles?.button_text_color || '#0a0a0a', form.styles?.primary_color || '#f5e642').pass !== 'AAA' && (
+                      <span className="ml-2 text-[9px]" style={{ color: contrastBadge(form.styles?.button_text_color || '#0a0a0a', form.styles?.primary_color || '#f5e642').color }}>
+                        {contrastBadge(form.styles?.button_text_color || '#0a0a0a', form.styles?.primary_color || '#f5e642').pass}
+                      </span>
+                    )}
+                  </label>
                   <div className="flex gap-2">
                     <input
                       type="color"
@@ -483,7 +517,12 @@ export default function WidgetsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Background</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                      Background
+                      <span className="ml-2 text-[9px]" style={{ color: contrastBadge(form.styles?.text_color || '#0a0a0a', form.styles?.bg_color || '#f5f5f0').color }}>
+                        {contrastBadge(form.styles?.text_color || '#0a0a0a', form.styles?.bg_color || '#f5f5f0').pass}
+                      </span>
+                    </label>
                     <div className="flex gap-2">
                       <input type="color" value={form.styles?.bg_color || '#f5f5f0'}
                         onChange={e => updateField('styles', { ...form.styles, bg_color: e.target.value })}
@@ -494,13 +533,34 @@ export default function WidgetsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Text Color</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                      Text Color
+                      <span className="ml-2 text-[9px]" style={{ color: contrastBadge(form.styles?.text_color || '#0a0a0a', form.styles?.bg_color || '#f5f5f0').color }}>
+                        {contrastBadge(form.styles?.text_color || '#0a0a0a', form.styles?.bg_color || '#f5f5f0').pass}
+                      </span>
+                    </label>
                     <div className="flex gap-2">
                       <input type="color" value={form.styles?.text_color || '#0a0a0a'}
                         onChange={e => updateField('styles', { ...form.styles, text_color: e.target.value })}
                         className="w-10 h-9 border-3 border-brutal-fg cursor-pointer" />
                       <input type="text" value={form.styles?.text_color || '#0a0a0a'}
                         onChange={e => updateField('styles', { ...form.styles, text_color: e.target.value })}
+                        className="flex-1 px-2 py-2 bg-white border-3 border-brutal-fg text-[10px] font-mono focus:outline-none" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                      Button Text
+                      <span className="ml-2 text-[9px]" style={{ color: contrastBadge(form.styles?.button_text_color || '#ffffff', form.styles?.primary_color || '#f5e642').color }}>
+                        {contrastBadge(form.styles?.button_text_color || '#ffffff', form.styles?.primary_color || '#f5e642').pass}
+                      </span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input type="color" value={form.styles?.button_text_color || '#ffffff'}
+                        onChange={e => updateField('styles', { ...form.styles, button_text_color: e.target.value })}
+                        className="w-10 h-9 border-3 border-brutal-fg cursor-pointer" />
+                      <input type="text" value={form.styles?.button_text_color || '#ffffff'}
+                        onChange={e => updateField('styles', { ...form.styles, button_text_color: e.target.value })}
                         className="flex-1 px-2 py-2 bg-white border-3 border-brutal-fg text-[10px] font-mono focus:outline-none" />
                     </div>
                   </div>
