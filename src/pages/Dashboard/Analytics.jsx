@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from 'react'
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { analyticsAPI } from '../../lib/api'
 import { fmt, fmtPct } from '../../lib/format'
@@ -268,53 +268,45 @@ export default function AnalyticsPage() {
   const [heatmapError, setHeatmapError] = useState(null)
   const [smsLoading, setSmsLoading] = useState(false)
   const [smsError, setSmsError] = useState(null)
+  const [showSms, setShowSms] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+
+  const loadOverview = useCallback(async (isRefresh = false) => {
+    if (!workspaceId) return
+    if (isRefresh) setRefreshing(true)
+    else setLoading(true)
+    setError(null)
+    try {
+      const cacheKey = `analytics-overview-${workspaceId}-${days}`
+      const cached = !isRefresh ? sessionStorage.getItem(cacheKey) : null
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        if (Date.now() - parsed.ts < 60000) {
+          setOverview(parsed.data); setLoading(false); setRefreshing(false)
+          return
+        }
+      }
+
+      const { data } = await analyticsAPI.overview(workspaceId, { days })
+      try { sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() })) } catch {}
+      setOverview(data)
+    } catch (err) {
+      console.error('Failed to load analytics:', err)
+      setError('Could not load analytics. Is the API running?')
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }, [workspaceId, days])
 
   useEffect(() => {
     if (!workspaceId) return
     document.title = 'Analytics | Veloce'
     const controller = new AbortController()
-    let cancelled = false
-
-    async function load() {
-      setLoading(true)
-      setError(null)
-      try {
-        // Check sessionStorage cache first (avoids refetch on Home→Analytics nav)
-        const cacheKey = `analytics-overview-${workspaceId}-${days}`
-        const cached = sessionStorage.getItem(cacheKey)
-        if (cached) {
-          const parsed = JSON.parse(cached)
-          if (Date.now() - parsed.ts < 60000) {
-            if (!cancelled) { setOverview(parsed.data); setLoading(false) }
-            return
-          }
-        }
-
-        const { data } = await analyticsAPI.overview(workspaceId, { days })
-        try { sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() })) } catch {}
-        if (!cancelled) setOverview(data)
-      } catch (err) {
-        console.error('Failed to load analytics:', err)
-        if (!cancelled) setError('Could not load analytics. Is the API running?')
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    // Load subscriber geography for mini-map
-    async function loadGeo() {
-      try {
-        const { data } = await analyticsAPI.overview(workspaceId, { days: 90 })
-        if (!cancelled && data?.top_campaigns) {
-          // Just extract geo summary if available
-          setGeoData(data)
-        }
-      } catch {}
-    }
-
-    load()
-    loadGeo()
-    return () => { cancelled = true; controller.abort() }
+    loadOverview()
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(() => loadOverview(true), 60000)
+    return () => { controller.abort(); clearInterval(interval) }
   }, [workspaceId, days])
 
   useEffect(() => {
@@ -355,13 +347,41 @@ export default function AnalyticsPage() {
   const growth = overview?.subscriber_growth || []
   const topCampaigns = overview?.top_campaigns || []
   const [detailCampaign, setDetailCampaign] = useState(null)
-  const [geoData, setGeoData] = useState(null)
 
   return (
     <div className="space-y-8">
-      <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">
-        <span className="text-brutal-green">Analyt</span>ics
-      </h2>
+      {/* Header with period selector + refresh */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">
+          <span className="text-brutal-green">Analyt</span>ics
+          {!loading && overview && (
+            <span className="inline-block ml-3 w-2.5 h-2.5 bg-brutal-green animate-pulse align-middle" title="Auto-refreshing" />
+          )}
+        </h2>
+        <div className="flex items-center gap-3">
+          <div className="flex border-3 border-brutal-fg overflow-hidden">
+            {[7, 14, 30, 90].map((d) => (
+              <button
+                key={d}
+                onClick={() => setDays(d)}
+                className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ${
+                  days === d ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'
+                }`}
+              >
+                {d}d
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => loadOverview(true)}
+            disabled={refreshing}
+            className="p-2 border-3 border-brutal-fg bg-white hover:bg-brutal-yellow/20 transition disabled:opacity-50"
+            title="Refresh data"
+          >
+            <span className={`text-sm font-bold ${refreshing ? 'animate-spin inline-block' : ''}`}>⟳</span>
+          </button>
+        </div>
+      </div>
 
       {loading ? (
         <LoadingState label="Loading analytics" />
@@ -369,162 +389,123 @@ export default function AnalyticsPage() {
         <EmptyState
           title="Couldn't load analytics"
           description={error}
-          action={{ label: 'Retry', onClick: () => setDays(d => d) }}
+          action={{ label: 'Retry', onClick: () => loadOverview(true) }}
         />
       ) : (
         <div className="space-y-8">
+          {/* LIVE PULSE — top priority, first thing you see */}
+          <ErrorBoundary><LivePulse workspaceId={workspaceId} /></ErrorBoundary>
+
+          {/* STAT CARDS */}
           <div className="grid md:grid-cols-4 gap-5">
-            <AnimatedStatCard label="Total Subscribers" value={overview?.total_subscribers ?? 0} delay={0} />
-            <AnimatedStatCard label="Campaigns Sent" value={overview?.campaigns_sent ?? 0} delay={0.1} />
+            <AnimatedStatCard label="Contacts" value={overview?.total_subscribers ?? 0} delay={0} />
+            <AnimatedStatCard label="Broadcasts Sent" value={overview?.campaigns_sent ?? 0} delay={0.1} />
             <AnimatedStatCard label="Avg Open Rate" value={overview?.avg_open_rate != null ? `${overview.avg_open_rate.toFixed(1)}%` : '--'} delay={0.2} />
             <AnimatedStatCard label="Avg Click Rate" value={overview?.avg_click_rate != null ? `${overview.avg_click_rate.toFixed(1)}%` : '--'} delay={0.3} />
           </div>
 
-          {/* SMS Stats */}
-          {smsLoading ? (
-            <div className="border-3 border-brutal-fg bg-white p-6">
-              <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">📱 Loading SMS stats...</p>
-            </div>
-          ) : smsError ? (
-            <div className="border-3 border-brutal-fg bg-white p-6">
-              <p className="text-xs font-bold text-brutal-red uppercase tracking-wider">⚠ Couldn't load SMS stats</p>
-            </div>
-          ) : smsStats && smsStats.reachable > 0 ? (
-            <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
-              <h3 className="font-heading text-xl uppercase tracking-wide mb-3">📱 SMS / RCS</h3>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Reachable</p>
-                  <p className="text-2xl font-heading text-brutal-green">{smsStats.reachable}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Sent</p>
-                  <p className="text-2xl font-heading">{smsStats.sent ?? '--'}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Response Rate</p>
-                  <p className="text-2xl font-heading text-brutal-muted">{smsStats.responseRate ?? '--'}</p>
-                </div>
-              </div>
-              <p className="text-[9px] text-brutal-muted mt-2">{smsStats.message}</p>
-            </div>
-          ) : null}
-
-          {/* Live Pulse */}
-          <ErrorBoundary><LivePulse workspaceId={workspaceId} /></ErrorBoundary>
-
-          {/* Date range toggle */}
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Range:</span>
-            <div className="flex border-3 border-brutal-fg overflow-hidden">
-              {[7, 14, 30, 90].map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setDays(d)}
-                  className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ${
-                    days === d
-                      ? 'bg-brutal-yellow text-brutal-fg'
-                      : 'bg-white text-brutal-muted hover:text-brutal-fg'
-                  }`}
-                >
-                  {d}d
-                </button>
-              ))}
-            </div>
-          </div>
-
+          {/* GROWTH CHART */}
           {growth.length > 0 ? (
             <AnimatedGrowthChart points={growth} />
           ) : (
             <EmptyState
               title="No growth data yet"
-              description="Subscriber growth appears here once you welcome your first subscribers."
+              description="Growth data appears here once you welcome your first contacts."
             />
           )}
 
-          {/* Email Open Heatmap */}
-          {heatmapLoading ? (
-            <div className="border-3 border-brutal-fg bg-white p-6">
-              <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">⏱ Loading heatmap...</p>
-            </div>
-          ) : heatmapError ? (
-            <div className="border-3 border-brutal-fg bg-white p-6">
-              <p className="text-xs font-bold text-brutal-red uppercase tracking-wider">⚠ Couldn't load heatmap</p>
-            </div>
-          ) : heatmap && heatmap.totalOpens > 0 ? (
-            <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
-              <h3 className="font-heading text-xl uppercase tracking-wide mb-4">When Your Emails Get Opened</h3>
-              <p className="text-xs text-brutal-muted mb-4">
-                Best time: <strong className="text-brutal-green">{heatmap.bestHour}:00</strong> &middot;
-                Best day: <strong className="text-brutal-green">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][heatmap.bestDay]}</strong> &middot;
-                Based on {heatmap.totalOpens.toLocaleString()} opens
-              </p>
-
-              {/* Hour-of-day bars */}
-              <div className="mb-4">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">By Hour of Day</p>
-                <div className="flex items-end gap-0.5 h-16">
-                  {heatmap.hours.map((h) => (
-                    <div key={h.hour} className="flex-1 flex flex-col items-center gap-1 group">
-                      <div
-                        className="w-full bg-brutal-green border border-brutal-fg hover:bg-brutal-green-light transition"
-                        style={{ height: `${Math.max(h.pct, 2)}%`, opacity: h.pct / 100 + 0.15 }}
-                        title={`${h.count} opens at ${h.hour}:00`}
-                      />
-                      <span className="text-[8px] font-bold text-brutal-muted">{h.hour}</span>
+          {/* CAMPAIGN PERFORMANCE + HEATMAP side by side on desktop */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Email Open Heatmap */}
+            <ErrorBoundary>
+              {heatmapLoading ? (
+                <div className="border-3 border-brutal-fg bg-white p-6"><p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">Loading heatmap...</p></div>
+              ) : heatmapError ? (
+                <div className="border-3 border-brutal-fg bg-white p-6"><p className="text-xs font-bold text-brutal-red uppercase tracking-wider">Couldn't load heatmap</p></div>
+              ) : heatmap && heatmap.totalOpens > 0 ? (
+                <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
+                  <h3 className="font-heading text-xl uppercase tracking-wide mb-4">When They Open</h3>
+                  <p className="text-xs text-brutal-muted mb-4">
+                    Best time: <strong className="text-brutal-green">{heatmap.bestHour}:00</strong> · Best day: <strong className="text-brutal-green">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][heatmap.bestDay]}</strong> · {heatmap.totalOpens.toLocaleString()} opens
+                  </p>
+                  <div className="mb-4">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">By Hour</p>
+                    <div className="flex items-end gap-0.5 h-16">
+                      {heatmap.hours.map((h) => (
+                        <div key={h.hour} className="flex-1 flex flex-col items-center gap-1 group">
+                          <div className="w-full bg-brutal-green border border-brutal-fg hover:bg-brutal-green-light transition" style={{ height: `${Math.max(h.pct, 2)}%`, opacity: h.pct / 100 + 0.15 }} title={`${h.count} opens at ${h.hour}:00`} />
+                          <span className="text-[8px] font-bold text-brutal-muted">{h.hour}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Day-of-week bars */}
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">By Day of Week</p>
-                <div className="flex items-end gap-1 h-12">
-                  {heatmap.days.map((d) => (
-                    <div key={d.day} className="flex-1 flex flex-col items-center gap-1 group">
-                      <div
-                        className="w-full bg-brutal-yellow border border-brutal-fg hover:bg-brutal-yellow-dark transition"
-                        style={{ height: `${Math.max(d.pct, 4)}%`, opacity: d.pct / 100 + 0.2 }}
-                        title={`${d.count} opens on ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.day]}`}
-                      />
-                      <span className="text-[8px] font-bold text-brutal-muted">{['S','M','T','W','T','F','S'][d.day]}</span>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">By Day</p>
+                    <div className="flex items-end gap-1 h-12">
+                      {heatmap.days.map((d) => (
+                        <div key={d.day} className="flex-1 flex flex-col items-center gap-1 group">
+                          <div className="w-full bg-brutal-yellow border border-brutal-fg hover:bg-brutal-yellow-dark transition" style={{ height: `${Math.max(d.pct, 4)}%`, opacity: d.pct / 100 + 0.2 }} title={`${d.count} opens on ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.day]}`} />
+                          <span className="text-[8px] font-bold text-brutal-muted">{['S','M','T','W','T','F','S'][d.day]}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
-            </div>
-          ) : null}
+              ) : null}
+            </ErrorBoundary>
 
-          {/* Campaign Performance (animated bars) */}
-          {topCampaigns.length > 0 && (
-            <ErrorBoundary><CampaignPerformance campaigns={topCampaigns} onSelect={setDetailCampaign} /></ErrorBoundary>
-          )}
+            {/* Campaign Performance */}
+            {topCampaigns.length > 0 && (
+              <ErrorBoundary><CampaignPerformance campaigns={topCampaigns} onSelect={setDetailCampaign} /></ErrorBoundary>
+            )}
+          </div>
 
-          {/* Subscriber geography summary */}
+          {/* Audience Reach */}
           {overview && (
             <ErrorBoundary><SubscriberGeoSummary overview={overview} /></ErrorBoundary>
           )}
 
-          {/* Campaign detail modal */}
+          {/* SMS — collapsible, most users don't need it */}
+          {smsStats && smsStats.reachable > 0 && (
+            <div className="border-3 border-brutal-fg bg-white shadow-brutal">
+              <button
+                onClick={() => setShowSms(!showSms)}
+                className="w-full flex items-center justify-between p-4 hover:bg-brutal-yellow/5 transition text-left"
+              >
+                <h3 className="font-heading text-lg uppercase tracking-wide">📱 SMS / RCS Stats</h3>
+                <span className={`text-sm font-bold transition-transform ${showSms ? 'rotate-180' : ''}`}>▼</span>
+              </button>
+              {showSms && (
+                <div className="px-4 pb-4 border-t-2 border-brutal-fg pt-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div><p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Reachable</p><p className="text-2xl font-heading text-brutal-green">{smsStats.reachable}</p></div>
+                    <div><p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Sent</p><p className="text-2xl font-heading">{smsStats.sent ?? '--'}</p></div>
+                    <div><p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Response Rate</p><p className="text-2xl font-heading text-brutal-muted">{smsStats.responseRate ?? '--'}</p></div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Campaign Detail Modal */}
           {detailCampaign && (
             <ErrorBoundary><CampaignDetailModal campaign={detailCampaign} onClose={() => setDetailCampaign(null)} /></ErrorBoundary>
           )}
 
-          {/* Top Performing Campaigns table */}
-          <div className="border-3 border-brutal-fg overflow-x-auto bg-white">
+          {/* Top Campaigns Table */}
+          <div className="border-3 border-brutal-fg overflow-x-auto bg-white shadow-brutal">
             <div className="px-4 py-3 border-b-3 border-brutal-fg bg-brutal-bg">
-              <h3 className="font-heading text-lg uppercase tracking-wide">Top Performing Campaigns</h3>
+              <h3 className="font-heading text-lg uppercase tracking-wide">All Broadcasts</h3>
             </div>
             {topCampaigns.length === 0 ? (
               <div className="p-6 text-center text-sm font-bold text-brutal-muted">
-                No campaign performance data yet. Send your first newsletter to see stats here.
+                No broadcast data yet. Send your first broadcast to see stats here.
               </div>
             ) : (
               <table className="w-full text-sm border-collapse">
                 <thead>
                   <tr className="border-b-3 border-brutal-fg bg-brutal-bg">
-                    <th className="text-left p-3 font-bold text-xs uppercase tracking-wider">Campaign</th>
+                    <th className="text-left p-3 font-bold text-xs uppercase tracking-wider">Broadcast</th>
                     <th className="text-right p-3 font-bold text-xs uppercase tracking-wider">Sent</th>
                     <th className="text-right p-3 font-bold text-xs uppercase tracking-wider">Open Rate</th>
                     <th className="text-right p-3 font-bold text-xs uppercase tracking-wider">Click Rate</th>
