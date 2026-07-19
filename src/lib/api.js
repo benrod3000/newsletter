@@ -118,6 +118,8 @@ export const analyticsAPI = {
     api.get(`/api/clients/${workspaceId}/analytics/heatmap`),
   sms: (workspaceId) =>
     api.get(`/api/clients/${workspaceId}/analytics/sms`),
+  live: (workspaceId) =>
+    api.get(`/api/clients/${workspaceId}/analytics/live`),
 }
 
 export const automationsAPI = {

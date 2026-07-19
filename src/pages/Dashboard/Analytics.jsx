@@ -190,6 +190,71 @@ function SubscriberGeoSummary({ overview }) {
   )
 }
 
+function LivePulse({ workspaceId }) {
+  const [events, setEvents] = useState([])
+  const [pulseId, setPulseId] = useState(null)
+  const ref = useRef(null)
+
+  // Poll every 20 seconds
+  useEffect(() => {
+    if (!workspaceId) return
+    let cancelled = false
+
+    async function fetchLive() {
+      try {
+        const { data } = await analyticsAPI.live(workspaceId)
+        if (!cancelled && data?.events?.length) {
+          setEvents(prev => {
+            const existing = new Set(prev.map((e) => `${e.email}-${e.timestamp}`))
+            const newEvents = data.events.filter((e) => !existing.has(`${e.email}-${e.timestamp}`))
+            if (newEvents.length) {
+              setPulseId(Date.now())
+            }
+            // Keep last 10
+            return [...newEvents, ...prev].slice(0, 10)
+          })
+        }
+      } catch {}
+    }
+
+    fetchLive()
+    const interval = setInterval(fetchLive, 20000)
+    return () => { cancelled = true; clearInterval(interval) }
+  }, [workspaceId])
+
+  // GSAP pulse on new events
+  useEffect(() => {
+    if (!pulseId || !ref.current) return
+    gsap.fromTo(ref.current, { scale: 1 }, {
+      scale: [1, 1.05, 1], duration: 0.4, ease: 'power2.inOut',
+    })
+  }, [pulseId])
+
+  if (events.length === 0) return null
+
+  return (
+    <div ref={ref} className="border-3 border-brutal-fg bg-white p-5 shadow-brutal">
+      <h3 className="font-heading text-lg uppercase tracking-wide mb-3 flex items-center gap-2">
+        <span className="inline-block w-2 h-2 bg-brutal-green rounded-full animate-pulse" />
+        Just Happened
+      </h3>
+      <div className="space-y-2">
+        {events.slice(0, 5).map((e, i) => (
+          <div key={`${e.email}-${e.timestamp}`} className="flex items-center gap-3 text-xs animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
+            <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${e.type === 'open' ? 'bg-brutal-green' : 'bg-brutal-yellow'}`} />
+            <span className="font-bold text-brutal-fg truncate">{e.email}</span>
+            <span className="text-brutal-muted">{e.type === 'open' ? 'opened' : 'clicked'}</span>
+            <span className="text-brutal-muted font-mono text-[10px] truncate">{e.campaign}</span>
+            <span className="ml-auto text-[9px] text-brutal-muted font-mono shrink-0">
+              {new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function AnalyticsPage() {
   const { workspaceId } = useAuthStore()
   const [overview, setOverview] = useState(null)
@@ -335,6 +400,9 @@ export default function AnalyticsPage() {
               <p className="text-[9px] text-brutal-muted mt-2">{smsStats.message}</p>
             </div>
           ) : null}
+
+          {/* Live Pulse */}
+          <LivePulse workspaceId={workspaceId} />
 
           {/* Date range toggle */}
           <div className="flex items-center gap-3">
