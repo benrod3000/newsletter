@@ -377,7 +377,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       return
     }
 
-    // Map exists — update circles, markers, pins
+    // Map exists - update circles, markers, pins
     const map = mapRef.current
     rebuildCircles(map)
     rebuildMarkers(map, locations)
@@ -506,7 +506,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
                     }`}
                   >
                     <span className="inline-block w-2 h-2 rounded-full border border-brutal-fg shrink-0" style={{ background: color }} />
-                    <span>{loc.city || 'Pin'}, {loc.state || '—'}</span>
+                    <span>{loc.city || 'Pin'}, {loc.state || '-'}</span>
                     <span className="text-brutal-muted">· {loc.zip || 'no ZIP'}</span>
                     <span className="text-brutal-green">· {locRadius}mi</span>
                     <button
@@ -528,10 +528,10 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
             </div>
           )}
 
-          {/* Live map — always visible when panel is open */}
+          {/* Live map - always visible when panel is open */}
           <div className="border-3 border-brutal-fg overflow-hidden">
             <div className="bg-brutal-fg text-white px-3 py-1.5 flex flex-wrap items-center justify-between text-[10px] font-bold uppercase tracking-wider gap-x-3 gap-y-1">
-              <span>{locations.length} location{locations.length !== 1 ? 's' : ''}{locations.length === 0 ? ' — click the map to add' : ''}</span>
+              <span>{locations.length} location{locations.length !== 1 ? 's' : ''}{locations.length === 0 ? ' - click the map to add' : ''}</span>
               {subscribers.some(s => s.latitude && s.longitude) && (
                   <span className="hidden sm:flex items-center gap-2">
                     <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#2f7f5f'}} /> Active</span>

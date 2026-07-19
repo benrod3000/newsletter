@@ -63,7 +63,7 @@ export const PILLARS = [
     number: '03',
     icon: Globe,
     title: 'Reach',
-    subtitle: 'Email, SMS, RCS — every channel, one audience.',
+    subtitle: 'Email, SMS, RCS - every channel, one audience.',
     body: 'Email, SMS, RCS, and soon social audience matching. One audience. Many destinations. Every channel respects subscriber consent.',
     cta: { label: 'See all channels', to: '/demo' },
     annotation: 'Email · SMS · RCS · Social matching (coming soon)',

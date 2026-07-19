@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/authStore'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
-/** Centralized auth token reader — single source of truth for JWT retrieval. */
+/** Centralized auth token reader - single source of truth for JWT retrieval. */
 export function getAuthToken() {
   return useAuthStore.getState().token
 }
