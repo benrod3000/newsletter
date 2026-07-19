@@ -3,6 +3,7 @@ import { useAuthStore } from '../../stores/authStore'
 import { analyticsAPI } from '../../lib/api'
 import { fmt, fmtPct } from '../../lib/format'
 import { EmptyState, LoadingState } from '../../components/ux'
+import ErrorBoundary from '../../components/ErrorBoundary'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 if (typeof window !== 'undefined') { gsap.registerPlugin(ScrollTrigger) }
@@ -264,7 +265,9 @@ export default function AnalyticsPage() {
   const [heatmap, setHeatmap] = useState(null)
   const [smsStats, setSmsStats] = useState(null)
   const [heatmapLoading, setHeatmapLoading] = useState(false)
+  const [heatmapError, setHeatmapError] = useState(null)
   const [smsLoading, setSmsLoading] = useState(false)
+  const [smsError, setSmsError] = useState(null)
 
   useEffect(() => {
     if (!workspaceId) return
@@ -320,11 +323,12 @@ export default function AnalyticsPage() {
 
     async function loadHeatmap() {
       setHeatmapLoading(true)
+      setHeatmapError(null)
       try {
         const { data } = await analyticsAPI.heatmap(workspaceId)
         if (!cancelled) setHeatmap(data)
       } catch {
-        // Silently handle — heatmap is optional
+        if (!cancelled) setHeatmapError(true)
       } finally {
         if (!cancelled) setHeatmapLoading(false)
       }
@@ -332,11 +336,12 @@ export default function AnalyticsPage() {
 
     async function loadSms() {
       setSmsLoading(true)
+      setSmsError(null)
       try {
         const { data } = await analyticsAPI.sms(workspaceId)
         if (!cancelled) setSmsStats(data)
       } catch {
-        // Silently handle — SMS analytics is optional
+        if (!cancelled) setSmsError(true)
       } finally {
         if (!cancelled) setSmsLoading(false)
       }
@@ -380,6 +385,10 @@ export default function AnalyticsPage() {
             <div className="border-3 border-brutal-fg bg-white p-6">
               <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">📱 Loading SMS stats...</p>
             </div>
+          ) : smsError ? (
+            <div className="border-3 border-brutal-fg bg-white p-6">
+              <p className="text-xs font-bold text-brutal-red uppercase tracking-wider">⚠ Couldn't load SMS stats</p>
+            </div>
           ) : smsStats && smsStats.reachable > 0 ? (
             <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
               <h3 className="font-heading text-xl uppercase tracking-wide mb-3">📱 SMS / RCS</h3>
@@ -402,7 +411,7 @@ export default function AnalyticsPage() {
           ) : null}
 
           {/* Live Pulse */}
-          <LivePulse workspaceId={workspaceId} />
+          <ErrorBoundary><LivePulse workspaceId={workspaceId} /></ErrorBoundary>
 
           {/* Date range toggle */}
           <div className="flex items-center gap-3">
@@ -437,6 +446,10 @@ export default function AnalyticsPage() {
           {heatmapLoading ? (
             <div className="border-3 border-brutal-fg bg-white p-6">
               <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">⏱ Loading heatmap...</p>
+            </div>
+          ) : heatmapError ? (
+            <div className="border-3 border-brutal-fg bg-white p-6">
+              <p className="text-xs font-bold text-brutal-red uppercase tracking-wider">⚠ Couldn't load heatmap</p>
             </div>
           ) : heatmap && heatmap.totalOpens > 0 ? (
             <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
@@ -485,17 +498,17 @@ export default function AnalyticsPage() {
 
           {/* Campaign Performance (animated bars) */}
           {topCampaigns.length > 0 && (
-            <CampaignPerformance campaigns={topCampaigns} onSelect={setDetailCampaign} />
+            <ErrorBoundary><CampaignPerformance campaigns={topCampaigns} onSelect={setDetailCampaign} /></ErrorBoundary>
           )}
 
           {/* Subscriber geography summary */}
           {overview && (
-            <SubscriberGeoSummary overview={overview} />
+            <ErrorBoundary><SubscriberGeoSummary overview={overview} /></ErrorBoundary>
           )}
 
           {/* Campaign detail modal */}
           {detailCampaign && (
-            <CampaignDetailModal campaign={detailCampaign} onClose={() => setDetailCampaign(null)} />
+            <ErrorBoundary><CampaignDetailModal campaign={detailCampaign} onClose={() => setDetailCampaign(null)} /></ErrorBoundary>
           )}
 
           {/* Top Performing Campaigns table */}

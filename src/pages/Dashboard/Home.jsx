@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 import { useReveal } from '../../App'
 import { analyticsAPI } from '../../lib/api'
+import { fmt, fmtPct } from '../../lib/format'
 import { LoadingState } from '../../components/ux'
 import MetricCard from '../../components/ui/MetricCard'
 import Panel from '../../components/ui/Panel'
@@ -56,9 +57,6 @@ export default function DashboardHome() {
     return () => { cancelled = true }
   }, [workspaceId])
 
-  const fmt = (n) => typeof n === 'number' ? n.toLocaleString() : '--'
-  const pct = (n) => typeof n === 'number' ? `${n.toFixed(1)}%` : '--'
-
   const greeting = () => {
     const h = new Date().getHours()
     if (h < 12) return 'Good morning'
@@ -92,8 +90,8 @@ export default function DashboardHome() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link to="/dashboard/subscribers" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Audience" value={fmt(stats?.total_subscribers)} accentColor="border-t-brutal-green" change={stats?.total_subscribers > 0 ? `+${stats?.total_subscribers}` : undefined} /></Link>
           <Link to="/dashboard/campaigns" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Newsletters Sent" value={fmt(stats?.campaigns_sent)} accentColor="border-t-brutal-yellow" /></Link>
-          <Link to="/dashboard/analytics" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Avg Open Rate" value={pct(stats?.avg_open_rate)} accentColor="border-t-brutal-green" /></Link>
-          <Link to="/dashboard/analytics" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Avg Click Rate" value={pct(stats?.avg_click_rate)} accentColor="border-t-brutal-fg" /></Link>
+          <Link to="/dashboard/analytics" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Avg Open Rate" value={fmtPct(stats?.avg_open_rate)} accentColor="border-t-brutal-green" /></Link>
+          <Link to="/dashboard/analytics" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Avg Click Rate" value={fmtPct(stats?.avg_click_rate)} accentColor="border-t-brutal-fg" /></Link>
         </div>
       )}
 
