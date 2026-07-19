@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import { analyticsAPI, getAuthToken } from '../../lib/api'
+import { analyticsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-gsap.registerPlugin(ScrollTrigger)
+if (typeof window !== 'undefined') { gsap.registerPlugin(ScrollTrigger) }
 
 function AnimatedStatCard({ label, value, delay = 0 }) {
   const ref = useRef(null)
@@ -35,7 +35,7 @@ function AnimatedStatCard({ label, value, delay = 0 }) {
 
 function AnimatedGrowthChart({ points, height = 40 }) {
   const chartRef = useRef(null)
-  const max = Math.max(...points.map((p) => p.count), 1)
+  const max = Math.max(...points.map((p) => p.count ?? 0), 1)
 
   useEffect(() => {
     const bars = chartRef.current?.querySelectorAll('.growth-bar')
@@ -69,7 +69,7 @@ function AnimatedGrowthChart({ points, height = 40 }) {
 
 function CampaignPerformance({ campaigns }) {
   const ref = useRef(null)
-  const maxSent = Math.max(...campaigns.map(c => c.sent), 1)
+  const maxSent = Math.max(...campaigns.map(c => c.sent ?? 0), 1)
 
   useEffect(() => {
     const rows = ref.current?.querySelectorAll('.perf-row')
@@ -92,15 +92,15 @@ function CampaignPerformance({ campaigns }) {
             </div>
             <div className="flex gap-1 h-5">
               <div className="relative flex-1 border-2 border-brutal-fg bg-brutal-surface overflow-hidden">
-                <div className="absolute inset-y-0 left-0 bg-brutal-green transition-all" style={{ width: `${Math.min(c.open_rate, 100)}%` }} title={`${c.open_rate.toFixed(1)}% opened`} />
+                <div className="absolute inset-y-0 left-0 bg-brutal-green transition-all" style={{ width: `${Math.min(c.open_rate ?? 0, 100)}%` }} title={`${(c.open_rate ?? 0).toFixed(1)}% opened`} />
               </div>
               <div className="relative flex-1 border-2 border-brutal-fg bg-brutal-surface overflow-hidden">
-                <div className="absolute inset-y-0 left-0 bg-brutal-yellow transition-all" style={{ width: `${Math.min(c.click_rate, 100)}%` }} title={`${c.click_rate.toFixed(1)}% clicked`} />
+                <div className="absolute inset-y-0 left-0 bg-brutal-yellow transition-all" style={{ width: `${Math.min(c.click_rate ?? 0, 100)}%` }} title={`${(c.click_rate ?? 0).toFixed(1)}% clicked`} />
               </div>
             </div>
             <div className="flex justify-between text-[10px] font-bold text-brutal-muted">
-              <span>🟢 {c.open_rate.toFixed(1)}% open</span>
-              <span>🟡 {c.click_rate.toFixed(1)}% click</span>
+              <span>🟢 {(c.open_rate ?? 0).toFixed(1)}% open</span>
+              <span>🟡 {(c.click_rate ?? 0).toFixed(1)}% click</span>
             </div>
           </div>
         ))}
@@ -117,36 +117,65 @@ export default function AnalyticsPage() {
   const [days, setDays] = useState(14)
   const [heatmap, setHeatmap] = useState(null)
   const [smsStats, setSmsStats] = useState(null)
-
-  useEffect(() => { if (workspaceId) { loadOverview(); document.title = 'Analytics | Veloce' } }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  , [workspaceId, days])
+  const [heatmapLoading, setHeatmapLoading] = useState(false)
+  const [smsLoading, setSmsLoading] = useState(false)
 
   useEffect(() => {
     if (!workspaceId) return
-    const token = getAuthToken()
-    // Load heatmap + SMS stats
-    fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/analytics/heatmap`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(r => r.json()).then(d => setHeatmap(d)).catch(() => {})
-    fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/analytics/sms`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(r => r.json()).then(d => setSmsStats(d)).catch(() => {})
-  }, [workspaceId])
+    document.title = 'Analytics | Veloce'
+    const controller = new AbortController()
+    let cancelled = false
 
-  async function loadOverview() {
-    setLoading(true)
-    setError(null)
-    try {
-      const { data } = await analyticsAPI.overview(workspaceId, { days })
-      setOverview(data)
-    } catch (err) {
-      console.error('Failed to load analytics:', err)
-      setError('Could not load analytics. Is the API running?')
-    } finally {
-      setLoading(false)
+    async function load() {
+      setLoading(true)
+      setError(null)
+      try {
+        const { data } = await analyticsAPI.overview(workspaceId, { days })
+        if (!cancelled) setOverview(data)
+      } catch (err) {
+        console.error('Failed to load analytics:', err)
+        if (!cancelled) setError('Could not load analytics. Is the API running?')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
-  }
+
+    load()
+    return () => { cancelled = true; controller.abort() }
+  }, [workspaceId, days])
+
+  useEffect(() => {
+    if (!workspaceId) return
+    let cancelled = false
+
+    async function loadHeatmap() {
+      setHeatmapLoading(true)
+      try {
+        const { data } = await analyticsAPI.heatmap(workspaceId)
+        if (!cancelled) setHeatmap(data)
+      } catch {
+        // Silently handle — heatmap is optional
+      } finally {
+        if (!cancelled) setHeatmapLoading(false)
+      }
+    }
+
+    async function loadSms() {
+      setSmsLoading(true)
+      try {
+        const { data } = await analyticsAPI.sms(workspaceId)
+        if (!cancelled) setSmsStats(data)
+      } catch {
+        // Silently handle — SMS analytics is optional
+      } finally {
+        if (!cancelled) setSmsLoading(false)
+      }
+    }
+
+    loadHeatmap()
+    loadSms()
+    return () => { cancelled = true }
+  }, [workspaceId])
 
   const growth = overview?.subscriber_growth || []
   const topCampaigns = overview?.top_campaigns || []
@@ -166,7 +195,7 @@ export default function AnalyticsPage() {
         <EmptyState
           title="Couldn't load analytics"
           description={error}
-          action={{ label: 'Retry', onClick: loadOverview }}
+          action={{ label: 'Retry', onClick: () => setDays(d => d) }}
         />
       ) : (
         <div className="space-y-8">
@@ -178,7 +207,11 @@ export default function AnalyticsPage() {
           </div>
 
           {/* SMS Stats */}
-          {smsStats && smsStats.reachable > 0 && (
+          {smsLoading ? (
+            <div className="border-3 border-brutal-fg bg-white p-6">
+              <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">📱 Loading SMS stats...</p>
+            </div>
+          ) : smsStats && smsStats.reachable > 0 ? (
             <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
               <h3 className="font-heading text-xl uppercase tracking-wide mb-3">📱 SMS / RCS</h3>
               <div className="grid grid-cols-3 gap-4">
@@ -197,7 +230,7 @@ export default function AnalyticsPage() {
               </div>
               <p className="text-[9px] text-brutal-muted mt-2">{smsStats.message}</p>
             </div>
-          )}
+          ) : null}
 
           {/* Date range toggle */}
           <div className="flex items-center gap-3">
@@ -229,7 +262,11 @@ export default function AnalyticsPage() {
           )}
 
           {/* Email Open Heatmap */}
-          {heatmap && heatmap.totalOpens > 0 && (
+          {heatmapLoading ? (
+            <div className="border-3 border-brutal-fg bg-white p-6">
+              <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">⏱ Loading heatmap...</p>
+            </div>
+          ) : heatmap && heatmap.totalOpens > 0 ? (
             <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
               <h3 className="font-heading text-xl uppercase tracking-wide mb-4">When Your Emails Get Opened</h3>
               <p className="text-xs text-brutal-muted mb-4">
@@ -272,7 +309,7 @@ export default function AnalyticsPage() {
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Campaign Performance (animated bars) */}
           {topCampaigns.length > 0 && (

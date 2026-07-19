@@ -114,6 +114,10 @@ export const analyticsAPI = {
     api.get(`/api/clients/${workspaceId}/analytics`, { params }),
   activity: (workspaceId) =>
     api.get(`/api/clients/${workspaceId}/activity`),
+  heatmap: (workspaceId) =>
+    api.get(`/api/clients/${workspaceId}/analytics/heatmap`),
+  sms: (workspaceId) =>
+    api.get(`/api/clients/${workspaceId}/analytics/sms`),
 }
 
 export const automationsAPI = {
