@@ -14,7 +14,7 @@ import Card from '../../components/ui/Card'
 import { relativeTime } from '../../lib/time'
 
 export default function DashboardHome() {
-  const { email, workspaceId } = useAuthStore()
+  const { email, workspaceId, role } = useAuthStore()
   const ref = useRef(null)
   const [stats, setStats] = useState(null)
   const [activities, setActivities] = useState([])
@@ -175,19 +175,16 @@ export default function DashboardHome() {
         </Panel>
 
         {/* Workspace Info */}
-        <Panel title="Workspace" accent="bg-brutal-fg text-white">
-          <div className="space-y-3">
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted mb-0.5">Email</p>
-              <p className="text-sm font-mono font-bold truncate">{email}</p>
-            </div>
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted mb-0.5">Workspace ID</p>
-              <p className="text-xs font-mono text-brutal-muted truncate">{workspaceId}</p>
-            </div>
-            <div className="flex gap-2 pt-1">
-              <Badge variant="green">Active</Badge>
-              <Badge variant="muted">Multi-tenant</Badge>
+        <Panel title="Account" accent="bg-brutal-fg text-white">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 border-2 border-brutal-fg bg-brutal-yellow flex items-center justify-center font-heading text-lg font-bold uppercase shrink-0">
+                {email?.[0] || '?'}
+              </div>
+              <div>
+                <p className="text-sm font-bold truncate">{email}</p>
+                <Badge variant="green">{role || 'owner'}</Badge>
+              </div>
             </div>
           </div>
         </Panel>
