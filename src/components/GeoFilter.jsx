@@ -437,7 +437,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       >
         <MapPin size={14} />
         {applied && locations.length > 0
-          ? `📍 ${locations[0].city}, ${locations[0].state}${locations.length > 1 ? ` +${locations.length - 1} more` : ''} · ${radius} mi`
+          ? `📍 ${locations[0].city}, ${locations[0].state}${locations.length > 1 ? ` +${locations.length - 1} more` : ''} · ${locations[0]?.radius ?? 10} mi`
           : '📍 Radius filter'}
         <span className="ml-auto text-[10px] opacity-60">{open ? '▲' : '▼'}</span>
       </button>
