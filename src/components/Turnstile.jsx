@@ -7,6 +7,7 @@ export default function Turnstile({ onVerify, onExpire }) {
   const widgetId = useRef(null);
   const [ready, setReady] = useState(false);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     // Load Turnstile script if not already loaded
     if (!window.turnstile) {
@@ -20,6 +21,7 @@ export default function Turnstile({ onVerify, onExpire }) {
       setReady(true);
     }
   }, []);
+  /* eslint-enable */
 
   useEffect(() => {
     if (!ready || !ref.current) return;
@@ -38,6 +40,7 @@ export default function Turnstile({ onVerify, onExpire }) {
         widgetId.current = null;
       }
     };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [ready]);
 
   return <div ref={ref} className="turnstile-widget" />;

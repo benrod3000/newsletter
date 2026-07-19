@@ -45,7 +45,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
           return locs.map((l) => ({ ...l, radius: l.radius ?? 10 }))
         }
       }
-    } catch {}
+    } catch { /* localStorage may be blocked */ }
     return []
   })
   const [applied, setApplied] = useState(() => {
@@ -82,6 +82,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     locations.forEach((_, i) => {
       tl.from(chipsRef.current[i], { y: -12, scale: 0.85, opacity: 0, duration: 0.3, ease: 'back.out(1.7)' }, i * 0.06)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   // ─── Debounced ZIP resolution ───
@@ -118,7 +119,8 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
         } else {
           setPending(null)
         }
-      } catch {
+      } catch (err) {
+        console.error('[GeoFilter] ZIP resolution failed:', err);
         setPending(null)
       } finally {
         setResolving(false)
@@ -189,7 +191,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     const proxy = { r: 0 }
     const tw = gsap.to(proxy, {
       r: targetMeters, duration, ease: 'power3.out',
-      onUpdate: () => { try { circle.setRadius(proxy.r) } catch {} },
+      onUpdate: () => { try { circle.setRadius(proxy.r) } catch { /* circle may be detached */ } },
     })
     gsapTweens.current.push(tw)
   }
@@ -230,7 +232,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     gsapTweens.current.forEach(t => t.kill())
     gsapTweens.current = []
 
-    circlesRef.current.forEach(c => { try { map.removeLayer(c) } catch {} })
+    circlesRef.current.forEach(c => { try { map.removeLayer(c) } catch { /* already removed */ } })
     circlesRef.current = []
 
     if (locations.length === 0) return
@@ -256,7 +258,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     })
 
     map.invalidateSize()
-    try { map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 }) } catch {}
+    try { map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 }) } catch { /* bounds may be empty */ }
   }
 
 // ─── Helper: create a draggable marker at a location ───
@@ -292,7 +294,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   // ─── Rebuild all markers on the map ───
   function rebuildMarkers(map, locs) {
     // Remove old markers
-    markersRef.current.forEach(m => { try { map.removeLayer(m) } catch {} })
+    markersRef.current.forEach(m => { try { map.removeLayer(m) } catch { /* already removed */ } })
     markersRef.current = []
 
     locs.forEach((loc, i) => {
@@ -389,6 +391,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     addSubscriberPins(g)
     g.addTo(map)
     subscriberLayerRef.current = g
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, locations])
 
   // ─── Location radius change: update a single circle ───
@@ -404,7 +407,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       const proxy = { r: 0 }
       const tw = gsap.to(proxy, {
         r: newRadius * 1609.34, duration: 0.35, ease: 'power3.out',
-        onUpdate: () => { try { circle.setRadius(proxy.r) } catch {} },
+        onUpdate: () => { try { circle.setRadius(proxy.r) } catch { /* circle may be gone */ } },
       })
       gsapTweens.current.push(tw)
     }
@@ -415,14 +418,14 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     if (locations.length === 0) return
     setApplied(true)
     onChange({ locations })
-    try { localStorage.setItem(GEO_FILTER_KEY, JSON.stringify({ locations, applied: true })) } catch {}
+    try { localStorage.setItem(GEO_FILTER_KEY, JSON.stringify({ locations, applied: true })) } catch { /* localStorage may be full */ }
   }
 
   function clearFilter() {
     setZip(''); setPending(null); setLocations([])
     setApplied(false); setOpen(false)
     onClear?.()
-    try { localStorage.removeItem(GEO_FILTER_KEY) } catch {}
+    try { localStorage.removeItem(GEO_FILTER_KEY) } catch { /* localStorage may be blocked */ }
   }
 
   // ─── Render ───

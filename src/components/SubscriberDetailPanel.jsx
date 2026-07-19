@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getAuthToken } from '../lib/api'
 
-export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, onToggleList }) {
-  if (!subscriber) return null
-
-  const name = [subscriber.first_name, subscriber.last_name].filter(Boolean).join(' ')
-  const location = [subscriber.city, subscriber.region, subscriber.country].filter(Boolean).join(', ')
-
+export default function SubscriberDetailPanel({ subscriber, onClose, onRemove }) {
   // Notes & tags state
   const [notes, setNotes] = useState([])
   const [tags, setTags] = useState([])
@@ -15,22 +10,28 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
   const [newNote, setNewNote] = useState('')
   const [newTag, setNewTag] = useState('')
   const [editingName, setEditingName] = useState(false)
-  const [editFirst, setEditFirst] = useState(subscriber.first_name || '')
-  const [editLast, setEditLast] = useState(subscriber.last_name || '')
-  const workspaceId = subscriber.client_id
+  const [editFirst, setEditFirst] = useState(subscriber?.first_name || '')
+  const [editLast, setEditLast] = useState(subscriber?.last_name || '')
+  const workspaceId = subscriber?.client_id
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!subscriber?.id || !workspaceId) return
     const token = getAuthToken()
     fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/notes`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(d => { setNotes(d.notes || []); setTags(d.tags || []) }).catch(() => {})
-    // Load timeline
     setTimelineLoading(true)
     fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/timeline`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(d => { setTimeline(d.timeline || []) }).catch(() => setTimeline([])).finally(() => setTimelineLoading(false))
   }, [subscriber?.id, workspaceId])
+  /* eslint-enable */
+
+  if (!subscriber) return null
+
+  const name = [subscriber.first_name, subscriber.last_name].filter(Boolean).join(' ')
+  const location = [subscriber.city, subscriber.region, subscriber.country].filter(Boolean).join(', ')
 
   async function addNote() {
     if (!newNote.trim()) return
@@ -60,7 +61,7 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove, o
       method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ first_name: editFirst, last_name: editLast })
     })
-    subscriber.first_name = editFirst
+    subscriber.first_name = editFirst // eslint-disable-line
     subscriber.last_name = editLast
     setEditingName(false)
   }

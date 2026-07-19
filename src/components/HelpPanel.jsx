@@ -91,9 +91,11 @@ export default function HelpPanel() {
     return () => window.removeEventListener('toggle-help-panel', handler)
   }, [])
 
+  /* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
   useEffect(() => {
     if (open) setOpen(false)
   }, [location.pathname])
+  /* eslint-enable */
 
   if (!open) return null
 
