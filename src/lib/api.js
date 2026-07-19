@@ -141,4 +141,11 @@ export const widgetsAPI = {
     api.delete(`/api/clients/${workspaceId}/widgets/${id}`),
 }
 
+export const usersAPI = {
+  list: (workspaceId) =>
+    api.get(`/api/clients/${workspaceId}/users`),
+  create: (workspaceId, data) =>
+    api.post(`/api/clients/${workspaceId}/users`, data),
+}
+
 export default api

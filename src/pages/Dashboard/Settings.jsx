@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import { brandingAPI, automationsAPI, getAuthToken } from '../../lib/api'
+import { brandingAPI, automationsAPI, usersAPI, getAuthToken } from '../../lib/api'
 import { useToast } from '../../components/Toast'
 import { Eye, EyeOff, ShieldCheck, Copy, Check } from 'lucide-react'
 import Btn from '../../components/ui/Button'
@@ -10,6 +10,12 @@ export default function SettingsPage() {
   const { workspaceId } = useAuthStore()
   const toast = useToast()
   const [activeTab, setActiveTab] = useState('branding')
+  const [team, setTeam] = useState([])
+  const [teamLoading, setTeamLoading] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [invitePassword, setInvitePassword] = useState('')
+  const [inviteRole, setInviteRole] = useState('editor')
+  const [inviting, setInviting] = useState(false)
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
   const [branding, setBranding] = useState({
@@ -73,6 +79,7 @@ export default function SettingsPage() {
       loadSmartTagHistory()
       loadActivityLog()
       loadAuditLogs()
+      loadTeam()
     }
   }, [workspaceId])
 
@@ -115,6 +122,15 @@ export default function SettingsPage() {
       setActivityLog(data.runs || [])
     } catch { setActivityLog([]) }
     finally { setActivityLogLoading(false) }
+  }
+
+  async function loadTeam() {
+    setTeamLoading(true)
+    try {
+      const { data } = await usersAPI.list(workspaceId)
+      setTeam(data.users || [])
+    } catch {}
+    setTeamLoading(false)
   }
 
   async function loadAuditLogs() {
@@ -224,10 +240,10 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <div className="flex border-3 border-brutal-fg overflow-hidden mb-8">
-        {['branding', 'sms', 'automations', 'security'].map(function(tab) {
+        {['branding', 'sms', 'automations', 'security', 'team'].map(function(tab) {
           return <button key={tab} onClick={function() { setActiveTab(tab) }}
             className={'px-6 py-3 font-bold text-sm uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ' + (activeTab === tab ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg')}>
-            {tab === 'branding' ? 'Branding' : tab === 'sms' ? 'SMS' : tab === 'automations' ? 'Automations' : 'Security'}
+            {tab === 'branding' ? 'Branding' : tab === 'sms' ? 'SMS' : tab === 'automations' ? 'Automations' : tab === 'security' ? 'Security' : 'Team'}
           </button>
         })}
       </div>
@@ -1069,6 +1085,81 @@ export default function SettingsPage() {
         </div>
 
       </div>}
+
+      {/* Team Tab */}
+      {activeTab === 'team' && (
+        <div className="space-y-8">
+          <div className="border-3 border-brutal-fg bg-white p-8">
+            <h3 className="font-heading text-2xl uppercase tracking-wide mb-6">👥 Team Members</h3>
+            <p className="text-xs text-brutal-muted mb-6">Invite people to manage this workspace. Each member gets their own login.</p>
+
+            {teamLoading ? (
+              <LoadingState label="Loading team" />
+            ) : (
+              <div className="space-y-4 mb-8">
+                {team.length === 0 ? (
+                  <p className="text-sm text-brutal-muted font-bold uppercase tracking-wider">No team members yet.</p>
+                ) : team.map(function(m) {
+                  return <div key={m.id} className="flex items-center justify-between border-3 border-brutal-fg p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 border-2 border-brutal-fg bg-brutal-surface flex items-center justify-center text-xs font-bold uppercase">{m.email[0]}</div>
+                      <div>
+                        <p className="text-sm font-bold">{m.email}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">
+                          {m.role} {!m.is_active ? '(inactive)' : ''} · {m.last_login_at ? `Last login ${new Date(m.last_login_at).toLocaleDateString()}` : 'Never logged in'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider border-2 ${m.is_active ? 'border-brutal-green text-brutal-green bg-brutal-green/10' : 'border-brutal-fg/30 text-brutal-muted'}`}>{m.role}</span>
+                  </div>
+                })}
+              </div>
+            )}
+
+            <div className="border-t-3 border-brutal-fg pt-6">
+              <h4 className="font-heading text-lg uppercase tracking-wide mb-4">Invite Member</h4>
+              <div className="grid sm:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">Email</label>
+                  <input type="email" value={inviteEmail} onChange={function(e) { setInviteEmail(e.target.value) }}
+                    placeholder="colleague@example.com"
+                    className="w-full px-3 py-2 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">Password</label>
+                  <input type="text" value={invitePassword} onChange={function(e) { setInvitePassword(e.target.value) }}
+                    placeholder="Set a temporary password"
+                    className="w-full px-3 py-2 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">Role</label>
+                  <select value={inviteRole} onChange={function(e) { setInviteRole(e.target.value) }}
+                    className="w-full px-3 py-2 bg-white border-3 border-brutal-fg text-sm focus:outline-none">
+                    <option value="editor">Editor</option>
+                    <option value="viewer">Viewer</option>
+                  </select>
+                </div>
+              </div>
+              <Btn variant="primary" size="md" loading={inviting} disabled={!inviteEmail.trim() || !invitePassword.trim()}
+                onClick={async function() {
+                  setInviting(true)
+                  try {
+                    await usersAPI.create(workspaceId, { email: inviteEmail.trim(), password: invitePassword, role: inviteRole })
+                    toast.addToast('Team member added!', 'success')
+                    setInviteEmail(''); setInvitePassword(''); setInviteRole('editor')
+                    const { data } = await usersAPI.list(workspaceId)
+                    setTeam(data.users || [])
+                  } catch (err) {
+                    const apiErr = err?.response?.data?.error
+                    toast.addToast(apiErr || 'Failed to add member', 'error')
+                  } finally { setInviting(false) }
+                }}>
+                Add Member
+              </Btn>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
