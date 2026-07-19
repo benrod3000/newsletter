@@ -43,9 +43,6 @@ const Changelog = lazy(() => import('./pages/Docs/Changelog'))
 // Fallback spinner for lazy-loaded routes
 function PageLoader() { return <div className="min-h-screen bg-brutal-bg flex items-center justify-center"><div className="h-4 w-4 bg-brutal-fg animate-pulse" /></div> }
 
-// Re-export GSAP hook for backward compatibility
-export { useReveal } from './hooks/use-gsap'
-
 // =============================================
 // Layouts
 // =============================================
