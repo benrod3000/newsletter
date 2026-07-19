@@ -4,6 +4,15 @@ export default function Changelog() {
   useEffect(() => { document.title = 'Changelog | Veloce' }, [])
   const entries = [
     {
+      date: 'July 19, 2026',
+      items: [
+        'Email provider abstraction: bulk sends now provider-agnostic. SendGrid and Resend both work for broadcasts via a shared EmailTransport interface. Per-workspace API keys supported.',
+        'Sentry error monitoring added across both frontend and backend. Browser tracing, session replay on errors, server-side OTEL instrumentation, Vercel cron monitoring.',
+        'Dashboard reframed from email platform to Audience OS: Messaging, People, Insights, Growth. Broadcasts replace Newsletters, Contacts replace Subscribers, Segments replace Lists, Capture Forms replace Widgets.',
+        'Sidebar simplified: SMS/RCS beta panel removed from main nav, accessible via Broadcasts page when enabled.',
+      ],
+    },
+    {
       date: 'July 18, 2026',
       items: [
         'Security audit: 7 findings fixed - stored XSS prevention (escapeHtml on all subscriber merge fields), HMAC-signed admin headers for defense-in-depth, CORS scoped to allowed origins, PostCSS advisory patched, token reads centralized into getAuthToken(), migration files renumbered',

@@ -81,7 +81,7 @@ export default function WidgetsPage() {
 
   useEffect(() => {
     if (workspaceId) {
-    document.title = 'Widgets | Veloce'
+    document.title = 'Capture Forms | Veloce'
       loadWidgets()
       loadLists()
     }
@@ -236,7 +236,7 @@ export default function WidgetsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">
-          <span className="text-brutal-green">Widg</span>ets
+          <span className="text-brutal-green">Capture</span> Forms
         </h2>
         {step === 0 && (
           <Btn

@@ -89,7 +89,7 @@ export default function DashboardHome() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link to="/dashboard/subscribers" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Audience" value={fmt(stats?.total_subscribers)} accentColor="border-t-brutal-green" change={stats?.total_subscribers > 0 ? `+${stats?.total_subscribers}` : undefined} /></Link>
-          <Link to="/dashboard/campaigns" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Newsletters Sent" value={fmt(stats?.campaigns_sent)} accentColor="border-t-brutal-yellow" /></Link>
+          <Link to="/dashboard/campaigns" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Broadcasts Sent" value={fmt(stats?.campaigns_sent)} accentColor="border-t-brutal-yellow" /></Link>
           <Link to="/dashboard/analytics" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Avg Open Rate" value={fmtPct(stats?.avg_open_rate)} accentColor="border-t-brutal-green" /></Link>
           <Link to="/dashboard/analytics" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition"><MetricCard label="Avg Click Rate" value={fmtPct(stats?.avg_click_rate)} accentColor="border-t-brutal-fg" /></Link>
         </div>
@@ -102,9 +102,9 @@ export default function DashboardHome() {
             <span className="text-lg font-heading">→</span>
           </div>
           <div className="flex-1">
-            <p className="text-sm font-bold">You have subscribers but no campaigns yet</p>
-            <p className="text-xs text-brutal-muted mt-1">Your audience is waiting. Create your first newsletter to start engaging your subscribers.</p>
-            <Btn variant="primary" size="md" onClick={() => window.location.href = '/dashboard/campaigns'}>Write Your First Newsletter →</Btn>
+            <p className="text-sm font-bold">You have contacts but no broadcasts yet</p>
+            <p className="text-xs text-brutal-muted mt-1">Your people are waiting. Create your first broadcast to start engaging your audience.</p>
+            <Btn variant="primary" size="md" onClick={() => window.location.href = '/dashboard/campaigns'}>Write Your First Broadcast →</Btn>
           </div>
         </Card>
       )}

@@ -36,7 +36,7 @@ Every workspace is completely isolated // subscribers, campaigns, automations, b
 
 ## Tech stack
 
-React 19 + Vite 8. Tailwind CSS v4. Zustand for auth. Axios with JWT. React Router v7. TipTap editor. GSAP for animations. Lucide icons. Deployed on Vercel.
+React 19 + Vite 8. Tailwind CSS v4. Zustand for auth. Axios with JWT. React Router v7. TipTap editor. GSAP for animations. Lucide icons. Sentry for error monitoring. Deployed on Vercel.
 
 ---
 

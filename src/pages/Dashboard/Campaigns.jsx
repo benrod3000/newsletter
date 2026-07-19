@@ -90,7 +90,7 @@ export default function CampaignsPage() {
 
   useEffect(() => {
     if (workspaceId) { loadCampaigns(); loadLists() }
-    document.title = 'Campaigns | Veloce'
+    document.title = 'Broadcasts | Veloce'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId])
 
@@ -276,9 +276,9 @@ export default function CampaignsPage() {
       <div className="flex items-center justify-between flex-wrap gap-4 border-b-3 border-brutal-fg pb-4">
         <div>
           <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">
-            <span className="text-brutal-green">Your</span> Newsletters
+            <span className="text-brutal-green">Broadcasts</span>
           </h2>
-          <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider mt-1">Write, review, and send to your audience</p>
+          <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider mt-1">Create and send messages to your people</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex border-3 border-brutal-fg bg-white overflow-hidden">
@@ -286,7 +286,7 @@ export default function CampaignsPage() {
             <button onClick={() => setViewMode('cards')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'cards' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>▥ Cards</button>
             <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'calendar' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>📅 Calendar</button>
           </div>
-          <Btn variant="primary" size="md" onClick={startNewCampaign}>+ New Newsletter</Btn>
+          <Btn variant="primary" size="md" onClick={startNewCampaign}>+ New Broadcast</Btn>
           <button
             onClick={async () => {
               setSmsOpen(!smsOpen)
@@ -433,7 +433,7 @@ export default function CampaignsPage() {
         <div className="border-3 border-brutal-fg bg-white shadow-brutal animate-fade-up">
           <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-5 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="font-heading text-xl uppercase tracking-wide">{editingId === 'new' ? 'New Newsletter' : 'Edit Newsletter'}</span>
+              <span className="font-heading text-xl uppercase tracking-wide">{editingId === 'new' ? 'New Broadcast' : 'Edit Broadcast'}</span>
               {editCampaign?.name && <span className="text-[10px] font-mono font-bold bg-brutal-fg text-brutal-yellow px-2 py-0.5">{editCampaign.name}</span>}
             </div>
             <button onClick={closeEditor} className="px-3 py-1 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition">
@@ -653,7 +653,7 @@ export default function CampaignsPage() {
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b-3 border-brutal-fg bg-brutal-surface">
-                <th className="text-left p-3 font-heading text-lg uppercase tracking-wider">Campaign</th>
+                <th className="text-left p-3 font-heading text-lg uppercase tracking-wider">Broadcast</th>
                 <th className="text-left p-3 font-heading text-lg uppercase tracking-wider hidden sm:table-cell">Audience</th>
                 <th className="text-left p-3 font-heading text-lg uppercase tracking-wider">Status</th>
                 <th className="text-right p-3 font-heading text-lg uppercase tracking-wider hidden md:table-cell">Sent</th>

@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import {
-  LayoutDashboard, Mail, Users, Layers, BarChart3,
-  Settings, Zap, ChevronLeft, ChevronRight, Search,
-  HelpCircle, LogOut, Globe, Menu, X, Radio
+  LayoutDashboard, Send, Users, PieChart, BarChart3,
+  Settings, ChevronLeft, ChevronRight, Search,
+  HelpCircle, LogOut, Globe, Menu, X
 } from 'lucide-react'
 
 const navGroups = [
@@ -15,17 +15,16 @@ const navGroups = [
     ],
   },
   {
-    label: 'Reach',
+    label: 'Messaging',
     items: [
-      { path: '/dashboard/campaigns', label: 'Email', icon: Mail },
-      { path: '/dashboard/campaigns', label: 'SMS / RCS', icon: Radio },
+      { path: '/dashboard/campaigns', label: 'Broadcasts', icon: Send },
     ],
   },
   {
-    label: 'Audience',
+    label: 'People',
     items: [
-      { path: '/dashboard/subscribers', label: 'Subscribers', icon: Users },
-      { path: '/dashboard/lists', label: 'Lists', icon: Layers },
+      { path: '/dashboard/subscribers', label: 'Contacts', icon: Users },
+      { path: '/dashboard/lists', label: 'Segments', icon: PieChart },
     ],
   },
   {
@@ -35,9 +34,9 @@ const navGroups = [
     ],
   },
   {
-    label: 'System',
+    label: 'Growth',
     items: [
-      { path: '/dashboard/widgets', label: 'Widgets', icon: Globe },
+      { path: '/dashboard/widgets', label: 'Capture Forms', icon: Globe },
       { path: '/dashboard/settings', label: 'Settings', icon: Settings },
     ],
   },
