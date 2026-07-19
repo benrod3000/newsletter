@@ -1,34 +1,107 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { analyticsAPI, getAuthToken } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+gsap.registerPlugin(ScrollTrigger)
 
-function StatCard({ label, value }) {
+function AnimatedStatCard({ label, value, delay = 0 }) {
+  const ref = useRef(null)
+  const [displayed, setDisplayed] = useState(0)
+  const numVal = typeof value === 'number' ? value : parseFloat(String(value).replace(/[^0-9.]/g, '')) || 0
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    gsap.fromTo(el, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, delay, ease: 'power3.out' })
+    if (numVal > 0) {
+      gsap.fromTo({ val: 0 }, { val: 0 }, {
+        val: numVal, duration: 1.2, delay: delay + 0.2, ease: 'power2.out',
+        onUpdate: function () { setDisplayed(Math.round(this.targets()[0].val)) },
+      })
+    } else {
+      setDisplayed(numVal)
+    }
+  }, [numVal, delay])
+
   return (
-    <div className="border-3 border-brutal-fg bg-white p-6 border-t-[6px] border-t-brutal-yellow hover:shadow-brutal transition">
+    <div ref={ref} className="border-3 border-brutal-fg bg-white p-6 border-t-[6px] border-t-brutal-yellow hover:shadow-brutal transition">
       <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">{label}</p>
-      <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">{value}</p>
+      <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">{typeof value === 'number' ? displayed.toLocaleString() : value}</p>
     </div>
   )
 }
 
-// Simple CSS bar chart // no charting library needed for a single series.
-function GrowthChart({ points }) {
+function AnimatedGrowthChart({ points, height = 40 }) {
+  const chartRef = useRef(null)
   const max = Math.max(...points.map((p) => p.count), 1)
+
+  useEffect(() => {
+    const bars = chartRef.current?.querySelectorAll('.growth-bar')
+    if (!bars?.length) return
+    gsap.fromTo(bars, { scaleY: 0, transformOrigin: 'bottom' }, {
+      scaleY: 1, duration: 0.6, stagger: 0.03, ease: 'power3.out',
+      scrollTrigger: { trigger: chartRef.current, start: 'top 90%' },
+    })
+  }, [points])
+
   return (
-    <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
+    <div ref={chartRef} className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
       <h3 className="font-heading text-xl uppercase tracking-wide mb-6">Subscriber Growth</h3>
-      <div className="flex items-end gap-2 h-40">
+      <div className="flex items-end gap-2" style={{ height: `${height * 4}px` }}>
         {points.map((p, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
             <div
-              className="w-full bg-brutal-yellow border-2 border-brutal-fg hover:bg-brutal-yellow-dark transition"
+              className="growth-bar w-full bg-brutal-yellow border-2 border-brutal-fg hover:bg-brutal-yellow-dark transition cursor-pointer"
               style={{ height: `${Math.max((p.count / max) * 100, 2)}%` }}
               title={`${p.count} on ${p.date}`}
             />
-            <span className="text-[10px] font-bold text-brutal-muted">
+            <span className="text-[10px] font-bold text-brutal-muted whitespace-nowrap">
               {new Date(p.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
             </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function CampaignPerformance({ campaigns }) {
+  const ref = useRef(null)
+  const maxSent = Math.max(...campaigns.map(c => c.sent), 1)
+
+  useEffect(() => {
+    const rows = ref.current?.querySelectorAll('.perf-row')
+    if (!rows?.length) return
+    gsap.fromTo(rows, { opacity: 0, x: -20 }, {
+      opacity: 1, x: 0, duration: 0.4, stagger: 0.08, ease: 'power2.out',
+      scrollTrigger: { trigger: ref.current, start: 'top 85%' },
+    })
+  }, [campaigns])
+
+  return (
+    <div ref={ref} className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
+      <h3 className="font-heading text-xl uppercase tracking-wide mb-6">📊 Campaign Performance</h3>
+      <div className="space-y-3">
+        {campaigns.map((c, i) => (
+          <div key={c.id ?? i} className="perf-row space-y-1.5">
+            <div className="flex justify-between text-xs font-bold">
+              <span className="truncate">{c.name}</span>
+              <span className="text-brutal-muted shrink-0 ml-2">{c.sent.toLocaleString()} sent</span>
+            </div>
+            <div className="flex gap-1 h-5">
+              <div className="relative flex-1 border-2 border-brutal-fg bg-brutal-surface overflow-hidden">
+                <div className="absolute inset-y-0 left-0 bg-brutal-green transition-all" style={{ width: `${Math.min(c.open_rate, 100)}%` }} title={`${c.open_rate.toFixed(1)}% opened`} />
+              </div>
+              <div className="relative flex-1 border-2 border-brutal-fg bg-brutal-surface overflow-hidden">
+                <div className="absolute inset-y-0 left-0 bg-brutal-yellow transition-all" style={{ width: `${Math.min(c.click_rate, 100)}%` }} title={`${c.click_rate.toFixed(1)}% clicked`} />
+              </div>
+            </div>
+            <div className="flex justify-between text-[10px] font-bold text-brutal-muted">
+              <span>🟢 {c.open_rate.toFixed(1)}% open</span>
+              <span>🟡 {c.click_rate.toFixed(1)}% click</span>
+            </div>
           </div>
         ))}
       </div>
@@ -98,10 +171,10 @@ export default function AnalyticsPage() {
       ) : (
         <div className="space-y-8">
           <div className="grid md:grid-cols-4 gap-5">
-            <StatCard label="Total Subscribers" value={fmt(overview?.total_subscribers)} />
-            <StatCard label="Campaigns Sent" value={fmt(overview?.campaigns_sent)} />
-            <StatCard label="Avg Open Rate" value={fmtPct(overview?.avg_open_rate)} />
-            <StatCard label="Avg Click Rate" value={fmtPct(overview?.avg_click_rate)} />
+            <AnimatedStatCard label="Total Subscribers" value={overview?.total_subscribers ?? 0} delay={0} />
+            <AnimatedStatCard label="Campaigns Sent" value={overview?.campaigns_sent ?? 0} delay={0.1} />
+            <AnimatedStatCard label="Avg Open Rate" value={overview?.avg_open_rate != null ? `${overview.avg_open_rate.toFixed(1)}%` : '--'} delay={0.2} />
+            <AnimatedStatCard label="Avg Click Rate" value={overview?.avg_click_rate != null ? `${overview.avg_click_rate.toFixed(1)}%` : '--'} delay={0.3} />
           </div>
 
           {/* SMS Stats */}
@@ -147,7 +220,7 @@ export default function AnalyticsPage() {
           </div>
 
           {growth.length > 0 ? (
-            <GrowthChart points={growth} />
+            <AnimatedGrowthChart points={growth} />
           ) : (
             <EmptyState
               title="No growth data yet"
@@ -201,6 +274,12 @@ export default function AnalyticsPage() {
             </div>
           )}
 
+          {/* Campaign Performance (animated bars) */}
+          {topCampaigns.length > 0 && (
+            <CampaignPerformance campaigns={topCampaigns} />
+          )}
+
+          {/* Top Performing Campaigns table */}
           <div className="border-3 border-brutal-fg overflow-x-auto bg-white">
             <div className="px-4 py-3 border-b-3 border-brutal-fg bg-brutal-bg">
               <h3 className="font-heading text-lg uppercase tracking-wide">Top Performing Campaigns</h3>

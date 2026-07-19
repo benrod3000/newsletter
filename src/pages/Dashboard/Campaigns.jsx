@@ -627,6 +627,23 @@ export default function CampaignsPage() {
                     )}
                   </div>
                 )}
+                {status === 'sent' && (
+                  <div className="border-t-2 border-brutal-fg pt-3 flex items-center gap-2">
+                    <button onClick={() => openEditor(c)} className="flex-1 py-1.5 border-2 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-yellow transition">
+                      📖 View
+                    </button>
+                    {c.public_archive && c.public_slug && (
+                      <a
+                        href={`https://newsletter.brod3000.com/newsletter/${c.public_slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-1.5 border-2 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:opacity-80 transition text-center"
+                      >
+                        🌐 Public
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             )
           })}
@@ -696,7 +713,18 @@ export default function CampaignsPage() {
                           )}
                         </div>
                       ) : (
-                        <span className="text-xs text-brutal-muted font-bold uppercase tracking-wider">--</span>
+                        <div className="flex items-center justify-end gap-2">
+                          {status === 'sent' ? (
+                            <>
+                              <button onClick={() => openEditor(c)} className="px-3 py-1 border-2 border-brutal-fg bg-white text-brutal-fg font-bold text-xs uppercase tracking-wider hover:bg-brutal-yellow transition">📖 View</button>
+                              {c.public_archive && c.public_slug && (
+                                <a href={`https://newsletter.brod3000.com/newsletter/${c.public_slug}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1 border-2 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:opacity-80 transition">🌐 Public</a>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-xs text-brutal-muted font-bold uppercase tracking-wider">--</span>
+                          )}
+                        </div>
                       )}
                     </td>
                   </tr>
