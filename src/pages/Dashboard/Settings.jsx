@@ -30,6 +30,7 @@ export default function SettingsPage() {
     ses_access_key: '',
     ses_secret_key: '',
     ses_from_email: '',
+    resend_api_key: '',
     twilio_account_sid: '',
     twilio_auth_token: '',
     twilio_phone_number: '',
@@ -348,10 +349,13 @@ export default function SettingsPage() {
                 >
                   <option value="sendgrid">SendGrid (bring your own API key)</option>
                   <option value="ses">Amazon SES ($1/10K emails)</option>
+                  <option value="resend">Resend (free tier: 3K/month)</option>
                 </select>
                 <p className="text-xs font-bold text-brutal-muted mt-1.5 uppercase tracking-wider">
                   {branding.email_provider === 'ses'
                     ? 'Amazon SES costs ~$1 per 10,000 emails sent // requires AWS credentials below'
+                    : branding.email_provider === 'resend'
+                    ? 'Resend free tier: 3,000 emails/month // then $0.001/email. Sign up at resend.com.'
                     : 'SendGrid free tier: 100 emails/day // requires a SendGrid API key below. Sign up at sendgrid.com.'}
                 </p>
               </div>
@@ -417,6 +421,18 @@ export default function SettingsPage() {
                   <p className="text-xs font-bold text-brutal-muted mt-1.5 uppercase tracking-wider">
                     Create a SendGrid account at sendgrid.com, generate an API key with <strong>Full Access</strong>, and paste it here. Free tier: 100 emails/day.
                   </p>
+                </div>
+              )}
+
+              {branding.email_provider === 'resend' && (
+                <div className="border border-brutal-fg bg-brutal-yellow/20 p-4 mb-5">
+                  <p className="text-xs font-bold uppercase tracking-wider mb-2">📋 Resend Setup (takes ~5 minutes)</p>
+                  <ol className="text-sm text-brutal-fg/80 space-y-1 list-decimal list-inside">
+                    <li>Create an account at <a href="https://resend.com" target="_blank" rel="noopener" className="underline font-bold">resend.com</a> (free tier: 3,000 emails/month)</li>
+                    <li>Add and verify your domain in the Resend dashboard</li>
+                    <li>Create an API key from the Resend dashboard (starts with <strong>re_</strong>)</li>
+                    <li>Paste the API key below and click <strong>Save Branding</strong></li>
+                  </ol>
                 </div>
               )}
 
@@ -540,6 +556,17 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </>
+              )}
+
+              {/* Resend API key field */}
+              {branding.email_provider === 'resend' && (
+                <div className="mb-6">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Resend API Key</label>
+                  <input type="password" value={branding.resend_api_key || ''}
+                    onChange={(e) => setBranding({ ...branding, resend_api_key: e.target.value })}
+                    className="w-full sm:w-96 px-4 py-2.5 bg-white border-3 border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10"
+                    placeholder="re_..." />
+                </div>
               )}
             </div>
 
