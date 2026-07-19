@@ -106,26 +106,35 @@ export default function WidgetFormPage() {
     )
   }
 
+  const isSmall = widget.size === 'small'
+  const isLarge = widget.size === 'large'
   const sizeClasses = {
     small: 'max-w-xs',
     medium: 'max-w-md',
     large: 'max-w-lg',
   }
   const sizeCls = sizeClasses[widget.size] || 'max-w-md'
+  const headerPad = isLarge ? 'px-8 py-6' : isSmall ? 'px-3 py-2' : 'px-6 py-4'
+  const bodyPad = isLarge ? 'p-8' : isSmall ? 'p-3' : 'p-6'
+  const headlineSize = isLarge ? 'text-3xl sm:text-4xl' : isSmall ? 'text-sm' : 'text-2xl sm:text-3xl'
+  const inputPad = isLarge ? 'px-4 py-3.5' : isSmall ? 'px-3 py-2' : 'px-4 py-3'
+  const buttonPad = isLarge ? 'py-3.5 text-sm' : isSmall ? 'py-2 text-[11px]' : 'py-3 text-sm'
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 animate-fade-up" style={{ backgroundColor: styles.bg_color || '#f5f5f0' }}>
+    <div className={`min-h-screen flex items-center justify-center ${isSmall ? 'p-2' : 'p-6'} animate-fade-up`} style={{ backgroundColor: styles.bg_color || '#f5f5f0' }}>
       <div className={`w-full ${sizeCls}`}>
         <div className="border-3 shadow-brutal" style={{ borderColor: styles.border_color || '#0a0a0a', backgroundColor: '#fff' }}>
-          {/* Header */}
-          <div className="border-b-3 px-6 py-4" style={{ backgroundColor: styles.primary_color || '#f5e642', borderColor: styles.border_color || '#0a0a0a' }}>
-            <h1 className="font-heading text-2xl sm:text-3xl uppercase tracking-tight leading-none">
-              {widget.headline}
-            </h1>
-          </div>
+          {/* Header - hidden in compact mode */}
+          {!isSmall && (
+            <div className={`border-b-3 ${headerPad}`} style={{ backgroundColor: styles.primary_color || '#f5e642', borderColor: styles.border_color || '#0a0a0a' }}>
+              <h1 className={`font-heading ${headlineSize} uppercase tracking-tight leading-none`}>
+                {widget.headline}
+              </h1>
+            </div>
+          )}
 
           {/* Body */}
-          <div className="p-6 space-y-5">
+          <div className={`${bodyPad} space-y-${isSmall ? '2' : '5'}`}>
             {submitted ? (
               <div className="space-y-3">
                 <div className="h-1 w-12" style={{ backgroundColor: widgetType === 'coupon' ? '#f5e642' : '#2f7f5f' }} />
@@ -151,11 +160,14 @@ export default function WidgetFormPage() {
               </div>
             ) : (
               <>
-                <p className="text-sm leading-relaxed" style={{ color: styles.text_color || 'inherit' }}>
-                  {widget.description}
-                </p>
+                {/* Description - hidden in compact mode */}
+                {!isSmall && (
+                  <p className="text-sm leading-relaxed" style={{ color: styles.text_color || 'inherit' }}>
+                    {widget.description}
+                  </p>
+                )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className={`space-y-${isSmall ? '2' : '4'}`}>
                   {fields.first_name?.required && (
                     <div>
                       <input
@@ -184,7 +196,7 @@ export default function WidgetFormPage() {
                       value={email}
                       onChange={e => { setEmail(e.target.value); setError('') }}
                       placeholder={widget.placeholder || 'you@example.com'}
-                      className={`w-full px-4 py-3 bg-white border-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition ${error ? 'border-brutal-red' : 'border-brutal-fg'}`}
+                      className={`w-full ${inputPad} bg-white border-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition ${error ? 'border-brutal-red' : 'border-brutal-fg'}`}
                       required
                       autoFocus
                     />
@@ -263,7 +275,7 @@ export default function WidgetFormPage() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full border-3 text-white font-bold py-3 text-sm uppercase tracking-wider hover:shadow-brutal disabled:opacity-50 transition active:translate-y-0.5"
+                    className={`w-full border-3 text-white font-bold ${buttonPad} uppercase tracking-wider hover:shadow-brutal disabled:opacity-50 transition active:translate-y-0.5`}
                     style={{ backgroundColor: styles.primary_color || '#0a0a0a', borderColor: styles.border_color || '#0a0a0a', color: styles.button_text_color || '#ffffff' }}
                   >
                     {submitting ? 'Sending...' : widget.button_text}
@@ -276,7 +288,7 @@ export default function WidgetFormPage() {
           {/* Footer */}
           <div className="px-6 py-3 border-t-3" style={{ borderColor: styles.border_color || '#0a0a0a' }}>
             <p className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider text-center">
-              No spam. Unsubscribe anytime. &nbsp;·&nbsp; 📍 Location data may be collected for personalization.
+              📍 Optional: share your location for nearby content · No spam. Unsubscribe anytime.
             </p>
           </div>
         </div>

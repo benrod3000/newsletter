@@ -280,16 +280,9 @@ export default function WidgetsPage() {
               </div>
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
-                  URL Slug
+                  Form URL
                 </label>
-                <input
-                  value={form.slug}
-                  onChange={e => updateField('slug', e.target.value)}
-                  className={`w-full px-4 py-2.5 bg-brutal-surface border-3 text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted ${errors.slug ? 'border-brutal-red' : 'border-brutal-fg'}`}
-                  placeholder="my-free-guide"
-                  disabled={!!editingId}
-                />
-                <p className="text-[10px] font-bold text-brutal-muted uppercase mt-1">
+                <p className="text-[10px] font-bold text-brutal-muted mb-1.5">
                   {EMBED_BASE}/{form.slug || '...'}
                 </p>
                 {errors.slug && <p className="text-xs font-bold text-brutal-red mt-1">{errors.slug}</p>}
@@ -316,15 +309,16 @@ export default function WidgetsPage() {
               {form.type === 'lead_magnet' && (
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
-                    Download URL
-                  </label>
-                  <input
-                    value={form.download_url}
-                    onChange={e => updateField('download_url', e.target.value)}
-                    className={`w-full px-4 py-2.5 bg-white border-3 text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted ${errors.download_url ? 'border-brutal-red' : 'border-brutal-fg'}`}
-                    placeholder="https://example.com/my-guide.pdf"
-                  />
+                  Link to your file
+                </label>
+                <input
+                  value={form.download_url}
+                  onChange={e => updateField('download_url', e.target.value)}
+                  className={`w-full px-4 py-2.5 bg-white border-3 text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted ${errors.download_url ? 'border-brutal-red' : 'border-brutal-fg'}`}
+                  placeholder="https://example.com/my-guide.pdf"
+                />
                   {errors.download_url && <p className="text-xs font-bold text-brutal-red mt-1">{errors.download_url}</p>}
+                  <p className="text-[10px] font-bold text-brutal-muted uppercase mt-1">Visitors get a download link after signing up</p>
                 </div>
               )}
             </div>
@@ -347,8 +341,7 @@ export default function WidgetsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Fields to Collect</label>
-              <div className="flex flex-wrap gap-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Fields to Collect</label>                <p className="text-[9px] text-brutal-muted font-bold uppercase tracking-wider mb-2">Choose what info to collect from visitors</p>              <div className="flex flex-wrap gap-2">
                 {[
                   { key: 'email', label: 'Email', required: true },
                   { key: 'first_name', label: 'First Name' },
@@ -389,21 +382,21 @@ export default function WidgetsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Widget Size</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Form Size</label>
               <div className="flex border-3 border-brutal-fg overflow-hidden">
                 {[
-                  { value: 'small', label: 'Small', h: 'h-8', desc: 'Compact' },
-                  { value: 'medium', label: 'Medium', h: 'h-14', desc: 'Standard' },
-                  { value: 'large', label: 'Large', h: 'h-20', desc: 'Hero' },
+                  { value: 'small', label: 'Compact', desc: 'Email only, no headline. Fits tight spaces.' },
+                  { value: 'medium', label: 'Standard', desc: 'Full form with headline and description.' },
+                  { value: 'large', label: 'Large', desc: 'Bigger text and padding. Great for landing pages.' },
                 ].map((opt) => (
                   <button
                     key={opt.value}
                     type="button"
                     onClick={() => updateField('size', opt.value)}
-                    className={`flex-1 px-3 py-2 text-xs font-bold uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ${form.size === opt.value ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}
+                    className={`flex-1 px-3 py-2.5 text-xs font-bold uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition leading-tight ${form.size === opt.value ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}
                   >
-                    <div className={`${opt.h} w-full border-2 mb-1 transition-colors ${form.size === opt.value ? 'border-brutal-fg bg-brutal-fg/20' : 'border-brutal-fg/30 bg-brutal-fg/5'}`} />
                     {opt.label}
+                    <p className="text-[9px] font-bold normal-case mt-0.5 opacity-70">{opt.desc}</p>
                   </button>
                 ))}
               </div>
@@ -633,28 +626,34 @@ export default function WidgetsPage() {
 
               {/* Right: Live Preview */}
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted mb-3">Live Preview · <span className="text-brutal-green">{form.size}</span></p>
+                <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted mb-3">Live Preview · <span className="text-brutal-green">{form.size === 'small' ? 'Compact' : form.size === 'large' ? 'Large' : 'Standard'}</span></p>
                 <div className={`border-3 shadow-brutal transition-all duration-200 ${form.size === 'small' ? 'max-w-xs' : form.size === 'large' ? 'max-w-xl' : 'max-w-md'}`} style={{ borderColor: form.styles?.border_color || '#0a0a0a' }}>
-                  <div className="border-b-3 px-5 py-3" style={{ backgroundColor: form.styles?.primary_color || '#f5e642', borderColor: form.styles?.border_color || '#0a0a0a' }}>
-                    <p className="font-heading text-lg uppercase leading-none" style={{ color: form.styles?.text_color || '#0a0a0a' }}>{formPreview.headline || 'Your Headline'}</p>
-                  </div>
-                  <div className="p-5 space-y-4" style={{ backgroundColor: '#fff' }}>
-                    <p className="text-xs leading-relaxed" style={{ color: form.styles?.text_color || 'inherit' }}>
-                      {formPreview.description || 'Your description here.'}
-                    </p>
-                    <div className="w-full px-4 py-3 bg-white border-3 text-xs text-brutal-muted" style={{ borderColor: form.styles?.border_color || '#0a0a0a' }}>
+                  {form.size !== 'small' && (
+                    <div className="border-b-3 px-5 py-3" style={{ backgroundColor: form.styles?.primary_color || '#f5e642', borderColor: form.styles?.border_color || '#0a0a0a' }}>
+                      <p className={`font-heading uppercase leading-none ${form.size === 'large' ? 'text-2xl' : 'text-lg'}`} style={{ color: form.styles?.text_color || '#0a0a0a' }}>{formPreview.headline || 'Your Headline'}</p>
+                    </div>
+                  )}
+                  <div className={`${form.size === 'small' ? 'p-3 space-y-2' : 'p-5 space-y-4'}`} style={{ backgroundColor: '#fff' }}>
+                    {form.size !== 'small' && (
+                      <p className="text-xs leading-relaxed" style={{ color: form.styles?.text_color || 'inherit' }}>
+                        {formPreview.description || 'Your description here.'}
+                      </p>
+                    )}
+                    <div className="w-full bg-white border-3 text-xs text-brutal-muted" style={{ borderColor: form.styles?.border_color || '#0a0a0a', padding: form.size === 'small' ? '6px 12px' : '12px 16px' }}>
                       {formPreview.placeholder || 'you@example.com'}
                     </div>
-                    <div className="w-full border-3 font-bold py-3 text-xs uppercase tracking-wider text-center"
-                      style={{ backgroundColor: form.styles?.primary_color || '#0a0a0a', borderColor: form.styles?.border_color || '#0a0a0a', color: form.styles?.button_text_color || '#ffffff' }}>
+                    <div className="w-full border-3 font-bold text-xs uppercase tracking-wider text-center"
+                      style={{ backgroundColor: form.styles?.primary_color || '#0a0a0a', borderColor: form.styles?.border_color || '#0a0a0a', color: form.styles?.button_text_color || '#ffffff', padding: form.size === 'small' ? '6px 12px' : '12px 16px' }}>
                       {formPreview.button_text || 'Button'}
                     </div>
                   </div>
-                  <div className="border-t-3 px-5 py-2.5 text-center" style={{ borderColor: form.styles?.border_color || '#0a0a0a' }}>
-                    <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: form.styles?.text_color || '#a8a49a' }}>
-                      No spam. Unsubscribe anytime.
-                    </p>
-                  </div>
+                  {form.size !== 'small' && (
+                    <div className="border-t-3 px-5 py-2.5 text-center" style={{ borderColor: form.styles?.border_color || '#0a0a0a' }}>
+                      <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: form.styles?.text_color || '#a8a49a' }}>
+                        No spam. Unsubscribe anytime.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
