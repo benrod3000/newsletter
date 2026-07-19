@@ -1,4 +1,4 @@
-import { useLayoutEffect, useEffect, useRef } from 'react'
+import { useLayoutEffect } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -41,16 +41,4 @@ export function useTerminalReveal(selector, { start = 'top 88%', stagger = 0.06,
   }, [selector, start, stagger, opacity, x, duration, ease])
 }
 
-export function PageTransition({ children, className = '' }) {
-  const ref = useRef(null)
-  useEffect(() => {
-    if (!ref.current) return
-    const children = Array.from(ref.current.children)
-    if (!children.length) return
-    const ctx = gsap.context(() => {
-      gsap.fromTo(children, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.05, ease: 'power2.out' })
-    }, ref)
-    return () => ctx.revert()
-  }, [])
-  return <div ref={ref} className={className}>{children}</div>
-}
+

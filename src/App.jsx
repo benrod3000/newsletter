@@ -11,7 +11,6 @@ import { CommandActionProvider } from './components/CommandActionContext'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Analytics } from '@vercel/analytics/react'
 import Btn from './components/ui/Button'
-import './App.css'
 
 // Pages // code-split dashboard for faster initial load
 const LandingPage = lazy(() => import('./pages/LandingPage'))
@@ -44,8 +43,8 @@ const Changelog = lazy(() => import('./pages/Docs/Changelog'))
 // Fallback spinner for lazy-loaded routes
 function PageLoader() { return <div className="min-h-screen bg-brutal-bg flex items-center justify-center"><div className="h-4 w-4 bg-brutal-fg animate-pulse" /></div> }
 
-// Re-export GSAP hooks for backward compatibility
-export { useReveal, useScrollReveal, useTerminalReveal, PageTransition } from './hooks/use-gsap'
+// Re-export GSAP hook for backward compatibility
+export { useReveal } from './hooks/use-gsap'
 
 // =============================================
 // Layouts

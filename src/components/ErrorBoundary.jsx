@@ -1,8 +1,6 @@
 import { Component } from 'react'
 import EmptyState from './ux/EmptyState'
 
-import Btn from '../components/ui/Button'
-
 /** Detect stale code-split chunks (after deploy) */
 function isChunkError(error) {
   const msg = typeof error === 'string' ? error : error?.message || ''

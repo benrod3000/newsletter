@@ -1,4 +1,4 @@
-import { Share2, Target, Mail, Zap, MapPin, Radio, Smartphone, Globe } from 'lucide-react'
+import { Share2, Target, Zap, Globe } from 'lucide-react'
 
 export const NAV_ITEMS = [
   { label: 'Features', href: '/#features' },

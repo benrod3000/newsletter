@@ -14,6 +14,7 @@ export default function Changelog() {
         'Smart tags "Run Now" fixed: subscriber_tags table created, events query batched to prevent URL overflow with large audiences.',
         'Login history: workspace_users now tracks last_login_at, last_login_ip, and last_login_user_agent. Audit log entries written on every login attempt.',
         'Analytics dashboard revamped: Live Pulse moved to top with auto-refresh every 60s, pulsing green dot shows real-time activity. Manual refresh button. Period selector in header. SMS stats collapsible. Heatmap and campaign performance side by side on desktop.',
+        'Code hygiene: removed unused imports, dead code (PageTransition), no-op useMemo, empty App.css. Extracted duplicate parseGeoFilter/haversineDistanceKm into shared geo-utils. Added logging to empty catch blocks in tracking routes. Removed unused dependencies (grapesjs, grapesjs-preset-newsletter, ua-parser-js).',
       ],
     },
     {

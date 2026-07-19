@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { widgetsAPI, listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
@@ -225,9 +225,6 @@ export default function WidgetsPage() {
   }
 
   const listName = (id) => lists.find(l => l.id === id)?.name || 'Unknown'
-
-  // Live preview of the widget form
-  const formPreview = useMemo(() => form, [form])
 
   if (loading) return <LoadingState />
 
@@ -630,21 +627,21 @@ export default function WidgetsPage() {
                 <div className={`border-3 shadow-brutal transition-all duration-200 ${form.size === 'small' ? 'max-w-xs' : form.size === 'large' ? 'max-w-xl' : 'max-w-md'}`} style={{ borderColor: form.styles?.border_color || '#0a0a0a' }}>
                   {form.size !== 'small' && (
                     <div className="border-b-3 px-5 py-3" style={{ backgroundColor: form.styles?.primary_color || '#f5e642', borderColor: form.styles?.border_color || '#0a0a0a' }}>
-                      <p className={`font-heading uppercase leading-none ${form.size === 'large' ? 'text-2xl' : 'text-lg'}`} style={{ color: form.styles?.text_color || '#0a0a0a' }}>{formPreview.headline || 'Your Headline'}</p>
+                      <p className={`font-heading uppercase leading-none ${form.size === 'large' ? 'text-2xl' : 'text-lg'}`} style={{ color: form.styles?.text_color || '#0a0a0a' }}>{form.headline || 'Your Headline'}</p>
                     </div>
                   )}
                   <div className={`${form.size === 'small' ? 'p-3 space-y-2' : 'p-5 space-y-4'}`} style={{ backgroundColor: '#fff' }}>
                     {form.size !== 'small' && (
                       <p className="text-xs leading-relaxed" style={{ color: form.styles?.text_color || 'inherit' }}>
-                        {formPreview.description || 'Your description here.'}
+                        {form.description || 'Your description here.'}
                       </p>
                     )}
                     <div className="w-full bg-white border-3 text-xs text-brutal-muted" style={{ borderColor: form.styles?.border_color || '#0a0a0a', padding: form.size === 'small' ? '6px 12px' : '12px 16px' }}>
-                      {formPreview.placeholder || 'you@example.com'}
+                      {form.placeholder || 'you@example.com'}
                     </div>
                     <div className="w-full border-3 font-bold text-xs uppercase tracking-wider text-center"
                       style={{ backgroundColor: form.styles?.primary_color || '#0a0a0a', borderColor: form.styles?.border_color || '#0a0a0a', color: form.styles?.button_text_color || '#ffffff', padding: form.size === 'small' ? '6px 12px' : '12px 16px' }}>
-                      {formPreview.button_text || 'Button'}
+                      {form.button_text || 'Button'}
                     </div>
                   </div>
                   {form.size !== 'small' && (

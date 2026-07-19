@@ -24,7 +24,7 @@ const COMMANDS = [
   ]},
 ]
 
-export default function CommandPalette({ onAction }) {
+export default function CommandPalette() {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
