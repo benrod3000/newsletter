@@ -393,7 +393,7 @@ export default function AnalyticsPage() {
         />
       ) : (
         <div className="space-y-8">
-          {/* LIVE PULSE — top priority, first thing you see */}
+          {/* LIVE PULSE - top priority, first thing you see */}
           <ErrorBoundary><LivePulse workspaceId={workspaceId} /></ErrorBoundary>
 
           {/* STAT CARDS */}
@@ -465,7 +465,7 @@ export default function AnalyticsPage() {
             <ErrorBoundary><SubscriberGeoSummary overview={overview} /></ErrorBoundary>
           )}
 
-          {/* SMS — collapsible, most users don't need it */}
+          {/* SMS - collapsible, most users don't need it */}
           {smsStats && smsStats.reachable > 0 && (
             <div className="border-3 border-brutal-fg bg-white shadow-brutal">
               <button

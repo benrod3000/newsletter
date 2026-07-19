@@ -10,6 +10,10 @@ export default function Changelog() {
         'Sentry error monitoring added across both frontend and backend. Browser tracing, session replay on errors, server-side OTEL instrumentation, Vercel cron monitoring.',
         'Dashboard reframed from email platform to Audience OS: Messaging, People, Insights, Growth. Broadcasts replace Newsletters, Contacts replace Subscribers, Segments replace Lists, Capture Forms replace Widgets.',
         'Sidebar simplified: SMS/RCS beta panel removed from main nav, accessible via Broadcasts page when enabled.',
+        'Widget builder: form fields (First Name, Last Name, Phone, ZIP) now properly save and render on public forms. Fields, styles, type, size, and location toggle all persist correctly.',
+        'Smart tags "Run Now" fixed: subscriber_tags table created, events query batched to prevent URL overflow with large audiences.',
+        'Login history: workspace_users now tracks last_login_at, last_login_ip, and last_login_user_agent. Audit log entries written on every login attempt.',
+        'Analytics dashboard revamped: Live Pulse moved to top with auto-refresh every 60s, pulsing green dot shows real-time activity. Manual refresh button. Period selector in header. SMS stats collapsible. Heatmap and campaign performance side by side on desktop.',
       ],
     },
     {
