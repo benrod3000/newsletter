@@ -164,8 +164,8 @@ export default function LoginPage() {
                   required
                 />
                 {fieldErrors.password && <p className="mt-1 text-[9px] font-bold text-brutal-red uppercase tracking-wider">{fieldErrors.password}</p>}
-                <div className="mt-1.5">
-                  <Link to="/forgot-password" className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider hover:text-brutal-green transition">
+                <div className="mt-2">
+                  <Link to="/forgot-password" className="text-xs font-bold text-brutal-green underline underline-offset-2 hover:text-brutal-fg transition">
                     Forgot password?
                   </Link>
                 </div>

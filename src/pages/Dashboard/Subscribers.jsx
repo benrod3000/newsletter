@@ -787,7 +787,7 @@ export default function SubscribersPage() {
                   ← Previous
                 </button>
                 <span className="text-[10px] font-bold text-brutal-muted px-2">
-                  {((page - 1) * perPage) + 1}–{Math.min(page * perPage, total)} of {total.toLocaleString()}
+                  {((page - 1) * perPage) + 1}-{Math.min(page * perPage, total)} of {total.toLocaleString()}
                 </span>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
