@@ -1,6 +1,5 @@
-import { createContext, useContext, useState, useCallback } from 'react'
-
-const CommandActionContext = createContext(null)
+import { useState, useCallback } from 'react'
+import { CommandActionContext } from './CommandActionContextValue'
 
 export function CommandActionProvider({ children }) {
   const [action, setAction] = useState(null)
@@ -20,8 +19,4 @@ export function CommandActionProvider({ children }) {
       {children}
     </CommandActionContext.Provider>
   )
-}
-
-export function useCommandAction() {
-  return useContext(CommandActionContext)
 }

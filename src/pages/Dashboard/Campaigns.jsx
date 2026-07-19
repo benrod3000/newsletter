@@ -7,7 +7,7 @@ import { useToast } from '../../components/Toast'
 import EmailEditor from '../../components/EmailEditor'
 import GeoFilter from '../../components/GeoFilter'
 import ConfirmModal from '../../components/ConfirmModal'
-import { useCommandAction } from '../../components/CommandActionContext'
+import { useCommandAction } from '../../components/useCommandAction'
 import { STATUS_STYLES, AUDIENCE_OPTIONS, generateSubjects, getAudienceLabel } from './Campaigns/constants'
 
 export default function CampaignsPage() {

@@ -23,9 +23,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   const [zip, setZip] = useState('')
   const [pending, setPending] = useState(null) // { lat, lng, city, state, zip }
   const [resolving, setResolving] = useState(false)
-  const [locations, setLocations] = useState([]) // each entry: { lat, lng, city, state, zip, radius }
   const [selectedLocIdx, setSelectedLocIdx] = useState(0)
-  const [applied, setApplied] = useState(false)
   const panelRef = useRef(null)
   const resolveTimer = useRef(null)
   const mapRef = useRef(null)
@@ -37,21 +35,25 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   const pendingPulse = useRef(null)
   const gsapTweens = useRef([])
 
-  // ─── Rehydrate filter state from localStorage (survives refresh) ───
-  useEffect(() => {
+  // Rehydrate from localStorage via lazy initializers (avoids setState-in-effect)
+  const [locations, setLocations] = useState(() => {
     try {
       const saved = localStorage.getItem(GEO_FILTER_KEY)
       if (saved) {
         const { locations: locs, applied: wasApplied } = JSON.parse(saved)
         if (locs?.length && wasApplied) {
-          // Ensure each location has a radius (backward-compat with old single-radius saves)
-          setLocations(locs.map((l) => ({ ...l, radius: l.radius ?? 10 })))
-          if (locs.length > 0) setSelectedLocIdx(0)
-          setApplied(true)
+          return locs.map((l) => ({ ...l, radius: l.radius ?? 10 }))
         }
       }
     } catch {}
-  }, [])
+    return []
+  })
+  const [applied, setApplied] = useState(() => {
+    try {
+      const saved = localStorage.getItem(GEO_FILTER_KEY)
+      return saved ? JSON.parse(saved).applied === true : false
+    } catch { return false }
+  })
 
   // ─── Panel open/close (GSAP) ───
   useEffect(() => {

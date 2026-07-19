@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LayoutDashboard, Mail, Users, Layers, BarChart3, Settings, Globe } from 'lucide-react'
-import { useCommandAction } from './CommandActionContext'
+import { useCommandAction } from './useCommandAction'
 
 const COMMANDS = [
   { group: 'Navigate', items: [
@@ -92,7 +92,9 @@ export default function CommandPalette() {
     }
   }, [open])
 
+  // Reset selection when query changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedIndex(0)
   }, [query])
 

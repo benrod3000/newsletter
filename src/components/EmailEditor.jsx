@@ -130,13 +130,14 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
     }
   }, [editor])
 
-  if (!editor) return null
-
   // Sync save status with parent saving state
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!saving && saveStatus === 'saving') setSaveStatus('saved')
     if (saving) setSaveStatus('saving')
-  }, [saving])
+  }, [saving, saveStatus])
+
+  if (!editor) return null
 
   const statusBadge = {
     idle: null,

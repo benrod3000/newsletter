@@ -4,7 +4,7 @@ import { listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
 import Btn from '../../components/ui/Button'
-import { useCommandAction } from '../../components/CommandActionContext'
+import { useCommandAction } from '../../components/useCommandAction'
 
 export default function ListsPage() {
   const { workspaceId } = useAuthStore()
