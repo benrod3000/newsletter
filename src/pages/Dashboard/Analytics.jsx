@@ -1,6 +1,7 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { analyticsAPI } from '../../lib/api'
+import { fmt, fmtPct } from '../../lib/format'
 import { EmptyState, LoadingState } from '../../components/ux'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -67,7 +68,7 @@ function AnimatedGrowthChart({ points, height = 40 }) {
   )
 }
 
-function CampaignPerformance({ campaigns }) {
+function CampaignPerformance({ campaigns, onSelect }) {
   const ref = useRef(null)
   const maxSent = Math.max(...campaigns.map(c => c.sent ?? 0), 1)
 
@@ -85,7 +86,7 @@ function CampaignPerformance({ campaigns }) {
       <h3 className="font-heading text-xl uppercase tracking-wide mb-6">📊 Campaign Performance</h3>
       <div className="space-y-3">
         {campaigns.map((c, i) => (
-          <div key={c.id ?? i} className="perf-row space-y-1.5">
+          <div key={c.id ?? i} className="perf-row space-y-1.5 cursor-pointer hover:bg-brutal-yellow/10 transition p-1 -m-1" onClick={() => onSelect?.(c)}>
             <div className="flex justify-between text-xs font-bold">
               <span className="truncate">{c.name}</span>
               <span className="text-brutal-muted shrink-0 ml-2">{c.sent.toLocaleString()} sent</span>
@@ -105,6 +106,86 @@ function CampaignPerformance({ campaigns }) {
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+function CampaignDetailModal({ campaign, onClose }) {
+  if (!campaign) return null
+  const openRate = campaign.open_rate ?? 0
+  const clickRate = campaign.click_rate ?? 0
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+      <div className="absolute inset-0 bg-brutal-fg/40" />
+      <div className="relative border-3 border-brutal-fg bg-white shadow-brutal p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-heading text-xl uppercase tracking-wide truncate">{campaign.name}</h3>
+          <button onClick={onClose} className="p-1 border-2 border-brutal-fg hover:bg-brutal-red/10 transition font-bold text-lg leading-none">✕</button>
+        </div>
+        <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-3">
+            <div className="border-2 border-brutal-fg p-3 text-center">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">Sent</p>
+              <p className="text-xl font-heading text-brutal-fg">{fmt(campaign.sent)}</p>
+            </div>
+            <div className="border-2 border-brutal-fg p-3 text-center">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">Opens</p>
+              <p className="text-xl font-heading text-brutal-green">{fmtPct(openRate)}</p>
+            </div>
+            <div className="border-2 border-brutal-fg p-3 text-center">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">Clicks</p>
+              <p className="text-xl font-heading text-brutal-yellow-dark">{fmtPct(clickRate)}</p>
+            </div>
+          </div>
+          {/* Open rate bar */}
+          <div>
+            <div className="flex justify-between text-[10px] font-bold mb-1">
+              <span>Open Rate</span><span>{openRate.toFixed(1)}%</span>
+            </div>
+            <div className="h-6 border-2 border-brutal-fg bg-brutal-surface overflow-hidden">
+              <div className="h-full bg-brutal-green transition-all" style={{ width: `${Math.min(openRate, 100)}%` }} />
+            </div>
+          </div>
+          {/* Click rate bar */}
+          <div>
+            <div className="flex justify-between text-[10px] font-bold mb-1">
+              <span>Click Rate</span><span>{clickRate.toFixed(1)}%</span>
+            </div>
+            <div className="h-6 border-2 border-brutal-fg bg-brutal-surface overflow-hidden">
+              <div className="h-full bg-brutal-yellow transition-all" style={{ width: `${Math.min(clickRate, 100)}%` }} />
+            </div>
+          </div>
+          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider text-center pt-2 border-t-2 border-brutal-fg/20">
+            Full click map and hourly breakdown coming soon
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SubscriberGeoSummary({ overview }) {
+  if (!overview?.top_campaigns?.length) return null
+  const totalSent = overview.top_campaigns.reduce((sum, c) => sum + (c.sent ?? 0), 0)
+  const totalOpens = overview.top_campaigns.reduce((sum, c) => sum + ((c.sent ?? 0) * (c.open_rate ?? 0) / 100), 0)
+
+  return (
+    <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
+      <h3 className="font-heading text-xl uppercase tracking-wide mb-4">🌍 Audience Reach</h3>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">Total Sent</p>
+          <p className="text-2xl font-heading text-brutal-fg">{fmt(totalSent)}</p>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">Est. Opens</p>
+          <p className="text-2xl font-heading text-brutal-green">{fmt(Math.round(totalOpens))}</p>
+        </div>
+      </div>
+      <p className="text-[9px] text-brutal-muted font-bold uppercase mt-3">
+        {overview.total_subscribers?.toLocaleString() || 0} subscribers · {overview.campaigns_sent ?? 0} campaigns sent
+      </p>
     </div>
   )
 }
@@ -130,7 +211,19 @@ export default function AnalyticsPage() {
       setLoading(true)
       setError(null)
       try {
+        // Check sessionStorage cache first (avoids refetch on Home→Analytics nav)
+        const cacheKey = `analytics-overview-${workspaceId}-${days}`
+        const cached = sessionStorage.getItem(cacheKey)
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          if (Date.now() - parsed.ts < 60000) {
+            if (!cancelled) { setOverview(parsed.data); setLoading(false) }
+            return
+          }
+        }
+
         const { data } = await analyticsAPI.overview(workspaceId, { days })
+        try { sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() })) } catch {}
         if (!cancelled) setOverview(data)
       } catch (err) {
         console.error('Failed to load analytics:', err)
@@ -140,7 +233,19 @@ export default function AnalyticsPage() {
       }
     }
 
+    // Load subscriber geography for mini-map
+    async function loadGeo() {
+      try {
+        const { data } = await analyticsAPI.overview(workspaceId, { days: 90 })
+        if (!cancelled && data?.top_campaigns) {
+          // Just extract geo summary if available
+          setGeoData(data)
+        }
+      } catch {}
+    }
+
     load()
+    loadGeo()
     return () => { cancelled = true; controller.abort() }
   }, [workspaceId, days])
 
@@ -179,9 +284,8 @@ export default function AnalyticsPage() {
 
   const growth = overview?.subscriber_growth || []
   const topCampaigns = overview?.top_campaigns || []
-
-  const fmt = (n) => (typeof n === 'number' ? n.toLocaleString() : '--')
-  const fmtPct = (n) => (typeof n === 'number' ? `${n.toFixed(1)}%` : '--')
+  const [detailCampaign, setDetailCampaign] = useState(null)
+  const [geoData, setGeoData] = useState(null)
 
   return (
     <div className="space-y-8">
@@ -313,7 +417,17 @@ export default function AnalyticsPage() {
 
           {/* Campaign Performance (animated bars) */}
           {topCampaigns.length > 0 && (
-            <CampaignPerformance campaigns={topCampaigns} />
+            <CampaignPerformance campaigns={topCampaigns} onSelect={setDetailCampaign} />
+          )}
+
+          {/* Subscriber geography summary */}
+          {overview && (
+            <SubscriberGeoSummary overview={overview} />
+          )}
+
+          {/* Campaign detail modal */}
+          {detailCampaign && (
+            <CampaignDetailModal campaign={detailCampaign} onClose={() => setDetailCampaign(null)} />
           )}
 
           {/* Top Performing Campaigns table */}
@@ -337,7 +451,7 @@ export default function AnalyticsPage() {
                 </thead>
                 <tbody>
                   {topCampaigns.map((c, i) => (
-                    <tr key={c.id ?? i} className="border-t border-brutal-fg">
+                    <tr key={c.id ?? i} className="border-t border-brutal-fg hover:bg-brutal-yellow/10 transition cursor-pointer" onClick={() => setDetailCampaign(c)}>
                       <td className="p-3 font-bold">{c.name}</td>
                       <td className="p-3 text-right font-bold">{fmt(c.sent)}</td>
                       <td className="p-3 text-right font-bold">{fmtPct(c.open_rate)}</td>
