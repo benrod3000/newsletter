@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useReveal, useScrollReveal, useTerminalReveal } from '../hooks/use-gsap.jsx'
 import gsap from 'gsap'
@@ -11,6 +11,8 @@ import { Annotation, Section, CountUp } from '../components/ux'
 import {
   NAV_ITEMS, STATS, TRUST_METRICS, TESTIMONIALS, PILLARS, FOOTER_LINKS,
 } from './LandingPage/data'
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
 gsap.registerPlugin(ScrollTrigger)
 import {
@@ -28,9 +30,41 @@ import {
 export default function LandingPage() {
   useEffect(() => { document.title = 'Veloce · Own your audience. Reach them anywhere.' }, [])
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [liveStats, setLiveStats] = useState(null)
+  const [ticker, setTicker] = useState(0)
   const heroRef = useRef(null)
   const statRef = useRef(null)
   const dashboardRef = useRef(null)
+  const tickerRef = useRef(null)
+
+  // Fetch live stats from public endpoint
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/public/stats`)
+      const data = await res.json()
+      setLiveStats(data)
+      setTicker(prev => prev + 1)
+      // GSAP pulse on the ticker
+      if (tickerRef.current) {
+        gsap.fromTo(tickerRef.current, { scale: 1 }, { scale: [1, 1.04, 1], duration: 0.3, ease: 'power2.inOut' })
+      }
+    } catch {} // silently fall back to static STATS
+  }, [])
+
+  useEffect(() => {
+    fetchStats()
+    const interval = setInterval(fetchStats, 30000)
+    return () => clearInterval(interval)
+  }, [fetchStats])
+
+  const statsToShow = liveStats
+    ? [
+        { value: liveStats.total_subscribers, label: 'Subscribers', desc: 'Across email, SMS, and RCS channels.' },
+        { value: liveStats.total_campaigns, label: 'Campaigns Sent', desc: `With ${liveStats.avg_open_rate}% average open rate.` },
+        { value: `${liveStats.avg_open_rate}%`, label: 'Avg Open Rate', desc: 'Real people. Real engagement.' },
+        { value: liveStats.automations_live, label: 'Automations Live', desc: 'Welcome drips, smart tags, auto-clean, and more.' },
+      ]
+    : STATS
 
   useReveal(heroRef, { stagger: 0.1, y: 20 })
   useReveal(statRef, { stagger: 0.06, y: 16, delay: 0.3 })
@@ -54,7 +88,10 @@ export default function LandingPage() {
       {/* ═══ STICKY NAV ═══ */}
       <nav className="sticky top-0 z-50 border-b-3 border-brutal-fg bg-white/95 backdrop-blur-sm" role="navigation" aria-label="Main navigation">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between">
-          <Link to="/" className="font-heading text-2xl uppercase tracking-wider leading-none hover:text-brutal-green transition-colors" aria-label="Veloce home">Veloce</Link>
+          <Link to="/" className="font-heading text-2xl uppercase tracking-wider leading-none hover:text-brutal-green transition-colors" aria-label="Veloce home">
+            Veloce
+            <span className="inline-block w-2 h-2 bg-brutal-green rounded-full animate-pulse ml-1.5 align-middle" title="Live" />
+          </Link>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6" role="menubar">
@@ -473,13 +510,19 @@ export default function LandingPage() {
       {/* ═══ STATS STRIP ═══ */}
       <Section>
         <div ref={statRef} className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5 max-w-5xl mx-auto">
-          {STATS.map((s) => (
+          {statsToShow.map((s) => (
             <Card key={s.label} hover padding="p-5 sm:p-6" className="text-center">
               <p className="text-stat text-brutal-green leading-none"><CountUp value={s.value} /></p>
               <p className="text-xs font-bold uppercase tracking-wider mt-2">{s.label}</p>
               <p className="text-[10px] text-brutal-muted mt-1 leading-relaxed">{s.desc}</p>
             </Card>
           ))}
+        </div>
+        <div ref={tickerRef} className="text-center mt-4">
+          <span className="inline-flex items-center gap-1.5 text-[9px] font-bold text-brutal-muted uppercase tracking-wider">
+            <span className="inline-block w-1.5 h-1.5 bg-brutal-green rounded-full animate-pulse" />
+            Live · Updated just now
+          </span>
         </div>
       </Section>
 
