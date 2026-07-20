@@ -4,6 +4,21 @@ export default function Changelog() {
   useEffect(() => { document.title = 'Changelog | Veloce' }, [])
   const entries = [
     {
+      date: 'July 20, 2026',
+      items: [
+        'Provider registry: email providers register via register()/resolve() pattern. No hardcoded conditionals. Adding a new provider is 3 lines.',
+        'Email dispatcher: single canonical send path. Primary-fallback provider chain with automatic failover on transient errors. Every email in the system goes through dispatchEmail().',
+        'Retry system: exponential backoff (0s, 2s, 8s) with 3 retries for transient failures. Time-budget protection stops sends gracefully before Vercel timeout.',
+        'Campaign activity log: every broadcast generates a GitHub-style timeline. Events capture queuing, sending, retries, provider selection, and completion.',
+        'Sandbox mode: test broadcasts without sending real emails. Synthetic open/click events populate analytics automatically. Enable per workspace.',
+        'Database optimization: 12 performance indexes on hot query paths, 2 materialized views for analytics (auto-refreshed by cron).',
+        'Seed system: replaced 392-line route + hundreds of REST calls with single PostgreSQL function. Demo generates 208 contacts, 7 broadcasts, and realistic engagement events.',
+        'API standardization: consistent { data } / { error: { code, message } } response shapes. Standardized helpers for all common responses. CORS applied automatically.',
+        'Rate limiting: tracking endpoints protected (100/s opens, 50/s clicks). Demo seed endpoint rate limited. Standardized middleware ready for all routes.',
+        'Staff engineer code review: 10 critical issues identified and resolved. Credential key mismatch fixed, admin auth added to seed, send queue time-budget protection.',
+      ],
+    },
+    {
       date: 'July 19, 2026',
       items: [
         'Email provider abstraction: bulk sends now provider-agnostic. SendGrid and Resend both work for broadcasts via a shared EmailTransport interface. Per-workspace API keys supported.',

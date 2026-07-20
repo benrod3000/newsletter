@@ -1,25 +1,26 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Mail, Users, Layers, BarChart3, Settings, Globe } from 'lucide-react'
+import { LayoutDashboard, Send, Users, PieChart, BarChart3, Settings, Globe } from 'lucide-react'
 import { useCommandAction } from './useCommandAction'
 
 const COMMANDS = [
   { group: 'Navigate', items: [
     { id: 'dashboard', label: 'Dashboard', description: 'Your home base. See subscriber counts and recent activity.', keywords: ['home', 'overview', 'stats', 'numbers'], shortcut: 'g d', action: '/dashboard', icon: LayoutDashboard },
-    { id: 'campaigns', label: 'Newsletters', description: 'Write and send newsletters to your audience.', keywords: ['send', 'email', 'newsletter', 'write', 'broadcast', 'message', 'campaign'], shortcut: 'g c', action: '/dashboard/campaigns', icon: Mail },
-    { id: 'subscribers', label: 'Audience', description: 'View and manage your audience. See who opened and clicked.', keywords: ['people', 'who', 'list', 'audience', 'subscribers', 'where are', 'import', 'add person', 'email list', 'contacts'], shortcut: 'g s', action: '/dashboard/subscribers', icon: Users },
-    { id: 'lists', label: 'Segments', description: 'Group subscribers into lists for targeted sends.', keywords: ['group', 'segment', 'filter', 'organize'], shortcut: 'g l', action: '/dashboard/lists', icon: Layers },
+    { id: 'campaigns', label: 'Broadcasts', description: 'Create and send broadcasts to your audience.', keywords: ['send', 'email', 'newsletter', 'write', 'broadcast', 'message', 'campaign'], shortcut: 'g c', action: '/dashboard/campaigns', icon: Send },
+    { id: 'subscribers', label: 'Contacts', description: 'View and manage your audience. See who opened and clicked.', keywords: ['people', 'who', 'list', 'audience', 'subscribers', 'where are', 'import', 'add person', 'email list', 'contacts'], shortcut: 'g s', action: '/dashboard/subscribers', icon: Users },
+    { id: 'lists', label: 'Segments', description: 'Group contacts into segments for targeted sends.', keywords: ['group', 'segment', 'filter', 'organize', 'list'], shortcut: 'g l', action: '/dashboard/lists', icon: PieChart },
     { id: 'analytics', label: 'Analytics', description: 'Track opens, clicks, and subscriber growth over time.', keywords: ['stats', 'open rate', 'click rate', 'growth', 'chart', 'see who opened', 'report'], shortcut: 'g a', action: '/dashboard/analytics', icon: BarChart3 },
-    { id: 'widgets', label: 'Widgets', description: 'Embed a signup form on your website to collect subscribers.', keywords: ['form', 'website', 'sign up', 'lead magnet', 'embed', 'collect', 'form on website'], shortcut: 'g w', action: '/dashboard/widgets', icon: Globe },
-    { id: 'settings', label: 'Settings', description: 'Manage your account, automations, and email provider.', keywords: ['account', 'password', 'automation', 'branding', 'change', 'configure'], shortcut: 'g e', action: '/dashboard/settings', icon: Settings },
+    { id: 'widgets', label: 'Capture Forms', description: 'Embed a signup form on your website to grow your audience.', keywords: ['form', 'website', 'sign up', 'lead magnet', 'embed', 'collect', 'form on website', 'widget'], shortcut: 'g w', action: '/dashboard/widgets', icon: Globe },
+    { id: 'settings', label: 'Settings', description: 'Manage your account, automations, email provider, and team.', keywords: ['account', 'password', 'automation', 'branding', 'change', 'configure', 'team', 'provider', 'sandbox'], shortcut: 'g e', action: '/dashboard/settings', icon: Settings },
   ]},
   { group: 'Actions', items: [
-    { id: 'new-campaign', label: 'Write Newsletter', description: 'Start writing a new newsletter to send.', keywords: ['create campaign', 'write email', 'draft', 'new campaign'], shortcut: 'n c', action: 'create-campaign' },
-    { id: 'add-subscriber', label: 'Add to Audience', description: 'Manually add someone to your mailing list.', keywords: ['new person', 'add email', 'add contact', 'add subscriber'], shortcut: 'n s', action: 'add-subscriber' },
-    { id: 'new-list', label: 'New List', description: 'Create a segment to organize your subscribers.', keywords: ['new segment', 'create group'], shortcut: 'n l', action: 'create-list' },
-    { id: 'export', label: 'Export CSV', description: 'Download your subscribers as a spreadsheet.', keywords: ['download', 'save', 'spreadsheet', 'excel'], shortcut: 'e', action: 'export-csv' },
-    { id: 'import', label: 'Import CSV', description: 'Upload subscribers from a spreadsheet file.', keywords: ['upload', 'from file', 'spreadsheet', 'excel', 'bulk add'], shortcut: 'i', action: 'import-csv' },
-    { id: 'radius-filter', label: 'Radius Filter', description: 'Find subscribers near a ZIP code.', keywords: ['location', 'nearby', 'zip code', 'map', 'distance', 'near me'], action: 'navigate-subscribers' },
+    { id: 'new-campaign', label: 'New Broadcast', description: 'Start writing a new broadcast to send.', keywords: ['create campaign', 'write email', 'draft', 'new campaign', 'new newsletter'], shortcut: 'n c', action: 'create-campaign' },
+    { id: 'add-subscriber', label: 'Add Contact', description: 'Manually add someone to your audience.', keywords: ['new person', 'add email', 'add contact', 'add subscriber'], shortcut: 'n s', action: 'add-subscriber' },
+    { id: 'new-list', label: 'New Segment', description: 'Create a segment to organize your contacts.', keywords: ['new segment', 'create group', 'new list'], shortcut: 'n l', action: 'create-list' },
+    { id: 'export', label: 'Export CSV', description: 'Download your contacts as a spreadsheet.', keywords: ['download', 'save', 'spreadsheet', 'excel'], shortcut: 'e', action: 'export-csv' },
+    { id: 'import', label: 'Import CSV', description: 'Upload contacts from a spreadsheet file.', keywords: ['upload', 'from file', 'spreadsheet', 'excel', 'bulk add'], shortcut: 'i', action: 'import-csv' },
+    { id: 'radius-filter', label: 'Radius Filter', description: 'Find contacts near a ZIP code.', keywords: ['location', 'nearby', 'zip code', 'map', 'distance', 'near me'], action: 'navigate-subscribers' },
+    { id: 'sandbox', label: 'Sandbox Mode', description: 'Test broadcasts without sending real emails.', keywords: ['test', 'simulate', 'fake', 'no email', 'safe mode', 'dry run'], action: '/dashboard/settings' },
     { id: 'automations', label: 'Automations', description: 'Set up auto-tagging, confirm reminders, and more.', keywords: ['auto', 'automatic', 'tag', 'clean', 'remind', 'schedule'], action: '/dashboard/settings' },
   ]},
 ]

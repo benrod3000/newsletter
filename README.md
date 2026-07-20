@@ -18,7 +18,7 @@ Every workspace is completely isolated // subscribers, campaigns, automations, b
 
 **Manage subscribers** // add them, import a CSV, or embed a signup form on your site. Filter by status, date, or search. Health scores (active / at risk / cold) recalculate daily. Bulk select, bulk delete, export // all there.
 
-**Write and send campaigns** // TipTap editor with merge tags, link embedding, image support. Subject line suggestions. Test emails before you send. Schedule for later. Opens and clicks tracked automatically.
+**Send broadcasts** — TipTap editor with merge tags, link embedding, image support. Subject line suggestions. Test emails before you send. Schedule for later. Opens and clicks tracked automatically. Retries with exponential backoff on transient failures. Campaign activity log tracks every step.
 
 **Turn on automations** and forget about them // confirm-remind for unconfirmed subs, auto-clean for cold ones after 90 days, smart tags that label engaged vs slipping subscribers. More coming.
 
