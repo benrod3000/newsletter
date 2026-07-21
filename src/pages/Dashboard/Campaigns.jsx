@@ -8,7 +8,7 @@ import EmailEditor from '../../components/EmailEditor'
 import GeoFilter from '../../components/GeoFilter'
 import ConfirmModal from '../../components/ConfirmModal'
 import { useCommandAction } from '../../components/useCommandAction'
-import { STATUS_STYLES, AUDIENCE_OPTIONS, generateSubjects, getAudienceLabel } from './Campaigns/constants'
+import { STATUS_STYLES, STATUS_LABELS, AUDIENCE_OPTIONS, generateSubjects, getAudienceLabel } from './Campaigns/constants'
 
 export default function CampaignsPage() {
   const { workspaceId, email } = useAuthStore()
@@ -599,7 +599,7 @@ export default function CampaignsPage() {
               <div key={c.id} className="border-3 border-brutal-fg bg-white p-5 shadow-brutal flex flex-col justify-between space-y-4 hover:-translate-y-1 transition duration-150">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${STATUS_STYLES[status]}`}>{status}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${STATUS_STYLES[status] || STATUS_STYLES.draft}`}>{STATUS_LABELS[status] || status}</span>
                     <span className="text-xs font-mono font-bold text-brutal-muted">{c.updated_at ? new Date(c.updated_at).toLocaleDateString() : '--'}</span>
                   </div>
                   <h3 className="font-heading text-2xl uppercase tracking-wide text-brutal-fg truncate" title={c.title || c.name}>{c.title || c.name}</h3>
@@ -697,8 +697,8 @@ export default function CampaignsPage() {
                     </td>
                     <td className="p-3 text-xs font-bold text-brutal-fg/80 uppercase tracking-wider hidden sm:table-cell">{getAudienceLabel(c.audience)}</td>
                     <td className="p-3">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${pendingSends.current[c.id] ? 'bg-brutal-yellow text-brutal-fg border-2 border-brutal-fg animate-pulse' : STATUS_STYLES[status]}`}>
-                        {pendingSends.current[c.id] ? 'sending...' : status}
+                      <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${pendingSends.current[c.id] ? 'bg-brutal-yellow text-brutal-fg border-2 border-brutal-fg animate-pulse' : STATUS_STYLES[status] || STATUS_STYLES.draft}`}>
+                        {pendingSends.current[c.id] ? 'Sending...' : STATUS_LABELS[status] || status}
                       </span>
                     </td>
                     <td className="p-3 text-right font-mono font-bold hidden md:table-cell">{(c.sent_count ?? 0).toLocaleString()}</td>
@@ -777,7 +777,7 @@ export default function CampaignsPage() {
                     <div key={i} className={`min-h-[60px] sm:min-h-[80px] p-1.5 border-r border-b border-brutal-fg/20 ${day ? 'hover:bg-brutal-yellow/5' : 'bg-brutal-bg/50'} ${isToday ? 'ring-2 ring-brutal-green' : ''}`}>
                       {day && <p className={`text-xs font-bold mb-0.5 ${isToday ? 'text-brutal-green' : ''}`}>{day}</p>}
                       {dayCamps.slice(0, 2).map(c => (
-                        <div key={c.id} className={`text-[8px] font-bold uppercase px-1 py-0.5 mb-0.5 truncate ${c.status === 'sent' ? 'bg-brutal-green/20 text-brutal-green' : c.status === 'scheduled' ? 'bg-brutal-yellow/30 text-brutal-fg' : 'bg-brutal-surface text-brutal-muted'}`}>
+                        <div key={c.id} className={`text-[8px] font-bold uppercase px-1 py-0.5 mb-0.5 truncate ${c.status === 'sent' || c.status === 'completed' ? 'bg-brutal-green/20 text-brutal-green' : c.status === 'sending' ? 'bg-brutal-yellow/30 text-brutal-fg animate-pulse' : c.status === 'scheduled' ? 'bg-brutal-yellow/30 text-brutal-fg' : 'bg-brutal-surface text-brutal-muted'}`}>
                           {c.title || c.name || 'Draft'}
                         </div>
                       ))}

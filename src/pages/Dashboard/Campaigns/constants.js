@@ -1,7 +1,29 @@
 export const STATUS_STYLES = {
-  draft: 'bg-brutal-surface text-brutal-fg border-2 border-brutal-fg',
+  draft:     'bg-brutal-surface text-brutal-fg border-2 border-brutal-fg',
   scheduled: 'bg-brutal-yellow text-brutal-fg border-2 border-brutal-fg',
-  sent: 'bg-brutal-green text-white border-2 border-brutal-fg',
+  queued:    'bg-blue-100 text-blue-800 border-2 border-blue-400',
+  preparing: 'bg-blue-100 text-blue-800 border-2 border-blue-400',
+  sending:   'bg-brutal-yellow text-brutal-fg border-2 border-brutal-fg animate-pulse',
+  retrying:  'bg-orange-100 text-orange-800 border-2 border-orange-400',
+  paused:    'bg-brutal-surface text-brutal-muted border-2 border-brutal-fg',
+  completed: 'bg-brutal-green text-white border-2 border-brutal-fg',
+  sent:      'bg-brutal-green text-white border-2 border-brutal-fg',
+  failed:    'bg-brutal-red text-white border-2 border-brutal-fg',
+  cancelled: 'bg-brutal-surface text-brutal-muted border-2 border-brutal-fg line-through',
+}
+
+export const STATUS_LABELS = {
+  draft:     'Draft',
+  scheduled: 'Scheduled',
+  queued:    'Queued',
+  preparing: 'Preparing',
+  sending:   'Sending',
+  retrying:  'Retrying',
+  paused:    'Paused',
+  completed: 'Sent',
+  sent:      'Sent',
+  failed:    'Failed',
+  cancelled: 'Cancelled',
 }
 
 export const AUDIENCE_OPTIONS = [
