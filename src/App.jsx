@@ -30,6 +30,7 @@ const SubscribersPage = lazy(() => import('./pages/Dashboard/Subscribers'))
 const CampaignsPage = lazy(() => import('./pages/Dashboard/Campaigns'))
 const ListsPage = lazy(() => import('./pages/Dashboard/Lists'))
 const AnalyticsPage = lazy(() => import('./pages/Dashboard/Analytics'))
+const DeliverabilityPage = lazy(() => import('./pages/Dashboard/Deliverability'))
 const SettingsPage = lazy(() => import('./pages/Dashboard/Settings'))
 const WidgetsPage = lazy(() => import('./pages/Dashboard/Widgets'))
 const DocsLayout = lazy(() => import('./pages/Docs/DocsLayout'))
@@ -199,6 +200,7 @@ function App() {
             <Route path="campaigns" element={<ErrorBoundary><CampaignsPage /></ErrorBoundary>} />
             <Route path="lists" element={<ErrorBoundary><ListsPage /></ErrorBoundary>} />
             <Route path="analytics" element={<ErrorBoundary><AnalyticsPage /></ErrorBoundary>} />
+            <Route path="deliverability" element={<ErrorBoundary><DeliverabilityPage /></ErrorBoundary>} />
             <Route path="settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
             <Route path="widgets" element={<ErrorBoundary><WidgetsPage /></ErrorBoundary>} />
           </Route>

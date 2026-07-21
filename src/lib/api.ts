@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
-import type { ApiResponse, AnalyticsOverview, Campaign, Subscriber } from './types'
+import type { ApiResponse, AnalyticsOverview, Campaign, Subscriber, DeliverabilityOverview, DnsCheckResponse } from './types'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
@@ -149,6 +149,15 @@ export const usersAPI = {
     api.get<ApiResponse>(`/api/clients/${workspaceId}/users`),
   create: (workspaceId: string, data: Record<string, unknown>) =>
     api.post<ApiResponse>(`/api/clients/${workspaceId}/users`, data),
+}
+
+// ── Deliverability ──
+
+export const deliverabilityAPI = {
+  overview: (workspaceId: string) =>
+    api.get<ApiResponse<DeliverabilityOverview>>(`/api/admin/deliverability/overview`),
+  checkDns: (workspaceId: string, domain: string) =>
+    api.get<ApiResponse<DnsCheckResponse>>(`/api/admin/deliverability/dns`, { params: { domain } }),
 }
 
 export default api

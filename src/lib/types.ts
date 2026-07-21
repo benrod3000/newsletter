@@ -71,3 +71,53 @@ export interface Subscriber {
   created_at?: string;
   unsubscribe_token?: string;
 }
+
+// ── Deliverability ──
+
+export type DnsStatus = 'pass' | 'warning' | 'fail' | 'unknown';
+
+export interface DnsCheckResult {
+  status: DnsStatus;
+  label: string;
+  value: string | null;
+  expected: string | null;
+  message: string;
+}
+
+export interface DnsHealthReport {
+  domain: string;
+  checkedAt: string;
+  spf: DnsCheckResult;
+  dkim: DnsCheckResult;
+  dmarc: DnsCheckResult;
+  mx: DnsCheckResult;
+}
+
+export interface Recommendation {
+  priority: 1 | 2 | 3;
+  category: 'dns' | 'bounces' | 'complaints' | 'general';
+  title: string;
+  description: string;
+}
+
+export interface DeliverabilityOverview {
+  score: number;
+  dnsScore: number;
+  bounceScore: number;
+  complaintScore: number;
+  dnsHealth: DnsHealthReport;
+  bounceRate: number;
+  complaintRate: number;
+  totalSends: number;
+  recommendations: Recommendation[];
+}
+
+export interface DnsCheckResponse {
+  domain: string;
+  checkedAt: string;
+  provider: string;
+  spf: DnsCheckResult;
+  dkim: DnsCheckResult;
+  dmarc: DnsCheckResult;
+  mx: DnsCheckResult;
+}

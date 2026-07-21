@@ -4,6 +4,19 @@ export default function Changelog() {
   useEffect(() => { document.title = 'Changelog | Veloce' }, [])
   const entries = [
     {
+      date: 'July 21, 2026',
+      items: [
+        'Deliverability Center: new dashboard page for monitoring email health. DNS record checker validates SPF, DKIM, DMARC, and MX records in real-time against your configured provider.',
+        'Deliverability scoring: transparent 0–100 health score calculated from DNS configuration (40%), bounce rate (30%), and complaint rate (30%). Color-coded status: Healthy (80+), Needs Attention (50–79), At Risk (<50).',
+        'DNS checker: uses Node.js built-in DNS resolution — zero third-party dependencies. Auto-detects DKIM selectors by provider (SendGrid s1/s2, Resend resend._domainkey). SPF validation checks for provider-specific include mechanisms.',
+        'Custom domain checker: check DNS for any domain directly from the Deliverability page. Useful for verifying tracking domains and additional sender domains.',
+        'Actionable recommendations: prioritized list of fixes sorted by severity. Each failing DNS record shows the exact value to add. Bounce and complaint threshold warnings with links to relevant settings.',
+        'TypeScript foundation: api.js and authStore.js converted to TypeScript with full type annotations. Shared types.ts for ApiResponse, Campaign, Subscriber, and new deliverability types. Zero tsc errors.',
+        'Frontend types expanded: DeliverabilityOverview, DnsHealthReport, DnsCheckResult, Recommendation, and DnsCheckResponse types for full deliverability type safety.',
+        'Deliverability API: two new admin endpoints — /api/admin/deliverability/overview (health score + DNS + bounce/complaint rates + recommendations) and /api/admin/deliverability/dns?domain= (custom domain checking).',
+      ],
+    },
+    {
       date: 'July 20, 2026',
       items: [
         'Provider registry: email providers register via register()/resolve() pattern. No hardcoded conditionals. Adding a new provider is 3 lines.',

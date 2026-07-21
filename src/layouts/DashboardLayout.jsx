@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/authStore'
 import {
   LayoutDashboard, Send, Users, PieChart, BarChart3,
   Settings, ChevronLeft, ChevronRight, Search,
-  HelpCircle, LogOut, Globe, Menu, X
+  HelpCircle, LogOut, Globe, Menu, X, Shield
 } from 'lucide-react'
 
 const navGroups = [
@@ -31,6 +31,7 @@ const navGroups = [
     label: 'Insights',
     items: [
       { path: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
+      { path: '/dashboard/deliverability', label: 'Deliverability', icon: Shield },
     ],
   },
   {

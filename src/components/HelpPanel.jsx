@@ -54,6 +54,18 @@ const PAGE_HELP = {
     ],
     next: 'Analytics auto-refreshes every minute. Send more broadcasts to build up your history.',
   },
+  '/dashboard/deliverability': {
+    title: 'Deliverability',
+    what: 'Monitor your email health. Check DNS records (SPF, DKIM, DMARC, MX), bounce rates, and spam complaint rates. Fix any issues to stay out of spam folders.',
+    actions: [
+      { label: 'View DNS health', tip: 'The DNS panel shows pass/warning/fail for each record type. Click to see the raw DNS value' },
+      { label: 'Fix DNS issues', tip: 'Each failing record shows exactly what to add to your DNS. Copy the expected value and add it to your domain provider' },
+      { label: 'Check bounce rate', tip: 'Keep bounce rate under 2%. Enable Auto-Clean in Settings to automatically suppress bounced addresses' },
+      { label: 'Monitor complaints', tip: 'Google and Yahoo require complaint rates below 0.3%. Make your unsubscribe link easy to find' },
+      { label: 'Check another domain', tip: 'Use the domain checker at the bottom to verify DNS for custom tracking domains or additional sender domains' },
+    ],
+    next: 'Good deliverability = more emails in inboxes. Check back here after making DNS changes to verify they took effect.',
+  },
   '/dashboard/widgets': {
     title: 'Capture Forms',
     what: 'Embed a form on your website to grow your audience. Each form has its own link, embed code, and style settings.',
