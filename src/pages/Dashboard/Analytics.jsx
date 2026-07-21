@@ -4,6 +4,7 @@ import { analyticsAPI } from '../../lib/api'
 import { fmt, fmtPct } from '../../lib/format'
 import { EmptyState, LoadingState } from '../../components/ux'
 import ErrorBoundary from '../../components/ErrorBoundary'
+import CampaignTimeline from '../../components/CampaignTimeline'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 if (typeof window !== 'undefined') { gsap.registerPlugin(ScrollTrigger) }
@@ -111,7 +112,7 @@ function CampaignPerformance({ campaigns, onSelect }) {
   )
 }
 
-function CampaignDetailModal({ campaign, onClose }) {
+function CampaignDetailModal({ campaign, workspaceId, onClose }) {
   if (!campaign) return null
   const openRate = campaign.open_rate ?? 0
   const clickRate = campaign.click_rate ?? 0
@@ -157,9 +158,7 @@ function CampaignDetailModal({ campaign, onClose }) {
               <div className="h-full bg-brutal-yellow transition-all" style={{ width: `${Math.min(clickRate, 100)}%` }} />
             </div>
           </div>
-          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider text-center pt-2 border-t-2 border-brutal-fg/20">
-            Full click map and hourly breakdown coming soon
-          </p>
+          <CampaignTimeline campaignId={campaign.id} workspaceId={workspaceId} />
         </div>
       </div>
     </div>
@@ -489,7 +488,7 @@ export default function AnalyticsPage() {
 
           {/* Campaign Detail Modal */}
           {detailCampaign && (
-            <ErrorBoundary><CampaignDetailModal campaign={detailCampaign} onClose={() => setDetailCampaign(null)} /></ErrorBoundary>
+            <ErrorBoundary><CampaignDetailModal campaign={detailCampaign} workspaceId={workspaceId} onClose={() => setDetailCampaign(null)} /></ErrorBoundary>
           )}
 
           {/* Top Campaigns Table */}
