@@ -9,12 +9,11 @@ import MetricCard from '../../components/ui/MetricCard'
 import Panel from '../../components/ui/Panel'
 import Badge from '../../components/ui/Badge'
 import { Mail, Upload, Zap, Globe } from 'lucide-react'
-import Btn from '../../components/ui/Button'
 import Card from '../../components/ui/Card'
 import { relativeTime } from '../../lib/time'
 
 export default function DashboardHome() {
-  const { email, workspaceId, role } = useAuthStore()
+  const { email, workspaceId, role, workspaceName } = useAuthStore()
   const ref = useRef(null)
   const [stats, setStats] = useState(null)
   const [activities, setActivities] = useState([])
@@ -48,7 +47,11 @@ export default function DashboardHome() {
       try {
         const { data } = await analyticsAPI.activity(workspaceId)
         if (!cancelled) setActivities(data.activity || [])
-      } catch {}
+      } catch (err) {
+        // Non-fatal: the panel falls back to its empty state. Logged rather
+        // than swallowed so a broken endpoint is still diagnosable.
+        console.error('Failed to load activity:', err)
+      }
       finally { if (!cancelled) setActivityLoading(false) }
     }
 
@@ -72,7 +75,12 @@ export default function DashboardHome() {
           {greeting()}, <span className="text-brutal-green">{email?.split('@')[0] || 'there'}</span>.
         </p>
         <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">
-          Here's what's happening in your workspace.
+          {/* Signup asks for a workspace name, so the first screen after it
+              should show that the answer was kept. Sessions predating this, and
+              OAuth sign-ins, have no name stored and fall back. */}
+          {workspaceName
+            ? `Here's what's happening in ${workspaceName}.`
+            : "Here's what's happening in your workspace."}
         </p>
       </div>
 
@@ -104,7 +112,11 @@ export default function DashboardHome() {
           <div className="flex-1">
             <p className="text-sm font-bold">You have contacts but no broadcasts yet</p>
             <p className="text-xs text-brutal-muted mt-1">Your people are waiting. Create your first broadcast to start engaging your audience.</p>
-            <Btn variant="primary" size="md" onClick={() => window.location.href = '/dashboard/campaigns'}>Write Your First Broadcast →</Btn>
+            {/* Router navigation, not window.location — a full reload here
+                re-downloads the app in the middle of onboarding. */}
+            <Link to="/dashboard/campaigns" className="inline-block mt-3 px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
+              Write Your First Broadcast →
+            </Link>
           </div>
         </Card>
       )}
@@ -118,7 +130,9 @@ export default function DashboardHome() {
           <div className="flex-1">
             <p className="text-sm font-bold">Start building your audience</p>
             <p className="text-xs text-brutal-muted mt-1">Set up a signup widget and start collecting subscribers. Embed it on your website in under a minute.</p>
-            <Btn variant="primary" size="md" onClick={() => window.location.href = '/dashboard/widgets'} className="bg-brutal-green text-white border-brutal-fg">Create a Widget →</Btn>
+            <Link to="/dashboard/widgets" className="inline-block mt-3 px-4 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
+              Create a Widget →
+            </Link>
           </div>
           <div className="hidden sm:flex items-center gap-6 text-[10px] font-bold text-brutal-muted uppercase tracking-wider">
             <span>← 1. Widget</span>

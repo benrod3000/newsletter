@@ -4,6 +4,17 @@ import type { ApiResponse, AnalyticsOverview, Campaign, Subscriber, Deliverabili
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
+/**
+ * OAuth is a full page navigation, not an axios call, so it cannot go through
+ * the client below. The login and signup pages each hardcoded the production
+ * host instead, which meant "Continue with Google" silently pointed at prod
+ * from every other environment. Building the URL from the same base as the rest
+ * of the API keeps them in step.
+ */
+export function oauthUrl(provider: 'google' | 'github'): string {
+  return `${API_BASE}/api/auth/oauth/${provider}`
+}
+
 /** Centralized auth token reader - single source of truth for JWT retrieval. */
 export function getAuthToken(): string | null {
   return useAuthStore.getState().token

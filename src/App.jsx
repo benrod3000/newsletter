@@ -10,7 +10,6 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { CommandActionProvider } from './components/CommandActionContext'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Analytics } from '@vercel/analytics/react'
-import Btn from './components/ui/Button'
 
 // Pages // code-split dashboard for faster initial load
 const LandingPage = lazy(() => import('./pages/LandingPage'))
@@ -60,7 +59,7 @@ function PublicLayout({ children }) {
             <Link to="/demo" className="hidden sm:block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 hover:text-brutal-fg transition-colors">Demo</Link>
             <span className="hidden sm:block w-px h-5 bg-brutal-fg/15" aria-hidden="true" />
             <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors">Sign In</Link>
-            <Btn variant="primary" size="md" onClick={() => window.location.href = '/signup'}>Get Started</Btn>
+            <Link to="/signup" className="px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">Get Started</Link>
           </div>
         </div>
       </div>

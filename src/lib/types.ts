@@ -4,6 +4,8 @@ export interface AuthState {
   workspaceId: string | null;
   email: string | null;
   role: string | null;
+  /** Chosen at signup. Absent for sessions created before this was stored, and for OAuth. */
+  workspaceName: string | null;
 }
 
 /** API response shape matching backend api-response.ts */

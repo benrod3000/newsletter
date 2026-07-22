@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, Users, BarChart3, Globe, Zap } from 'lucide-react'
-import Btn from '../components/ui/Button'
 import GeoFilter from '../components/GeoFilter'
 import gsap from 'gsap'
 
@@ -88,9 +87,9 @@ export default function DemoPage() {
         <Link to="/signup" className="px-5 py-2.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
           Create Free Account
         </Link>
-        <Btn variant="primary" size="md" onClick={() => window.location.href = '/login'}>
+        <Link to="/login" className="px-5 py-2.5 border-3 border-brutal-fg bg-brutal-yellow font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
           Sign In
-        </Btn>
+        </Link>
       </div>
 
       <Panel title="Demo Workspace · 12,453 subscribers" accent="bg-brutal-fg text-white">
@@ -324,6 +323,26 @@ export default function DemoPage() {
           </div>
         </div>
       </Panel>
+
+      {/* The only CTAs used to sit above the demo. Anyone who actually explored
+          it — the most interested visitors — reached the end with nothing to
+          act on and had to scroll back up. */}
+      <div className="border-3 border-brutal-fg bg-white p-6 sm:p-8 text-center space-y-4 shadow-brutal">
+        <h2 className="font-heading text-2xl sm:text-3xl uppercase tracking-tight leading-none">
+          Ready to build your own?
+        </h2>
+        <p className="text-sm text-brutal-muted max-w-md mx-auto">
+          Everything above works on a real workspace. Free to start, no credit card required.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-1">
+          <Link to="/signup" className="px-5 py-2.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
+            Create Free Account
+          </Link>
+          <Link to="/login" className="px-5 py-2.5 border-3 border-brutal-fg bg-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
+            Sign In
+          </Link>
+        </div>
+      </div>
     </div>
   )
 }

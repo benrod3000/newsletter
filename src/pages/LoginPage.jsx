@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
-import { authAPI } from '../lib/api'
+import { oauthUrl } from '../lib/api'
+import { normalizeAuthError, requiresNewSecurityCheck } from '../lib/authErrors'
+import { useRetryCountdown } from '../hooks/use-retry-countdown'
 import axios from 'axios'
 import Btn from '../components/ui/Button'
 import Turnstile from '../components/Turnstile'
 import { ShieldCheck } from 'lucide-react'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
+  const location = useLocation()
+  // Handed over by signup's "account already exists" path, so the address is
+  // not typed twice.
+  const [email, setEmail] = useState(location.state?.email || '')
   const [password, setPassword] = useState('')
   const [workspaceId, setWorkspaceId] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  // Always the shape returned by normalizeAuthError, so the banner renders one
+  // way regardless of whether the failure came from the API or from this form.
+  const [error, setError] = useState(null)
   const [fieldErrors, setFieldErrors] = useState({})
   const [totpRequired, setTotpRequired] = useState(false)
   const [totpCode, setTotpCode] = useState('')
@@ -37,13 +44,16 @@ export default function LoginPage() {
     // Set by the api client's 401 interceptor so an expired session explains
     // itself instead of silently dumping the user at a login form.
     if (new URLSearchParams(window.location.search).get('expired') === '1') {
-      setError('Your session expired. Please sign in again.')
+      setError({ message: 'Your session expired. Please sign in again.' })
     }
   }, [])
 
+  const retryIn = useRetryCountdown(error?.retryAfter)
+  const rateLimited = retryIn > 0
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError('')
+    setError(null)
     setFieldErrors({})
 
     const fe = {}
@@ -55,7 +65,7 @@ export default function LoginPage() {
     // load, let the request through — the server verifies the token anyway,
     // and a broken widget must not be an unrecoverable lockout.
     if (!turnstileToken && !turnstileError) {
-      setError('Please complete the security check.')
+      setError({ message: 'Please complete the security check.' })
       return
     }
 
@@ -81,12 +91,18 @@ export default function LoginPage() {
         return
       }
 
-      setAuth(data.token, data.workspaceId, data.email, data.role)
+      setAuth({
+        token: data.token,
+        workspaceId: data.workspaceId,
+        email: data.email,
+        role: data.role,
+        workspaceName: data.workspace_name,
+      })
       navigate('/dashboard')
     } catch (err) {
-      const apiErr = err.response?.data?.error
-      setError(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Login failed. Try again.')
-      setTurnstileToken('')
+      setError(normalizeAuthError(err, { fallback: 'Login failed. Try again.' }))
+      // Only a rejected challenge needs re-solving; a wrong password does not.
+      if (requiresNewSecurityCheck(err)) setTurnstileToken('')
     } finally {
       setLoading(false)
     }
@@ -94,7 +110,7 @@ export default function LoginPage() {
 
   const handleTotpSubmit = async (e) => {
     e.preventDefault()
-    setError('')
+    setError(null)
     setLoading(true)
 
     try {
@@ -107,14 +123,20 @@ export default function LoginPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error?.message || 'Invalid code')
+        setError({ message: data.error?.message || 'Invalid code' })
         return
       }
 
-      setAuth(data.token, data.workspaceId, data.email, data.role)
+      setAuth({
+        token: data.token,
+        workspaceId: data.workspaceId,
+        email: data.email,
+        role: data.role,
+        workspaceName: data.workspace_name,
+      })
       navigate('/dashboard')
     } catch {
-      setError('Verification failed. Try again.')
+      setError({ message: 'Verification failed. Try again.' })
     } finally {
       setLoading(false)
     }
@@ -142,8 +164,13 @@ export default function LoginPage() {
 
         <form onSubmit={totpRequired ? handleTotpSubmit : handleSubmit} className="space-y-5">
           {error && (
-            <div id="login-error" className="text-xs font-bold uppercase border-3 border-brutal-fg bg-brutal-yellow p-3 text-brutal-fg" role="alert">
-              {error}
+            <div id="login-error" className="border-3 border-brutal-fg bg-brutal-yellow p-3 text-brutal-fg space-y-1" role="alert">
+              <p className="text-xs font-bold uppercase">{error.message}</p>
+              {rateLimited && (
+                <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-fg/70">
+                  Try again in {retryIn}s
+                </p>
+              )}
             </div>
           )}
 
@@ -268,11 +295,13 @@ export default function LoginPage() {
             variant="primary"
             fullWidth
             type="submit"
-            disabled={loading || (!totpRequired && !turnstileToken && !turnstileError)}
+            disabled={loading || rateLimited || (!totpRequired && !turnstileToken && !turnstileError)}
             loading={loading}
             size="lg"
           >
-            {totpRequired ? (loading ? 'Verifying...' : 'Verify Code') : (loading ? 'Authenticating...' : 'Login')}
+            {totpRequired
+              ? (loading ? 'Verifying...' : 'Verify Code')
+              : loading ? 'Authenticating...' : rateLimited ? `Try again in ${retryIn}s` : 'Login'}
           </Btn>
         </form>
 
@@ -283,12 +312,12 @@ export default function LoginPage() {
             <span className="flex-1 h-px bg-brutal-fg/15" />
           </div>
           <div className="flex gap-3">
-            <a href="https://newsletter-core.vercel.app/api/auth/oauth/google"
+            <a href={oauthUrl('google')}
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border-3 border-brutal-fg bg-white text-xs font-bold uppercase tracking-wider hover:shadow-brutal hover:-translate-y-0.5 transition">
               <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
               Google
             </a>
-            <a href="https://newsletter-core.vercel.app/api/auth/oauth/github"
+            <a href={oauthUrl('github')}
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border-3 border-brutal-fg bg-white text-xs font-bold uppercase tracking-wider hover:shadow-brutal hover:-translate-y-0.5 transition">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
               GitHub

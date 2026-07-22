@@ -15,7 +15,7 @@ export default function OAuthCallbackPage() {
     const role = params.get("role");
 
     if (token && workspaceId && email) {
-      setAuth(token, workspaceId, email, role || "owner");
+      setAuth({ token, workspaceId, email, role: role || "owner" });
       navigate("/dashboard", { replace: true });
     } else {
       navigate("/login?oauth_error=missing_params", { replace: true });
