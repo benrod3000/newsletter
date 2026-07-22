@@ -20,7 +20,7 @@ export default function EmptyState({
   const displayIcon = variant ? ICONS[variant] || ICONS.default : icon
   return (
     <div className="border-3 border-brutal-fg bg-white p-8 text-center space-y-6 animate-fade-up">
-      <div className="text-4xl text-brutal-muted/40 font-heading">{displayIcon}</div>
+      <div className="text-4xl text-brutal-muted/40 font-heading" aria-hidden="true">{displayIcon}</div>
 
       <div className="space-y-2">
         <p className="text-sm font-bold uppercase tracking-[0.15em] text-brutal-fg">

@@ -72,7 +72,12 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2.5 max-w-sm pointer-events-none" aria-live="polite">
+      <div
+        className="fixed top-4 right-4 z-50 flex flex-col gap-2.5 max-w-sm pointer-events-none"
+        role="region"
+        aria-label="Notifications"
+        aria-live="polite"
+      >
         {toasts.length >= 2 && (
           <button
             onClick={dismissAll}
@@ -85,10 +90,11 @@ export function ToastProvider({ children }) {
         {toasts.map((toast) => (
           <div
             key={toast.id}
+            role={toast.type === 'error' ? 'alert' : 'status'}
             className={`pointer-events-auto flex items-stretch overflow-hidden shadow-brutal animate-scale-in ${TOAST_STYLES[toast.type] || TOAST_STYLES.info}`}
           >
             <div className="flex items-center gap-3 px-4 py-3 flex-1 min-w-0">
-              <span className="text-base shrink-0 font-bold">{TOAST_ICONS[toast.type]}</span>
+              <span className="text-base shrink-0 font-bold" aria-hidden="true">{TOAST_ICONS[toast.type]}</span>
               <span className="flex-1 text-xs font-bold uppercase tracking-wider leading-tight truncate">
                 {toast.message}{toast.count > 1 ? ` (×${toast.count})` : ''}
               </span>
