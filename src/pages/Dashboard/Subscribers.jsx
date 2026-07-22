@@ -184,10 +184,12 @@ export default function SubscribersPage() {
     if (!confirm(`Delete ${selectedIds.size} subscriber(s)? This cannot be undone.`)) return
     setBulkRemoving(true)
     try {
-      await subscribersAPI.bulkRemove(workspaceId, Array.from(selectedIds))
+      const res = await subscribersAPI.bulkRemove(workspaceId, Array.from(selectedIds))
+      // Trust the server's count: ids the workspace doesn't own are filtered out.
+      const removed = res?.data?.deleted ?? selectedIds.size
       setSubscribers((prev) => prev.filter((s) => !selectedIds.has(s.id)))
-      setTotal((prev) => Math.max(0, prev - selectedIds.size))
-      toast.addToast(`Removed ${selectedIds.size} from your audience.`, 'success')
+      setTotal((prev) => Math.max(0, prev - removed))
+      toast.addToast(`Removed ${removed} from your audience.`, 'success')
     } catch (err) {
       const apiErr = err?.response?.data?.error
       toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Bulk delete failed', 'error')
