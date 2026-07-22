@@ -14,11 +14,13 @@ export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
   const [turnstileToken, setTurnstileToken] = useState('')
+  const [turnstileError, setTurnstileError] = useState('')
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
-    if (!turnstileToken) { setError('Please complete the security check.'); return }
+    // A failed widget must not lock the user out; the server still verifies.
+    if (!turnstileToken && !turnstileError) { setError('Please complete the security check.'); return }
     setLoading(true)
     try {
       await axios.post(`${API_URL}/api/auth/forgot-password`, { email })
@@ -71,10 +73,14 @@ export default function ForgotPasswordPage() {
               required
             />
             {!sent && <div className="flex justify-center">
-            <Turnstile onVerify={setTurnstileToken} onExpire={function() { setTurnstileToken('') }} />
+            <Turnstile
+              onVerify={(t) => { setTurnstileToken(t); setTurnstileError('') }}
+              onExpire={() => setTurnstileToken('')}
+              onError={setTurnstileError}
+            />
           </div>}
 
-          <Btn variant="primary" fullWidth type="submit" disabled={loading || (!sent && !turnstileToken)} loading={loading} size="lg">
+          <Btn variant="primary" fullWidth type="submit" disabled={loading || (!sent && !turnstileToken && !turnstileError)} loading={loading} size="lg">
               {loading ? 'Sending...' : 'Send Reset Link'}
             </Btn>
           </form>

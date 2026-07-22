@@ -15,6 +15,7 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const [turnstileToken, setTurnstileToken] = useState('')
+  const [turnstileError, setTurnstileError] = useState('')
 
   const navigate = useNavigate()
   const setAuth = useAuthStore((s) => s.setAuth)
@@ -97,10 +98,14 @@ export default function SignupPage() {
           </div>
 
           <div className="flex justify-center">
-            <Turnstile onVerify={setTurnstileToken} onExpire={function() { setTurnstileToken('') }} />
+            <Turnstile
+              onVerify={(t) => { setTurnstileToken(t); setTurnstileError('') }}
+              onExpire={() => setTurnstileToken('')}
+              onError={setTurnstileError}
+            />
           </div>
 
-          <Btn variant="primary" type="submit" disabled={loading || !turnstileToken} loading={loading} fullWidth size="lg">
+          <Btn variant="primary" type="submit" disabled={loading || (!turnstileToken && !turnstileError)} loading={loading} fullWidth size="lg">
             {loading ? 'Creating account...' : 'Create Account'}
           </Btn>
         </form>

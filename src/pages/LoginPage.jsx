@@ -8,20 +8,6 @@ import Turnstile from '../components/Turnstile'
 import { ShieldCheck } from 'lucide-react'
 
 export default function LoginPage() {
-  useEffect(() => { document.title = 'Sign In | Veloce' }, [])
-  useEffect(() => {
-    const hash = window.location.hash.replace('#', '');
-    const params = new URLSearchParams(hash);
-    if (params.get('requires_totp') === 'true') {
-      setTotpRequired(true);
-      setPartialToken(params.get('partial_token') || '');
-    }
-    // Set by the api client's 401 interceptor so an expired session explains
-    // itself instead of silently dumping the user at a login form.
-    if (new URLSearchParams(window.location.search).get('expired') === '1') {
-      setError('Your session expired. Please sign in again.');
-    }
-  }, [])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [workspaceId, setWorkspaceId] = useState('')
@@ -32,9 +18,28 @@ export default function LoginPage() {
   const [totpCode, setTotpCode] = useState('')
   const [partialToken, setPartialToken] = useState('')
   const [turnstileToken, setTurnstileToken] = useState('')
+  const [turnstileError, setTurnstileError] = useState('')
+  const [showWorkspaceField, setShowWorkspaceField] = useState(false)
 
   const navigate = useNavigate()
   const setAuth = useAuthStore((state) => state.setAuth)
+
+  useEffect(() => { document.title = 'Sign In | Veloce' }, [])
+
+  // Declared after the state it sets — previously these effects sat above the
+  // useState calls and referenced the setters before declaration.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.hash.replace('#', ''))
+    if (params.get('requires_totp') === 'true') {
+      setTotpRequired(true)
+      setPartialToken(params.get('partial_token') || '')
+    }
+    // Set by the api client's 401 interceptor so an expired session explains
+    // itself instead of silently dumping the user at a login form.
+    if (new URLSearchParams(window.location.search).get('expired') === '1') {
+      setError('Your session expired. Please sign in again.')
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -46,7 +51,10 @@ export default function LoginPage() {
     if (password.length < 6) fe.password = 'At least 6 characters'
     if (Object.keys(fe).length) { setFieldErrors(fe); return }
 
-    if (!turnstileToken) {
+    // Only block when the widget is working but unfinished. If it failed to
+    // load, let the request through — the server verifies the token anyway,
+    // and a broken widget must not be an unrecoverable lockout.
+    if (!turnstileToken && !turnstileError) {
       setError('Please complete the security check.')
       return
     }
@@ -176,8 +184,24 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {/* Advanced: almost nobody needs this, and sitting between the
+                  password and the submit button it pushed the primary action
+                  below the fold on mobile while asking self-serve users for an
+                  id they have never been given. */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Workspace ID</label>
+                <button
+                  type="button"
+                  onClick={() => setShowWorkspaceField((v) => !v)}
+                  className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted hover:text-brutal-fg underline underline-offset-2 transition"
+                  aria-expanded={showWorkspaceField}
+                  aria-controls="login-workspace"
+                >
+                  {showWorkspaceField ? '− Use default workspace' : '+ Sign in to a specific workspace'}
+                </button>
+              </div>
+
+              <div className={showWorkspaceField ? '' : 'hidden'}>
+                <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5" htmlFor="login-workspace">Workspace ID</label>
                 <input
                   type="text"
                   id="login-workspace"
@@ -219,15 +243,32 @@ export default function LoginPage() {
             </div>
           )}
 
-          {!totpRequired && !turnstileToken && <div className="flex justify-center">
-            <Turnstile onVerify={setTurnstileToken} onExpire={function() { setTurnstileToken('') }} />
-          </div>}
+          {!totpRequired && !turnstileToken && (
+            <div className="space-y-2">
+              <div className="flex justify-center">
+                <Turnstile
+                  onVerify={(t) => { setTurnstileToken(t); setTurnstileError('') }}
+                  onExpire={() => setTurnstileToken('')}
+                  onError={setTurnstileError}
+                />
+              </div>
+              {turnstileError ? (
+                <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-fg text-center" role="status">
+                  {turnstileError}
+                </p>
+              ) : (
+                <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted-on-light text-center" role="status">
+                  Waiting for security check…
+                </p>
+              )}
+            </div>
+          )}
 
           <Btn
             variant="primary"
             fullWidth
             type="submit"
-            disabled={loading || (!totpRequired && !turnstileToken)}
+            disabled={loading || (!totpRequired && !turnstileToken && !turnstileError)}
             loading={loading}
             size="lg"
           >

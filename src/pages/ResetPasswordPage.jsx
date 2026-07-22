@@ -16,11 +16,13 @@ export default function ResetPasswordPage() {
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
   const [turnstileToken, setTurnstileToken] = useState('')
+  const [turnstileError, setTurnstileError] = useState('')
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
-    if (!turnstileToken) { setError('Please complete the security check.'); return }
+    // A failed widget must not lock the user out; the server still verifies.
+    if (!turnstileToken && !turnstileError) { setError('Please complete the security check.'); return }
     if (password.length < 6) { setError('Password must be at least 6 characters.'); return }
     setLoading(true)
     try {
@@ -73,10 +75,14 @@ export default function ResetPasswordPage() {
               minLength={6}
             />
             {!done && <div className="flex justify-center">
-            <Turnstile onVerify={setTurnstileToken} onExpire={function() { setTurnstileToken('') }} />
+            <Turnstile
+              onVerify={(t) => { setTurnstileToken(t); setTurnstileError('') }}
+              onExpire={() => setTurnstileToken('')}
+              onError={setTurnstileError}
+            />
           </div>}
 
-          <Btn type="submit" disabled={loading || !turnstileToken} loading={loading} fullWidth size="lg" className="bg-brutal-green text-white border-brutal-fg hover:shadow-brutal">
+          <Btn type="submit" disabled={loading || (!turnstileToken && !turnstileError)} loading={loading} fullWidth size="lg" className="bg-brutal-green text-white border-brutal-fg hover:shadow-brutal">
               {loading ? 'Resetting...' : 'Reset Password'}
             </Btn>
           </form>
