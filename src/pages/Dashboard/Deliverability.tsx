@@ -5,31 +5,26 @@ import { fmtPct } from '../../lib/format'
 import { EmptyState, LoadingState } from '../../components/ux'
 import ErrorBoundary from '../../components/ErrorBoundary'
 import { Shield, AlertTriangle, CheckCircle, XCircle, HelpCircle, Search, RefreshCw } from 'lucide-react'
+import type { DeliverabilityOverview, DnsCheckResult, DnsHealthReport, Recommendation, DnsCheckResponse } from '../../lib/types'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 if (typeof window !== 'undefined') { gsap.registerPlugin(ScrollTrigger) }
 
 // ── Helpers ──
 
-function scoreColor(score) {
+function scoreColor(score: number): string {
   if (score >= 80) return 'text-brutal-green'
   if (score >= 50) return 'text-brutal-yellow-dark'
   return 'text-brutal-red'
 }
 
-function scoreBg(score) {
-  if (score >= 80) return 'bg-brutal-green'
-  if (score >= 50) return 'bg-brutal-yellow'
-  return 'bg-brutal-red'
-}
-
-function scoreLabel(score) {
+function scoreLabel(score: number): string {
   if (score >= 80) return 'Healthy'
   if (score >= 50) return 'Needs Attention'
   return 'At Risk'
 }
 
-function dnsIcon(status) {
+function dnsIcon(status: string) {
   switch (status) {
     case 'pass': return <CheckCircle size={16} className="text-brutal-green" />
     case 'warning': return <AlertTriangle size={16} className="text-brutal-yellow-dark" />
@@ -38,8 +33,8 @@ function dnsIcon(status) {
   }
 }
 
-function statusBadge(status) {
-  const map = {
+function statusBadge(status: string): string {
+  const map: Record<string, string> = {
     pass: 'border-brutal-green text-brutal-green',
     warning: 'border-brutal-yellow-dark text-brutal-yellow-dark',
     fail: 'border-brutal-red text-brutal-red',
@@ -50,8 +45,8 @@ function statusBadge(status) {
 
 // ── Animated Score Ring ──
 
-function ScoreRing({ score, size = 120 }) {
-  const ringRef = useRef(null)
+function ScoreRing({ score, size = 120 }: { score: number; size?: number }) {
+  const ringRef = useRef<HTMLDivElement>(null)
   const circumference = 2 * Math.PI * 45
   const offset = circumference - (score / 100) * circumference
 
@@ -59,7 +54,6 @@ function ScoreRing({ score, size = 120 }) {
     const el = ringRef.current
     if (!el) return
     gsap.fromTo(el, { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.6, ease: 'power3.out' })
-    // Animate the ring
     const circle = el.querySelector('.score-ring-fg')
     if (circle) {
       gsap.fromTo(circle, { strokeDashoffset: circumference }, {
@@ -75,7 +69,7 @@ function ScoreRing({ score, size = 120 }) {
       <svg width={size} height={size} className="transform -rotate-90">
         <circle cx={size / 2} cy={size / 2} r="45" fill="none" stroke="currentColor" strokeWidth="6" className="text-brutal-surface" />
         <circle cx={size / 2} cy={size / 2} r="45" fill="none" strokeWidth="6" strokeLinecap="round"
-          className={`score-ring-fg ${scoreColor(score).replace('text-', 'text-')}`}
+          className={`score-ring-fg ${scoreColor(score)}`}
           style={{
             strokeDasharray: circumference,
             strokeDashoffset: offset,
@@ -94,8 +88,8 @@ function ScoreRing({ score, size = 120 }) {
 
 // ── DNS Record Row ──
 
-function DnsRow({ result, delay = 0 }) {
-  const ref = useRef(null)
+function DnsRow({ result, delay = 0 }: { result: DnsCheckResult; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const el = ref.current
@@ -126,9 +120,9 @@ function DnsRow({ result, delay = 0 }) {
 
 // ── Recommendation Row ──
 
-function RecRow({ rec, delay = 0 }) {
-  const ref = useRef(null)
-  const priorityColors = { 1: 'border-l-brutal-red', 2: 'border-l-brutal-yellow', 3: 'border-l-brutal-green' }
+function RecRow({ rec, delay = 0 }: { rec: Recommendation; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const priorityColors: Record<number, string> = { 1: 'border-l-brutal-red', 2: 'border-l-brutal-yellow', 3: 'border-l-brutal-green' }
 
   useEffect(() => {
     const el = ref.current
@@ -153,16 +147,16 @@ function RecRow({ rec, delay = 0 }) {
 
 export default function DeliverabilityPage() {
   const { workspaceId } = useAuthStore()
-  const [data, setData] = useState(null)
+  const [data, setData] = useState<DeliverabilityOverview | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
   // Custom domain check state
   const [customDomain, setCustomDomain] = useState('')
-  const [dnsResult, setDnsResult] = useState(null)
+  const [dnsResult, setDnsResult] = useState<DnsCheckResponse | null>(null)
   const [checkingDomain, setCheckingDomain] = useState(false)
-  const [dnsError, setDnsError] = useState(null)
+  const [dnsError, setDnsError] = useState<string | null>(null)
 
   const loadData = useCallback(async (isRefresh = false) => {
     if (!workspaceId) return
@@ -182,9 +176,10 @@ export default function DeliverabilityPage() {
         }
       }
 
-      const { data: apiData } = await deliverabilityAPI.overview(workspaceId)
-      try { sessionStorage.setItem(cacheKey, JSON.stringify({ data: apiData, ts: Date.now() })) } catch { /* quota exceeded */ }
-      setData(apiData)
+      const res = await deliverabilityAPI.overview(workspaceId)
+      const overview = res.data?.data
+      try { sessionStorage.setItem(cacheKey, JSON.stringify({ data: overview, ts: Date.now() })) } catch { /* storage unavailable */ }
+      setData(overview || null)
     } catch (err) {
       console.error('Deliverability load error:', err)
       setError('Could not load deliverability data.')
@@ -204,7 +199,7 @@ export default function DeliverabilityPage() {
 
   // ── Custom domain DNS check ──
 
-  const handleCheckDomain = useCallback(async (e) => {
+  const handleCheckDomain = useCallback(async (e?: React.FormEvent) => {
     e?.preventDefault()
     const domain = customDomain.trim().toLowerCase()
     if (!domain || !workspaceId) return
@@ -214,9 +209,9 @@ export default function DeliverabilityPage() {
     setDnsResult(null)
 
     try {
-      const { data: apiData } = await deliverabilityAPI.checkDns(workspaceId, domain)
-      setDnsResult(apiData)
-    } catch (err) {
+      const res = await deliverabilityAPI.checkDns(workspaceId, domain)
+      setDnsResult(res.data?.data || null)
+    } catch (err: any) {
       setDnsError(err?.response?.data?.error?.message || 'DNS check failed')
     } finally {
       setCheckingDomain(false)
@@ -258,6 +253,7 @@ export default function DeliverabilityPage() {
         <EmptyState
           title="Couldn't load deliverability"
           description={error}
+          variant="default"
           action={{ label: 'Retry', onClick: () => loadData(true) }}
         />
       ) : (
@@ -282,14 +278,14 @@ export default function DeliverabilityPage() {
             {/* Bounce Rate */}
             <div className={`border-3 border-brutal-fg bg-white p-6 border-t-[6px] ${(data?.bounceRate || 0) > 0.02 ? 'border-t-brutal-red' : 'border-t-brutal-green'}`}>
               <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Bounce Rate</p>
-              <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">{fmtPct(data?.bounceRate || 0)}</p>
+              <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">{fmtPct((data?.bounceRate || 0) * 100)}</p>
               <p className="text-[10px] text-brutal-muted mt-1 font-bold">{data?.totalSends?.toLocaleString() || 0} sends (30d)</p>
             </div>
 
             {/* Complaint Rate */}
             <div className={`border-3 border-brutal-fg bg-white p-6 border-t-[6px] ${(data?.complaintRate || 0) > 0.001 ? 'border-t-brutal-red' : 'border-t-brutal-green'}`}>
               <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Complaint Rate</p>
-              <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">{fmtPct(data?.complaintRate || 0)}</p>
+              <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">{fmtPct((data?.complaintRate || 0) * 100)}</p>
               <p className="text-[10px] text-brutal-muted mt-1 font-bold">Target: &lt;0.1%</p>
             </div>
           </div>
@@ -340,7 +336,7 @@ export default function DeliverabilityPage() {
                   <input
                     type="text"
                     value={customDomain}
-                    onChange={(e) => setCustomDomain(e.target.value)}
+                    onChange={(e) => { setCustomDomain(e.target.value); setDnsError(null) }}
                     placeholder="e.g., myotherdomain.com"
                     className="w-full border-3 border-brutal-fg px-4 py-2 text-sm font-bold bg-white focus:outline-none focus:ring-2 focus:ring-brutal-yellow uppercase placeholder:normal-case"
                   />
