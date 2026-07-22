@@ -1,12 +1,16 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback, lazy, Suspense } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { campaignsAPI, listsAPI, templatesAPI, getAuthToken } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import Btn from '../../components/ui/Button'
 import { useToast } from '../../components/Toast'
-import EmailEditor from '../../components/EmailEditor'
-import GeoFilter from '../../components/GeoFilter'
+// The rich-text editor pulls in TipTap and dominates this route's bundle, but
+// it is only rendered while editing a campaign — most visits here are to read
+// the list. Loading it on demand keeps the list view light.
+const EmailEditor = lazy(() => import('../../components/EmailEditor'))
+const GeoFilter = lazy(() => import('../../components/GeoFilter'))
 import ConfirmModal from '../../components/ConfirmModal'
+import PromptModal from '../../components/PromptModal'
 import { useCommandAction } from '../../components/useCommandAction'
 import { STATUS_STYLES, STATUS_LABELS, AUDIENCE_OPTIONS, generateSubjects, getAudienceLabel } from './Campaigns/constants'
 
@@ -43,6 +47,8 @@ export default function CampaignsPage() {
   const [geoTrigger, setGeoTrigger] = useState(false) // Location-triggered
   const [smsImages, setSmsImages] = useState('') // RCS carousel (comma-separated URLs)
   const [confirmAction, setConfirmAction] = useState(null) // { title, message, onConfirm, danger }
+  const [confirmDiscard, setConfirmDiscard] = useState(false)
+  const [templatePromptOpen, setTemplatePromptOpen] = useState(false)
   const [inlineEditId, setInlineEditId] = useState(null)
   const [inlineEditVal, setInlineEditVal] = useState('')
   const { action, consume } = useCommandAction()
@@ -204,8 +210,31 @@ export default function CampaignsPage() {
 
   function closeEditor() {
     if (editContent && editContent !== (editCampaign?.editor_html || '')) {
-      if (!confirm('You have unsaved changes. Leave anyway?')) return
+      setConfirmDiscard(true)
+      return
     }
+    discardAndClose()
+  }
+
+  async function saveAsTemplate(name) {
+    setTemplatePromptOpen(false)
+    try {
+      await templatesAPI.create(workspaceId, {
+        name,
+        subject: editSubject,
+        editor_html: editContent,
+        audience: editAudience,
+        category: 'campaign',
+      })
+      toast.addToast(`Saved "${name}" as template`, 'success')
+    } catch (err) {
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to save template', 'error')
+    }
+  }
+
+  function discardAndClose() {
+    setConfirmDiscard(false)
     setEditingId(null)
     setEditCampaign(null)
     setEditContent('')
@@ -272,6 +301,30 @@ export default function CampaignsPage() {
           danger={confirmAction.danger}
         />
       )}
+
+      <ConfirmModal
+        open={confirmDiscard}
+        title="Discard changes"
+        message="This campaign has unsaved changes. Leaving now will lose them."
+        confirmLabel="Discard"
+        cancelLabel="Keep editing"
+        danger
+        onConfirm={discardAndClose}
+        onCancel={() => setConfirmDiscard(false)}
+      />
+
+      <PromptModal
+        open={templatePromptOpen}
+        title="Save as template"
+        message="Reuse this layout and settings for future campaigns."
+        label="Template name"
+        placeholder="e.g. Weekly digest"
+        initialValue={editCampaign?.title || editCampaign?.name || ''}
+        confirmLabel="Save template"
+        validate={(v) => (!v ? 'Enter a template name' : v.length > 100 ? 'Keep it under 100 characters' : '')}
+        onSubmit={saveAsTemplate}
+        onCancel={() => setTemplatePromptOpen(false)}
+      />
 
       <div className="flex items-center justify-between flex-wrap gap-4 border-b-3 border-brutal-fg pb-4">
         <div>
@@ -494,11 +547,13 @@ export default function CampaignsPage() {
                 </select>
                 {editAudience === 'geo' && (
                   <div className="mt-3">
-                    <GeoFilter
-                      onChange={(geo) => setGeoAudience(geo)}
-                      onClear={() => setGeoAudience(null)}
-                      active={!!geoAudience}
-                    />
+                    <Suspense fallback={<div className="text-xs font-bold uppercase tracking-wider text-brutal-muted" role="status">Loading map…</div>}>
+                      <GeoFilter
+                        onChange={(geo) => setGeoAudience(geo)}
+                        onClear={() => setGeoAudience(null)}
+                        active={!!geoAudience}
+                      />
+                    </Suspense>
                   </div>
                 )}
               </div>
@@ -507,12 +562,14 @@ export default function CampaignsPage() {
             {/* TipTap Editor */}
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">Email Content</label>
-              <EmailEditor
-                content={editContent}
-                onChange={autosave}
-                onSave={saveDraft}
-                saving={autosaving}
-              />
+              <Suspense fallback={<div className="border-3 border-brutal-fg bg-white p-8 text-xs font-bold uppercase tracking-wider text-brutal-muted" role="status">Loading editor…</div>}>
+                <EmailEditor
+                  content={editContent}
+                  onChange={autosave}
+                  onSave={saveDraft}
+                  saving={autosaving}
+                />
+              </Suspense>
             </div>
 
             {/* Bottom actions */}
@@ -526,23 +583,7 @@ export default function CampaignsPage() {
                 {editingId !== 'new' && (
                   <>
                     <button
-                      onClick={async () => {
-                        const name = prompt('Template name:', editCampaign?.title || editCampaign?.name || '')
-                        if (!name?.trim()) return
-                        try {
-                          await templatesAPI.create(workspaceId, {
-                            name: name.trim(),
-                            subject: editSubject,
-                            editor_html: editContent,
-                            audience: editAudience,
-                            category: 'campaign',
-                          })
-                          toast.addToast(`Saved "${name.trim()}" as template`, 'success')
-                        } catch (err) {
-                          const apiErr = err?.response?.data?.error
-                          toast.addToast(apiErr || 'Failed to save template', 'error')
-                        }
-                      }}
+                      onClick={() => setTemplatePromptOpen(true)}
                       disabled={autosaving}
                       className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-[10px] uppercase tracking-wider hover:bg-brutal-surface transition disabled:opacity-50"
                     >

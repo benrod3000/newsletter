@@ -9,6 +9,8 @@ import { relativeTime } from '../../lib/time'
 import GeoFilter from '../../components/GeoFilter'
 import { formatDistance } from '../../lib/geo'
 import Btn from '../../components/ui/Button'
+import ConfirmModal from '../../components/ConfirmModal'
+import PromptModal from '../../components/PromptModal'
 import { STATUS_FILTERS, HEALTH_STYLES } from './Subscribers/constants'
 
 export default function SubscribersPage() {
@@ -49,6 +51,11 @@ export default function SubscribersPage() {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [bulkRemoving, setBulkRemoving] = useState(false)
   const [bulkTagging, setBulkTagging] = useState(false)
+  // Destructive actions and free-text input go through in-app dialogs rather
+  // than window.confirm/prompt.
+  const [confirmBulkRemove, setConfirmBulkRemove] = useState(false)
+  const [confirmRemoveId, setConfirmRemoveId] = useState(null)
+  const [tagPromptOpen, setTagPromptOpen] = useState(false)
   const [showListPicker, setShowListPicker] = useState(false)
   const [bulkMoving, setBulkMoving] = useState(false)
   const [subscriberLists, setSubscriberLists] = useState([])
@@ -147,7 +154,6 @@ export default function SubscribersPage() {
   }
 
   async function removeSubscriber(id) {
-    if (!confirm('Remove this subscriber?')) return
     setRemovingId(id)
     try {
       await subscribersAPI.remove(workspaceId, id)
@@ -180,8 +186,32 @@ export default function SubscribersPage() {
     }
   }
 
+  async function bulkTag(tag) {
+    setTagPromptOpen(false)
+    setBulkTagging(true)
+    try {
+      const token = getAuthToken()
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/tags/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ subscriberIds: Array.from(selectedIds), tag }),
+      })
+      const data = await res.json()
+      if (data.ok) {
+        toast.addToast(`Tagged ${data.tagged} subscribers with "${tag}"`, 'success')
+      } else {
+        toast.addToast(data.error || 'Failed to tag subscribers', 'error')
+      }
+    } catch {
+      toast.addToast('Failed to tag subscribers', 'error')
+    } finally {
+      setBulkTagging(false)
+      setSelectedIds(new Set())
+    }
+  }
+
   async function bulkRemove() {
-    if (!confirm(`Delete ${selectedIds.size} subscriber(s)? This cannot be undone.`)) return
+    setConfirmBulkRemove(false)
     setBulkRemoving(true)
     try {
       const res = await subscribersAPI.bulkRemove(workspaceId, Array.from(selectedIds))
@@ -571,37 +601,14 @@ export default function SubscribersPage() {
             )}
           </div>
           <button
-            onClick={async () => {
-              const tag = prompt('Tag name:')
-              if (!tag) return
-              setBulkTagging(true)
-              try {
-                const token = getAuthToken()
-                const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/tags/bulk`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                  body: JSON.stringify({ subscriberIds: Array.from(selectedIds), tag }),
-                })
-                const data = await res.json()
-                if (data.ok) {
-                  toast.addToast(`Tagged ${data.tagged} subscribers with "${tag}"`, 'success')
-                } else {
-                  toast.addToast(data.error || 'Failed to tag subscribers', 'error')
-                }
-              } catch {
-                toast.addToast('Failed to tag subscribers', 'error')
-              } finally {
-                setBulkTagging(false)
-                setSelectedIds(new Set())
-              }
-            }}
+            onClick={() => setTagPromptOpen(true)}
             disabled={bulkTagging}
             className="px-4 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition disabled:opacity-50"
           >
             {bulkTagging ? 'Tagging...' : 'Tag Selected'}
           </button>
           <button
-            onClick={bulkRemove}
+            onClick={() => setConfirmBulkRemove(true)}
             disabled={bulkRemoving}
             className="px-4 py-2 bg-white border-3 border-brutal-fg font-bold text-xs uppercase tracking-wider hover:opacity-80 disabled:opacity-50"
           >
@@ -707,14 +714,15 @@ export default function SubscribersPage() {
                     type="checkbox"
                     checked={selectedIds.size === subscribers.length && subscribers.length > 0}
                     onChange={selectAll}
+                    aria-label={selectedIds.size === subscribers.length && subscribers.length > 0 ? 'Deselect all subscribers' : 'Select all subscribers'}
                     className="w-4 h-4 accent-brutal-fg cursor-pointer"
                   />
                 </th>
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider">Email</th>
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell">Name</th>
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell">Status</th>
-                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden lg:table-cell">📍 Location</th>
-                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden md:table-cell">📱 Phone</th>
+                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden lg:table-cell"><span aria-hidden="true">📍</span> Location</th>
+                <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden md:table-cell"><span aria-hidden="true">📱</span> Phone</th>
                 <th className="text-left p-3 font-bold text-xs uppercase tracking-wider hidden md:table-cell">Joined</th>
                 {geoFilter && <th className="text-right p-3 font-bold text-xs uppercase tracking-wider">Distance</th>}
                 <th className="text-right p-3"></th>
@@ -730,6 +738,7 @@ export default function SubscribersPage() {
                         type="checkbox"
                         checked={selectedIds.has(s.id)}
                         onChange={() => toggleSelect(s.id)}
+                        aria-label={`Select ${s.email}`}
                         className="w-4 h-4 accent-brutal-fg cursor-pointer"
                       />
                     </td>
@@ -762,7 +771,7 @@ export default function SubscribersPage() {
                     )}
                     <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
-                        onClick={() => removeSubscriber(s.id)}
+                        onClick={() => setConfirmRemoveId(s.id)}
                         disabled={removingId === s.id}
                         className="text-xs font-bold text-brutal-red uppercase tracking-wider hover:opacity-70 disabled:opacity-50"
                       >
@@ -807,7 +816,39 @@ export default function SubscribersPage() {
       <SubscriberDetailPanel
         subscriber={selectedSubscriber}
         onClose={() => setSelectedSubscriber(null)}
-        onRemove={removeSubscriber}
+        onRemove={(id) => setConfirmRemoveId(id)}
+      />
+
+      <ConfirmModal
+        open={!!confirmRemoveId}
+        title="Remove subscriber"
+        message="They will be removed from your audience. This cannot be undone."
+        confirmLabel="Remove"
+        danger
+        onConfirm={() => { const id = confirmRemoveId; setConfirmRemoveId(null); removeSubscriber(id) }}
+        onCancel={() => setConfirmRemoveId(null)}
+      />
+
+      <ConfirmModal
+        open={confirmBulkRemove}
+        title={`Delete ${selectedIds.size} subscriber${selectedIds.size === 1 ? '' : 's'}`}
+        message="They will be permanently removed from your audience. This cannot be undone."
+        confirmLabel={`Delete ${selectedIds.size}`}
+        danger
+        onConfirm={bulkRemove}
+        onCancel={() => setConfirmBulkRemove(false)}
+      />
+
+      <PromptModal
+        open={tagPromptOpen}
+        title="Tag selected"
+        message={`Apply a tag to ${selectedIds.size} selected subscriber${selectedIds.size === 1 ? '' : 's'}.`}
+        label="Tag name"
+        placeholder="e.g. vip"
+        confirmLabel="Apply tag"
+        validate={(v) => (!v ? 'Enter a tag name' : v.length > 50 ? 'Keep tags under 50 characters' : '')}
+        onSubmit={bulkTag}
+        onCancel={() => setTagPromptOpen(false)}
       />
     </div>
   )

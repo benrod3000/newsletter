@@ -5,11 +5,13 @@ import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
 import Btn from '../../components/ui/Button'
 import { useCommandAction } from '../../components/useCommandAction'
+import ConfirmModal from '../../components/ConfirmModal'
 
 export default function ListsPage() {
   const { workspaceId } = useAuthStore()
   const toast = useToast()
   const [lists, setLists] = useState([])
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -61,7 +63,7 @@ export default function ListsPage() {
   }
 
   async function removeList(id) {
-    if (!confirm('Delete this list? Subscribers on it will not be deleted.')) return
+    setConfirmDeleteId(null)
     setRemovingId(id)
     try {
       await listsAPI.remove(workspaceId, id)
@@ -176,7 +178,7 @@ export default function ListsPage() {
                   {l.opt_in_type === 'double' ? 'Double opt-in' : 'Single opt-in'}
                 </span>
                 <button
-                  onClick={() => removeList(l.id)}
+                  onClick={() => setConfirmDeleteId(l.id)}
                   disabled={removingId === l.id}
                   className="text-xs font-bold text-brutal-fg/50 uppercase tracking-wider hover:text-brutal-fg disabled:opacity-50"
                 >
@@ -187,6 +189,16 @@ export default function ListsPage() {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        open={!!confirmDeleteId}
+        title="Delete list"
+        message="The list will be deleted. Subscribers on it are kept in your audience."
+        confirmLabel="Delete list"
+        danger
+        onConfirm={() => removeList(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   )
 }

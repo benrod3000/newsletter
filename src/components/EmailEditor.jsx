@@ -6,6 +6,21 @@ import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
 import DOMPurify from 'dompurify'
 import { getAuthToken } from '../lib/api'
+import PromptModal from './PromptModal'
+
+/** Reject anything that isn't an http(s) URL — notably javascript: hrefs. */
+function validateUrl(value) {
+  if (!value) return 'Enter a URL'
+  try {
+    const parsed = new URL(value)
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return 'Only http:// and https:// links are allowed'
+    }
+    return ''
+  } catch {
+    return 'Enter a full URL, including https://'
+  }
+}
 
 const MERGE_TAGS = [
   { tag: '{{first_name}}', label: 'First Name' },
@@ -31,6 +46,8 @@ const ToolbarButton = ({ active, onClick, children, title }) => (
 
 export default function EmailEditor({ content, onChange, onSave, saving }) {
   const [showTags, setShowTags] = useState(false)
+  const [linkPromptOpen, setLinkPromptOpen] = useState(false)
+  const [imagePromptOpen, setImagePromptOpen] = useState(false)
   const [previewMode, setPreviewMode] = useState(null) // null=edit, 'mobile'
   const [splitMode, setSplitMode] = useState(false) // side-by-side editor + preview
   const [htmlMode, setHtmlMode] = useState(false)
@@ -69,20 +86,14 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
     setShowTags(false)
   }, [editor])
 
-  const addLink = useCallback(() => {
-    if (!editor) return
-    const url = window.prompt('URL:')
-    if (url) {
-      editor.chain().focus().setLink({ href: url }).run()
-    }
+  const addLink = useCallback((url) => {
+    setLinkPromptOpen(false)
+    if (editor && url) editor.chain().focus().setLink({ href: url }).run()
   }, [editor])
 
-  const addImage = useCallback(() => {
-    if (!editor) return
-    const url = window.prompt('Image URL:')
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run()
-    }
+  const addImage = useCallback((url) => {
+    setImagePromptOpen(false)
+    if (editor && url) editor.chain().focus().setImage({ src: url }).run()
   }, [editor])
 
   const toggleHtmlMode = useCallback(() => {
@@ -156,8 +167,8 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
         <ToolbarButton active={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} title="Heading 2">H2</ToolbarButton>
         <ToolbarButton active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} title="Bullet List">• List</ToolbarButton>
         <ToolbarButton active={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Numbered List">1. List</ToolbarButton>
-        <ToolbarButton active={editor.isActive('link')} onClick={addLink} title="Add Link">🔗</ToolbarButton>
-        <ToolbarButton active={false} onClick={addImage} title="Add Image">🖼</ToolbarButton>
+        <ToolbarButton active={editor.isActive('link')} onClick={() => setLinkPromptOpen(true)} title="Add Link">🔗</ToolbarButton>
+        <ToolbarButton active={false} onClick={() => setImagePromptOpen(true)} title="Add Image">🖼</ToolbarButton>
 
         <span className="flex-1" />
 
@@ -315,6 +326,30 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
           <EditorContent editor={editor} />
         </div>
       )}
+
+      <PromptModal
+        open={linkPromptOpen}
+        title="Add link"
+        label="URL"
+        type="url"
+        placeholder="https://example.com"
+        confirmLabel="Add link"
+        validate={validateUrl}
+        onSubmit={addLink}
+        onCancel={() => setLinkPromptOpen(false)}
+      />
+
+      <PromptModal
+        open={imagePromptOpen}
+        title="Add image"
+        label="Image URL"
+        type="url"
+        placeholder="https://example.com/image.png"
+        confirmLabel="Add image"
+        validate={validateUrl}
+        onSubmit={addImage}
+        onCancel={() => setImagePromptOpen(false)}
+      />
     </div>
   )
 }
