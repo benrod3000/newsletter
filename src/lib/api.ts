@@ -22,6 +22,32 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+/**
+ * Sessions expire (30 days), and a stale token 401s on every call. Without
+ * this, each page handled that independently or not at all, leaving the
+ * dashboard as empty states and spinners with no way to recover short of
+ * clearing site data.
+ *
+ * Auth endpoints are excluded: a 401 from /api/auth/token is "wrong password",
+ * which the login form reports itself. Redirecting on it would wipe the error.
+ */
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status
+    const url: string = error.config?.url ?? ''
+    const isAuthEndpoint = url.startsWith('/api/auth/')
+
+    if (status === 401 && !isAuthEndpoint) {
+      useAuthStore.getState().clearAuth()
+      if (!window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login?expired=1'
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+
 // ── Auth ──
 
 export const authAPI = {
@@ -153,11 +179,14 @@ export const usersAPI = {
 
 // ── Deliverability ──
 
+// These previously called /api/admin/deliverability/*, which sits behind admin
+// Basic Auth — the dashboard's bearer token always 401'd, so the page never
+// worked. The workspace-scoped routes share the same implementation.
 export const deliverabilityAPI = {
   overview: (workspaceId: string) =>
-    api.get<ApiResponse<DeliverabilityOverview>>(`/api/admin/deliverability/overview`),
+    api.get<ApiResponse<DeliverabilityOverview>>(`/api/clients/${workspaceId}/deliverability/overview`),
   checkDns: (workspaceId: string, domain: string) =>
-    api.get<ApiResponse<DnsCheckResponse>>(`/api/admin/deliverability/dns`, { params: { domain } }),
+    api.get<ApiResponse<DnsCheckResponse>>(`/api/clients/${workspaceId}/deliverability/dns`, { params: { domain } }),
 }
 
 export default api

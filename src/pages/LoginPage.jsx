@@ -16,6 +16,11 @@ export default function LoginPage() {
       setTotpRequired(true);
       setPartialToken(params.get('partial_token') || '');
     }
+    // Set by the api client's 401 interceptor so an expired session explains
+    // itself instead of silently dumping the user at a login form.
+    if (new URLSearchParams(window.location.search).get('expired') === '1') {
+      setError('Your session expired. Please sign in again.');
+    }
   }, [])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
