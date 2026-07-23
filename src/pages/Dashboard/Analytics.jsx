@@ -88,7 +88,12 @@ function CampaignPerformance({ campaigns, onSelect }) {
       <h3 className="font-heading text-xl uppercase tracking-wide mb-6">📊 Campaign Performance</h3>
       <div className="space-y-3">
         {campaigns.map((c, i) => (
-          <div key={c.id ?? i} className="perf-row space-y-1.5 cursor-pointer hover:bg-brutal-yellow/10 transition p-1 -m-1" onClick={() => onSelect?.(c)}>
+          <button
+            key={c.id ?? i}
+            type="button"
+            onClick={() => onSelect?.(c)}
+            className="perf-row w-full text-left space-y-1.5 cursor-pointer hover:bg-brutal-yellow/10 transition p-1 -m-1"
+          >
             <div className="flex justify-between text-xs font-bold">
               <span className="truncate">{c.name}</span>
               <span className="text-brutal-muted shrink-0 ml-2">{c.sent.toLocaleString()} sent</span>
@@ -105,7 +110,7 @@ function CampaignPerformance({ campaigns, onSelect }) {
               <span>🟢 {(c.open_rate ?? 0).toFixed(1)}% open</span>
               <span>🟡 {(c.click_rate ?? 0).toFixed(1)}% click</span>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>
@@ -113,6 +118,46 @@ function CampaignPerformance({ campaigns, onSelect }) {
 }
 
 function CampaignDetailModal({ campaign, workspaceId, onClose }) {
+  const panelRef = useRef(null)
+  const restoreFocusTo = useRef(null)
+
+  // Reachable via the now-keyboard-accessible performance rows, so it needs the
+  // same Escape-to-close, focus-trap, and focus-restore contract as ConfirmModal.
+  useEffect(() => {
+    if (!campaign) return
+
+    restoreFocusTo.current = document.activeElement
+    panelRef.current?.focus()
+
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onClose?.()
+        return
+      }
+      if (e.key !== 'Tab' || !panelRef.current) return
+      const focusable = panelRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      if (!focusable.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      restoreFocusTo.current?.focus?.()
+    }
+  }, [campaign?.id])
+
   if (!campaign) return null
   const openRate = campaign.open_rate ?? 0
   const clickRate = campaign.click_rate ?? 0
@@ -120,10 +165,18 @@ function CampaignDetailModal({ campaign, workspaceId, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-brutal-fg/40" />
-      <div className="relative border-3 border-brutal-fg bg-white shadow-brutal p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="campaign-detail-title"
+        tabIndex={-1}
+        className="relative border-3 border-brutal-fg bg-white shadow-brutal p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto focus:outline-none"
+        onClick={e => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-heading text-xl uppercase tracking-wide truncate">{campaign.name}</h3>
-          <button onClick={onClose} className="p-1 border-2 border-brutal-fg hover:bg-brutal-red/10 transition font-bold text-lg leading-none">✕</button>
+          <h3 id="campaign-detail-title" className="font-heading text-xl uppercase tracking-wide truncate">{campaign.name}</h3>
+          <button onClick={onClose} aria-label="Close campaign details" className="p-1 border-2 border-brutal-fg hover:bg-brutal-red/10 transition font-bold text-lg leading-none">✕</button>
         </div>
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3">

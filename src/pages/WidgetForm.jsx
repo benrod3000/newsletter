@@ -137,8 +137,8 @@ export default function WidgetFormPage() {
           <div className={`${bodyPad} space-y-${isSmall ? '2' : '5'}`}>
             {submitted ? (
               <div className="space-y-3">
-                <div className="h-1 w-12" style={{ backgroundColor: widgetType === 'coupon' ? '#f5e642' : '#2f7f5f' }} />
-                <p className="text-sm font-bold uppercase tracking-wider" style={{ color: widgetType === 'coupon' ? '#b8860b' : '#2f7f5f' }}>
+                <div className="h-1 w-12" style={{ backgroundColor: widgetType === 'coupon' ? '#f5e642' : '#2b7657' }} />
+                <p className="text-sm font-bold uppercase tracking-wider" style={{ color: widgetType === 'coupon' ? '#b8860b' : '#2b7657' }}>
                   {widget.success_message}
                 </p>
                 {widgetType === 'coupon' && widget.download_url && (

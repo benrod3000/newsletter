@@ -126,7 +126,7 @@ button:disabled, input:disabled, select:disabled, textarea:disabled, [disabled] 
   background: #0a0a0a;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2f7f5f;
+  background: var(--color-brutal-green);
 }
 
 /* =============================================
@@ -251,7 +251,7 @@ button:disabled, input:disabled, select:disabled, textarea:disabled, [disabled] 
 
 .card-green {
   border: 3px solid #0a0a0a;
-  background: #2f7f5f;
+  background: var(--color-brutal-green);
   color: #fff;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }

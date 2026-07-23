@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { HelpCircle, ArrowRight } from 'lucide-react'
 
@@ -96,6 +96,8 @@ export default function HelpPanel() {
   const [open, setOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
+  const panelRef = useRef(null)
+  const restoreFocusTo = useRef(null)
 
   // Match the current path to help config (longest prefix match)
   const help = Object.entries(PAGE_HELP).find(([path]) =>
@@ -114,21 +116,64 @@ export default function HelpPanel() {
   }, [location.pathname])
   /* eslint-enable */
 
+  // Match the modal a11y contract used by ConfirmModal/PromptModal: focus the
+  // panel on open, close on Escape, keep Tab inside the dialog, and restore
+  // focus to the trigger on close.
+  useEffect(() => {
+    if (!open) return
+
+    restoreFocusTo.current = document.activeElement
+    panelRef.current?.focus()
+
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setOpen(false)
+        return
+      }
+      if (e.key !== 'Tab' || !panelRef.current) return
+      const focusable = panelRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      if (!focusable.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      restoreFocusTo.current?.focus?.()
+    }
+  }, [open])
+
   if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh]" onClick={() => setOpen(false)}>
       <div className="absolute inset-0 bg-brutal-fg/20" />
       <div
-        className="relative w-full max-w-md border-3 border-brutal-fg bg-white shadow-brutal animate-bounce-in"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="help-panel-title"
+        tabIndex={-1}
+        className="relative w-full max-w-md border-3 border-brutal-fg bg-white shadow-brutal animate-bounce-in focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-5 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <HelpCircle size={16} />
-            <h2 className="font-heading text-xl uppercase tracking-wide">Help</h2>
+            <h2 id="help-panel-title" className="font-heading text-xl uppercase tracking-wide">Help</h2>
           </div>
-          <button onClick={() => setOpen(false)} className="text-brutal-fg font-bold text-lg leading-none">✕</button>
+          <button onClick={() => setOpen(false)} aria-label="Close help" className="text-brutal-fg font-bold text-lg leading-none">✕</button>
         </div>
 
         <div className="p-6 space-y-6">

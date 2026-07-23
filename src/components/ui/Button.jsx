@@ -4,7 +4,7 @@ const VARIANTS = {
   primary: 'bg-brutal-yellow text-brutal-fg border-3 border-brutal-fg hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-0 active:shadow-none',
   secondary: 'bg-white text-brutal-fg border-3 border-brutal-fg hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-0',
   ghost: 'bg-transparent text-brutal-fg/60 border-3 border-transparent hover:text-brutal-fg hover:border-brutal-fg',
-  danger: 'bg-brutal-red text-white border-3 border-brutal-fg hover:opacity-80 active:translate-y-0.5',
+  danger: 'bg-brutal-red text-white border-3 border-brutal-fg hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-0 active:shadow-none',
   link: 'bg-transparent text-brutal-green underline border-0 hover:opacity-70',
 }
 

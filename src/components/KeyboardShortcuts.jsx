@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const isMac = typeof navigator !== 'undefined' && navigator.platform?.toUpperCase().includes('MAC')
 const cmd = isMac ? '⌘' : 'Ctrl'
@@ -46,6 +46,8 @@ function KeyBadge({ children }) {
 
 export default function KeyboardShortcuts() {
   const [open, setOpen] = useState(false)
+  const panelRef = useRef(null)
+  const restoreFocusTo = useRef(null)
 
   useEffect(() => {
     const handler = (e) => {
@@ -66,19 +68,57 @@ export default function KeyboardShortcuts() {
     }
   }, [open])
 
+  // Same modal a11y contract as ConfirmModal/HelpPanel: move focus into the
+  // dialog on open so screen readers land inside it, keep Tab from escaping to
+  // the page behind, and hand focus back to the trigger on close.
+  useEffect(() => {
+    if (!open) return
+    restoreFocusTo.current = document.activeElement
+    panelRef.current?.focus()
+
+    const onKeyDown = (e) => {
+      if (e.key !== 'Tab' || !panelRef.current) return
+      const focusable = panelRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      if (!focusable.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      restoreFocusTo.current?.focus?.()
+    }
+  }, [open])
+
   if (!open) return null
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" onClick={() => setOpen(false)}>
       <div className="absolute inset-0 bg-brutal-fg/40" />
       <div
-        className="relative w-full max-w-lg bg-brutal-bg border-3 border-brutal-fg shadow-brutal max-h-[80vh] overflow-y-auto"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="shortcuts-title"
+        tabIndex={-1}
+        className="relative w-full max-w-lg bg-brutal-bg border-3 border-brutal-fg shadow-brutal max-h-[80vh] overflow-y-auto focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-6 py-4 flex items-center justify-between">
-          <h2 className="font-heading text-xl uppercase tracking-wide">Keyboard Shortcuts</h2>
+          <h2 id="shortcuts-title" className="font-heading text-xl uppercase tracking-wide">Keyboard Shortcuts</h2>
           <button
             onClick={() => setOpen(false)}
+            aria-label="Close keyboard shortcuts"
             className="px-2 py-1 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-sm hover:opacity-80"
           >
             ×

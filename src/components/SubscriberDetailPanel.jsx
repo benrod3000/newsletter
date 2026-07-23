@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getAuthToken } from '../lib/api'
 
 export default function SubscriberDetailPanel({ subscriber, onClose, onRemove }) {
+  const panelRef = useRef(null)
+  const restoreFocusTo = useRef(null)
   // Notes & tags state
   const [notes, setNotes] = useState([])
   const [tags, setTags] = useState([])
@@ -27,6 +29,49 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove })
     }).then(r => r.json()).then(d => { setTimeline(d.timeline || []) }).catch(() => setTimeline([])).finally(() => setTimelineLoading(false))
   }, [subscriber?.id, workspaceId])
   /* eslint-enable */
+
+  // Same modal a11y contract as ConfirmModal: close on Escape, keep Tab inside
+  // the drawer, and restore focus to the trigger on close. Keyed on the
+  // subscriber id so it re-arms each time a different row opens the panel.
+  useEffect(() => {
+    if (!subscriber) return
+
+    restoreFocusTo.current = document.activeElement
+    panelRef.current?.focus()
+
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onClose?.()
+        return
+      }
+      if (e.key !== 'Tab' || !panelRef.current) return
+      const focusable = panelRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      if (!focusable.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      restoreFocusTo.current?.focus?.()
+    }
+    // Keyed on the subscriber's identity, not the object or `onClose`: the trap
+    // should arm once per panel opening. Re-running whenever the parent hands
+    // down a fresh callback would tear the listener down and steal focus back
+    // to the panel mid-interaction.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subscriber?.id])
 
   if (!subscriber) return null
 
@@ -70,7 +115,12 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove })
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
       <div className="absolute inset-0 bg-brutal-fg/30" />
       <div
-        className="relative w-full max-w-md bg-brutal-bg border-l-3 border-brutal-fg overflow-y-auto shadow-brutal animate-slide-in"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="subscriber-panel-title"
+        tabIndex={-1}
+        className="relative w-full max-w-md bg-brutal-bg border-l-3 border-brutal-fg overflow-y-auto shadow-brutal animate-slide-in focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -78,7 +128,7 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove })
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <p className="text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1">Subscriber</p>
-              <h2 className="font-heading text-2xl uppercase tracking-wide leading-none break-all">{subscriber.email}</h2>
+              <h2 id="subscriber-panel-title" className="font-heading text-2xl uppercase tracking-wide leading-none break-all">{subscriber.email}</h2>
               {name && !editingName && (
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-bold mt-1">{name}</p>
@@ -101,7 +151,7 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove })
                 <button onClick={() => { setEditingName(true); setEditFirst(''); setEditLast('') }} className="text-xs font-bold text-brutal-muted hover:text-brutal-fg mt-1 uppercase tracking-wider">+ Add name</button>
               )}
             </div>
-            <button onClick={onClose} className="px-2 py-1 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-lg leading-none hover:opacity-80">×</button>
+            <button onClick={onClose} aria-label="Close subscriber details" className="px-2 py-1 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-lg leading-none hover:opacity-80">×</button>
           </div>
           <span className={`inline-block mt-3 text-xs font-bold px-2 py-1 border border-brutal-fg ${
             subscriber.confirmed ? 'bg-brutal-green text-white' : 'bg-brutal-yellow text-brutal-fg'
@@ -178,6 +228,8 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove })
           <Section title="Consent">
             <Row label="Email Marketing" value={subscriber.consent_email_marketing ? 'Yes' : 'No'} />
             <Row label="Analytics" value={subscriber.consent_analytics_tracking ? 'Yes' : 'No'} />
+            {subscriber.suppressed && <Row label="Suppressed" value={subscriber.suppressed_reason || 'Yes'} />}
+          </Section>
 
           {/* Tags */}
           <Section title="Tags">
@@ -205,8 +257,6 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove })
                 <p className="text-[9px] text-brutal-muted mt-0.5">{new Date(n.created_at).toLocaleDateString()}</p>
               </div>
             ))}
-          </Section>
-            {subscriber.suppressed && <Row label="Suppressed" value={subscriber.suppressed_reason || 'Yes'} />}
           </Section>
         </div>
 

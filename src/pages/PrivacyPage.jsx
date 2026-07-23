@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Btn from '../components/ui/Button'
 
 export default function PrivacyPage() {
   useEffect(() => { document.title = 'Privacy Policy | Veloce' }, [])
+  const navigate = useNavigate()
   return (
     <div className="min-h-screen bg-brutal-bg text-brutal-fg flex flex-col">
       <div className="border-b-3 border-brutal-fg bg-white/95 backdrop-blur-sm">
@@ -76,7 +77,7 @@ export default function PrivacyPage() {
           <h2 className="font-heading text-2xl uppercase mt-8">12. Contact</h2>
           <p>Privacy inquiries: support@veloce.app<br />Veloce is operated in California, USA.<br />Response time: within 45 days as required by California law.</p>
         </div>
-        <Btn variant="primary" size="lg" onClick={() => window.location.href = '/'}>← Back to Home</Btn>
+        <Btn variant="primary" size="lg" onClick={() => navigate('/')}>← Back to Home</Btn>
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Send, Users, PieChart, BarChart3, Settings, Globe, Shield } from 'lucide-react'
+import { LayoutDashboard, Send, Users, PieChart, BarChart3, Settings, Globe, Shield, Mail } from 'lucide-react'
 import { useCommandAction } from './useCommandAction'
 
 const COMMANDS = [
@@ -131,6 +131,9 @@ export default function CommandPalette() {
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]" onClick={() => setOpen(false)}>
       <div className="absolute inset-0 bg-brutal-fg/30" />
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Command palette"
         className="relative w-full max-w-lg border-3 border-brutal-fg bg-brutal-bg shadow-brutal"
         onClick={(e) => e.stopPropagation()}
       >
@@ -142,6 +145,7 @@ export default function CommandPalette() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKey}
             placeholder="What do you want to do?"
+            aria-label="Search commands"
             className="w-full bg-transparent text-sm font-bold placeholder:text-brutal-muted focus:outline-none"
           />
         </div>

@@ -5,7 +5,7 @@ import gsap from 'gsap'
 import L from 'leaflet'
 
 const PRESETS = [1, 5, 10, 25, 50, 100]
-const CIRCLE_COLORS = ['#2f7f5f', '#f5e642', '#e03131', '#4a9e7a', '#d4c82e']
+const CIRCLE_COLORS = ['#2b7657', '#f5e642', '#e03131', '#4a9e7a', '#d4c82e']
 const MAX_LOCATIONS = 5
 const GEO_FILTER_KEY = 'geo-filter-state'
 
@@ -217,7 +217,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   function addSubscriberPins(layer) {
     subscribers.forEach(s => {
       if (!s.latitude || !s.longitude) return
-      const colors = { active: '#2f7f5f', at_risk: '#f5e642', cold: '#e03131' }
+      const colors = { active: '#2b7657', at_risk: '#f5e642', cold: '#e03131' }
       const sizes = { active: 7, at_risk: 5, cold: 3 }
       L.circleMarker([s.latitude, s.longitude], {
         radius: sizes[s.health_score] || 4, color: '#0a0a0a',
@@ -539,7 +539,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
               <span>{locations.length} location{locations.length !== 1 ? 's' : ''}{locations.length === 0 ? ' - click the map to add' : ''}</span>
               {subscribers.some(s => s.latitude && s.longitude) && (
                   <span className="hidden sm:flex items-center gap-2">
-                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#2f7f5f'}} /> Active</span>
+                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#2b7657'}} /> Active</span>
                     <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#f5e642'}} /> Risk</span>
                     <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#e03131'}} /> Cold</span>
                   </span>
@@ -565,7 +565,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
                   [&::-webkit-slider-thumb]:shadow-brutal [&::-webkit-slider-thumb]:cursor-pointer
                   [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:bg-brutal-green
                   [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-brutal-fg [&::-moz-range-thumb]:cursor-pointer"
-                style={{ accentColor: '#2f7f5f' }}
+                style={{ accentColor: '#2b7657' }}
               />
             </div>
           )}

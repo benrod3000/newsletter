@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useReveal, useScrollReveal, useTerminalReveal } from '../hooks/use-gsap.jsx'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -29,6 +29,7 @@ import {
 
 export default function LandingPage() {
   useEffect(() => { document.title = 'Veloce · Own your audience. Reach them anywhere.' }, [])
+  const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [liveStats, setLiveStats] = useState(null)
   const [ticker, setTicker] = useState(0)
@@ -100,7 +101,7 @@ export default function LandingPage() {
             ))}
             <span className="w-px h-5 bg-brutal-fg/15" aria-hidden="true" />
             <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg transition-colors" role="menuitem">Sign In</Link>
-            <Btn variant="primary" size="md" onClick={() => window.location.href = '/signup'} role="menuitem">Create Free Account</Btn>
+            <Btn variant="primary" size="md" onClick={() => navigate('/signup')} role="menuitem">Create Free Account</Btn>
           </div>
 
           {/* Mobile hamburger */}
@@ -117,7 +118,7 @@ export default function LandingPage() {
             ))}
             <hr className="border-brutal-fg/15" />
             <Link to="/login" onClick={() => setMobileOpen(false)} className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/50 hover:text-brutal-fg">Sign In</Link>
-            <Btn variant="primary" size="md" fullWidth onClick={() => { window.location.href = '/signup'; setMobileOpen(false); }}>Create Free Account</Btn>
+            <Btn variant="primary" size="md" fullWidth onClick={() => { navigate('/signup'); setMobileOpen(false) }}>Create Free Account</Btn>
           </div>
         )}
       </nav>
@@ -147,10 +148,10 @@ export default function LandingPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 items-start">
-            <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
+            <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => navigate('/signup')}>
               Create Free Account
             </Btn>
-            <Btn variant="secondary" size="lg" onClick={() => window.location.href = '/demo'}>
+            <Btn variant="secondary" size="lg" onClick={() => navigate('/demo')}>
               Watch Demo
             </Btn>
           </div>
@@ -358,7 +359,7 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-          <Btn variant="primary" size="lg" icon={<ArrowRight size={14} />} onClick={() => window.location.href = '/demo'}>
+          <Btn variant="primary" size="lg" icon={<ArrowRight size={14} />} onClick={() => navigate('/demo')}>
             See Automations in Action
           </Btn>
         </div>
@@ -435,7 +436,7 @@ export default function LandingPage() {
           <p className="text-base sm:text-lg text-brutal-fg/70 max-w-xl mx-auto font-medium">
             Veloce organizes your audience by location automatically. Every newsletter reaches the people who actually matter, without extra work.
           </p>
-          <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
+          <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => navigate('/signup')}>
             Create Free Account
           </Btn>
         </div>
@@ -500,7 +501,7 @@ export default function LandingPage() {
               <p className="text-sm text-brutal-fg/70 leading-relaxed">
                 Location, engagement, devices, tags, acquisition source. Every subscriber has a full profile so you can target with precision.
               </p>
-              <Btn variant="primary" size="md" icon={<ArrowRight size={14} />} onClick={() => window.location.href = '/demo'}>
+              <Btn variant="primary" size="md" icon={<ArrowRight size={14} />} onClick={() => navigate('/demo')}>
                 Explore Subscriber Data
               </Btn>
             </div>
@@ -584,7 +585,7 @@ export default function LandingPage() {
                   </div>
                   {pillar.subtitle && <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">{pillar.subtitle}</p>}
                   <p className="text-sm text-brutal-fg/70 leading-relaxed max-w-md">{pillar.body}</p>
-                  <Btn variant="primary" size="lg" icon={<ArrowRight size={14} />} onClick={() => window.location.href = pillar.cta.to}>
+                  <Btn variant="primary" size="lg" icon={<ArrowRight size={14} />} onClick={() => navigate(pillar.cta.to)}>
                     {pillar.cta.label}
                   </Btn>
                   <Annotation>{pillar.annotation}</Annotation>
@@ -729,10 +730,10 @@ export default function LandingPage() {
             No monthly fees. No per-contact charges. No algorithms deciding who sees your content. Just your audience, your data, your rules.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => window.location.href = '/signup'}>
+            <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => navigate('/signup')}>
               Create Free Account
             </Btn>
-            <Btn variant="ghost" size="lg" onClick={() => window.location.href = '/demo'}>
+            <Btn variant="ghost" size="lg" onClick={() => navigate('/demo')}>
               Explore Live Demo
             </Btn>
           </div>

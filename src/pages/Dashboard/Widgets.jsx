@@ -29,8 +29,8 @@ function getContrastRatio(hex1, hex2) {
 
 function contrastBadge(fg, bg) {
   const ratio = getContrastRatio(fg, bg)
-  if (ratio >= 7) return { pass: 'AAA', color: '#2f7f5f' }
-  if (ratio >= 4.5) return { pass: 'AA', color: '#2f7f5f' }
+  if (ratio >= 7) return { pass: 'AAA', color: '#2b7657' }
+  if (ratio >= 4.5) return { pass: 'AA', color: '#2b7657' }
   if (ratio >= 3) return { pass: 'AA-large', color: '#f5e642' }
   return { pass: 'FAIL', color: '#e03131' }
 }

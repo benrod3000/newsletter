@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Btn from '../components/ui/Button'
 import Input from '../components/ui/Input'
@@ -9,6 +9,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.
 
 export default function ForgotPasswordPage() {
   useEffect(() => { document.title = 'Forgot Password | Veloce' }, [])
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
@@ -55,7 +56,7 @@ export default function ForgotPasswordPage() {
               <p className="text-xs font-bold uppercase tracking-wider text-brutal-green">✓ Reset link sent</p>
               <p className="text-xs text-brutal-fg/70 mt-1">Check your email. The link expires in 1 hour.</p>
             </div>
-            <Btn variant="primary" fullWidth size="lg" onClick={() => window.location.href = '/login'}>
+            <Btn variant="primary" fullWidth size="lg" onClick={() => navigate('/login')}>
               Back to Sign In
             </Btn>
           </div>
