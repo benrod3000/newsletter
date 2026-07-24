@@ -4,6 +4,26 @@ export default function Changelog() {
   useEffect(() => { document.title = 'Changelog | Veloce' }, [])
   const entries = [
     {
+      date: 'July 23, 2026',
+      items: [
+        'Amazon SES sending wired end-to-end: SES is now a working send provider alongside Resend and SendGrid. Emails go out as raw MIME so one-click List-Unsubscribe (RFC 8058) headers are preserved, with automatic fallback to your backup provider on transient errors.',
+        'Bring-your-own-provider now names every option where you look for it: the homepage, share previews, integrations, and docs present Resend (fastest to set up, 3,000 emails/month free), Amazon SES (cheapest at volume, ~$1 per 10,000), and SendGrid side by side — flexibility, not homework.',
+        'Brand typography restored: a theme-token mismatch was silently rendering every section heading and the Veloce wordmark in the body font. Headings now display in Bebas Neue across the entire site.',
+        'Accessibility: the "Explore Live Demo" button and keyboard focus rings are now visible on dark sections, and the "Skip to content" link now lands on the main content instead of nowhere.',
+        'Clearer calls to action: the hero\'s "Watch Demo" is now "See Live Demo" — it opens an interactive product tour, not a video.',
+        'New sample newsletter: a conversational, two-voice template (chat-bubble layout, alternating speakers, geo-personalized greeting) you can preview and adapt for event announcements.',
+      ],
+    },
+    {
+      date: 'July 22, 2026',
+      items: [
+        'Campaign sends are now durable: broadcasts run through a per-recipient queue in Postgres, so an interrupted send resumes exactly where it left off — no dropped recipients, no duplicate emails.',
+        'Campaign-recovery cron moved to a daily cadence so scheduled recovery no longer collides with deploys.',
+        'Signup failures are now actionable: instead of a generic yellow banner, each error points to the field or the next step (for example, "this email already has an account → sign in").',
+        'Stability and accessibility fixes: modal focus handling corrected, a color-palette crash resolved, and a stale brand green updated so secondary text meets contrast targets.',
+      ],
+    },
+    {
       date: 'July 21, 2026',
       items: [
         'Deliverability Center: new dashboard page for monitoring email health. DNS record checker validates SPF, DKIM, DMARC, and MX records in real-time against your configured provider.',

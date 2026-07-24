@@ -152,7 +152,7 @@ export default function LandingPage() {
               Create Free Account
             </Btn>
             <Btn variant="secondary" size="lg" onClick={() => navigate('/demo')}>
-              Watch Demo
+              See Live Demo
             </Btn>
           </div>
           <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · No time limit · Bring your own Resend, SES, or SendGrid</p>
