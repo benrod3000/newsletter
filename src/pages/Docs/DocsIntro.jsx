@@ -45,7 +45,7 @@ export default function DocsIntro() {
 
       <Section title="Bring Your Own Provider">
         <p className="text-sm text-brutal-fg/70 leading-relaxed">
-          Veloce works with your existing SendGrid or Amazon SES account. No vendor lock-in, no platform fees.
+          Veloce works with your existing Resend, SendGrid, or Amazon SES account. No vendor lock-in, no platform fees.
           You pay only for what your provider charges.
         </p>
       </Section>

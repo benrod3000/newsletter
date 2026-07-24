@@ -5,7 +5,7 @@ export default function FAQ() {
   const faqs = [
     {
       q: 'How much does Veloce cost?',
-      a: 'Veloce is free to start. You only pay for your email provider (SendGrid or AWS SES). SendGrid free tier includes 100 emails/day. SES costs about $1 per 10,000 emails.',
+      a: 'Veloce is free to start. You only pay for your email provider (Resend, SendGrid, or AWS SES). Resend free tier includes 3,000 emails/month; SendGrid free tier includes 100 emails/day; SES costs about $1 per 10,000 emails.',
     },
     {
       q: 'Do I need a credit card?',
@@ -13,7 +13,7 @@ export default function FAQ() {
     },
     {
       q: 'Can I use my own email provider?',
-      a: 'Yes. Veloce supports both SendGrid and Amazon SES. Bring your own API keys with no vendor lock-in.',
+      a: 'Yes. Veloce supports Resend, SendGrid, and Amazon SES. Bring your own API keys with no vendor lock-in.',
     },
     {
       q: 'How is this different from Mailchimp?',

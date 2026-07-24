@@ -27,9 +27,14 @@
   --color-brutal-surface: #e8e8e0;
   --color-brutal-surface-dark: #d4d0c8;
   --color-brutal-border: #0a0a0a;
-  --font-family-heading: "Bebas Neue", Impact, "Arial Black", sans-serif;
-  --font-family-sans: Inter, "Helvetica Neue", Arial, sans-serif;
-  --font-family-mono: ui-monospace, SFMono-Regular, monospace;
+  /* Tailwind v4 derives font utilities from `--font-*` tokens: `--font-heading`
+     → `font-heading`, etc. The previous `--font-family-*` names generated no
+     matching utility, so `font-heading` (logo, every section H2, KPI numbers)
+     silently fell back to Inter. Renamed so the Bebas display face actually
+     renders where the markup asks for it. */
+  --font-heading: "Bebas Neue", Impact, "Arial Black", sans-serif;
+  --font-sans: Inter, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, monospace;
   --shadow-brutal: 4px 4px 0px #0a0a0a;
   --border-width-3: 3px;
   /* Typography scale */
@@ -59,7 +64,7 @@
   }
 
   body {
-    font-family: var(--font-family-sans);
+    font-family: var(--font-sans);
     font-size: 18px;
     line-height: 1.5;
     color: var(--color-brutal-fg);
@@ -84,6 +89,13 @@
   *:focus-visible {
     outline: 3px solid var(--color-brutal-fg);
     outline-offset: 2px;
+  }
+
+  /* On dark sections the near-black ring above is invisible; invert it to the
+     light background color so keyboard focus stays visible there. */
+  .bg-brutal-fg:focus-visible,
+  .bg-brutal-fg *:focus-visible {
+    outline-color: var(--color-brutal-bg);
   }
 }
 

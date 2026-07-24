@@ -4,6 +4,9 @@ const VARIANTS = {
   primary: 'bg-brutal-yellow text-brutal-fg border-3 border-brutal-fg hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-0 active:shadow-none',
   secondary: 'bg-white text-brutal-fg border-3 border-brutal-fg hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-0',
   ghost: 'bg-transparent text-brutal-fg/60 border-3 border-transparent hover:text-brutal-fg hover:border-brutal-fg',
+  // For use on dark (bg-brutal-fg) sections, where `ghost`'s near-black text is
+  // invisible. Light text/border that reads on the dark surface.
+  ghostOnDark: 'bg-transparent text-brutal-bg/80 border-3 border-brutal-bg/40 hover:text-brutal-bg hover:border-brutal-bg',
   danger: 'bg-brutal-red text-white border-3 border-brutal-fg hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-0 active:shadow-none',
   link: 'bg-transparent text-brutal-green underline border-0 hover:opacity-70',
 }

@@ -226,6 +226,7 @@ function App() {
             <Route path="features/analytics" element={<DocsIntro />} />
             <Route path="features/sms" element={<DocsIntro />} />
             <Route path="features/templates" element={<DocsIntro />} />
+            <Route path="integrations/resend" element={<Setup />} />
             <Route path="integrations/sendgrid" element={<Setup />} />
             <Route path="integrations/ses" element={<Setup />} />
             <Route path="api/overview" element={<DocsIntro />} />

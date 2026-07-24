@@ -13,7 +13,7 @@ export default function Quickstart() {
       </Step>
 
       <Step number={2} title="Connect your email provider">
-        <p>Go to <strong>Settings → Email Provider</strong>. Choose SendGrid or Amazon SES. Enter your API key or SES credentials. Save and click "Test Provider" to verify everything works.</p>
+        <p>Go to <strong>Settings → Email Provider</strong>. Choose Resend, SendGrid, or Amazon SES. Enter your API key or SES credentials. Save and click "Test Provider" to verify everything works.</p>
       </Step>
 
       <Step number={3} title="Add subscribers">

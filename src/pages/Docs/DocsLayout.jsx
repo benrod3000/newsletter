@@ -16,6 +16,7 @@ const SIDEBAR = [
     { to: '/docs/features/templates', label: 'Templates' },
   ]},
   { heading: 'Integrations', links: [
+    { to: '/docs/integrations/resend', label: 'Resend' },
     { to: '/docs/integrations/sendgrid', label: 'SendGrid' },
     { to: '/docs/integrations/ses', label: 'Amazon SES' },
   ]},

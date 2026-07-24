@@ -55,7 +55,7 @@ export default function PrivacyPage() {
           <ul className="list-disc list-inside space-y-1">
           <li><strong>Supabase</strong> (database hosting), our infrastructure provider</li>
           <li><strong>Twilio</strong> // SMS and RCS message delivery (when enabled by workspace operator)</li>
-          <li><strong>SendGrid or AWS SES</strong>, your chosen email delivery provider</li>
+          <li><strong>Resend, SendGrid, or AWS SES</strong>, your chosen email delivery provider</li>
           </ul>
           <p>We require all third parties to maintain appropriate data protection standards.</p>
 

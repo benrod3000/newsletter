@@ -17,7 +17,7 @@ export default function TermsPage() {
         <p className="text-sm text-brutal-muted">Last updated: July 2026</p>
         <div className="space-y-4 text-sm leading-relaxed">
           <h2 className="font-heading text-2xl uppercase mt-8">1. Service Description</h2>
-          <p>Veloce is an email newsletter platform that provides subscriber management, campaign creation, geo-targeting, and analytics. You bring your own email sending provider (SendGrid or AWS SES). This platform is operated from California, USA.</p>
+          <p>Veloce is an email newsletter platform that provides subscriber management, campaign creation, geo-targeting, and analytics. You bring your own email sending provider (Resend, SendGrid, or AWS SES). This platform is operated from California, USA.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">2. Eligibility</h2>
           <p>You must be at least 18 years old to use Veloce. By creating an account, you represent that you meet this requirement and that all information you provide is accurate.</p>
@@ -34,7 +34,7 @@ export default function TermsPage() {
             <li>Include clear opt-out instructions ("Reply STOP to unsubscribe") in every SMS</li>
             <li>Identify yourself as the sender in all communications</li>
             <li>Comply with CAN-SPAM, TCPA, CTIA guidelines, California B&P Code § 17529, and all applicable laws</li>
-            <li>Maintain your own sending infrastructure // SendGrid or SES for email, Twilio for SMS</li>
+            <li>Maintain your own sending infrastructure // Resend, SendGrid, or SES for email, Twilio for SMS</li>
           </ul>
 
           <h2 className="font-heading text-2xl uppercase mt-8">5. Acceptable Use</h2>

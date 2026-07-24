@@ -124,9 +124,9 @@ export default function LandingPage() {
       </nav>
 
       {/* ═══ HERO ═══ */}
-      <Section className="bg-dots-light pt-28 sm:pt-36" id="main-content">
+      <Section className="bg-dots-light pt-28 sm:pt-36 focus:outline-none" id="main-content" tabIndex={-1}>
         <div ref={heroRef} className="max-w-5xl mx-auto space-y-10 sm:space-y-12">
-          <Badge variant="yellow">Email + SMS + RCS + geo-targeting + automations</Badge>
+          <Badge variant="yellow">Newsletter platform · Email · SMS · RCS</Badge>
 
           <h1 className="text-display leading-[0.85]">
             Stop Renting{' '}
@@ -136,10 +136,10 @@ export default function LandingPage() {
           <div className="h-2 w-24 bg-brutal-yellow border-2 border-brutal-fg" aria-hidden="true" />
 
           <p className="text-lg sm:text-xl text-brutal-fg/80 leading-relaxed max-w-2xl font-medium">
-            Email, SMS, RCS, automation, geo-targeting, and subscriber intelligence // one platform.
+            The newsletter platform where you own the list and bring your own sending — Resend, SES, or SendGrid. One audience, reachable by email, SMS, or RCS.
           </p>
 
-          <Annotation>audience ownership · byo email/SMS provider · free to start · no credit card</Annotation>
+          <Annotation>audience ownership · bring your own Resend / SES / SendGrid · free to start</Annotation>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
             <span className="flex items-center gap-1 text-[10px] font-bold text-brutal-green uppercase tracking-wider"><CheckCircle size={12} aria-hidden="true" /> No per-contact fees</span>
@@ -155,7 +155,7 @@ export default function LandingPage() {
               Watch Demo
             </Btn>
           </div>
-          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · No time limit · Bring your own SendGrid or SES</p>
+          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · No time limit · Bring your own Resend, SES, or SendGrid</p>
         </div>
       </Section>
 
@@ -733,11 +733,11 @@ export default function LandingPage() {
             <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => navigate('/signup')}>
               Create Free Account
             </Btn>
-            <Btn variant="ghost" size="lg" onClick={() => navigate('/demo')}>
+            <Btn variant="ghostOnDark" size="lg" onClick={() => navigate('/demo')}>
               Explore Live Demo
             </Btn>
           </div>
-          <Annotation className="justify-center !text-brutal-bg/50">no credit card · no time limit · BYO SendGrid or SES</Annotation>
+          <Annotation className="justify-center !text-brutal-bg/50">no credit card · no time limit · BYO Resend, SES, or SendGrid</Annotation>
         </div>
       </Section>
 
@@ -751,8 +751,9 @@ export default function LandingPage() {
           </h2>
           <div className="flex flex-wrap justify-center gap-3 sm:gap-4 max-w-xl mx-auto">
             {[
-              { label: 'SendGrid', icon: Mail },
+              { label: 'Resend', icon: Mail },
               { label: 'AWS SES', icon: Globe },
+              { label: 'SendGrid', icon: Mail },
               { label: 'Twilio', icon: Smartphone },
               { label: 'Supabase', icon: BarChart3 },
               { label: 'CSV Import', icon: FileText },
