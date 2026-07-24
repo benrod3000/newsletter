@@ -149,8 +149,8 @@ export const analyticsAPI = {
     api.get<ApiResponse<AnalyticsOverview>>(`/api/clients/${workspaceId}/analytics`, { params }),
   activity: (workspaceId: string) =>
     api.get<ApiResponse>(`/api/clients/${workspaceId}/activity`),
-  heatmap: (workspaceId: string) =>
-    api.get<ApiResponse>(`/api/clients/${workspaceId}/analytics/heatmap`),
+  heatmap: (workspaceId: string, params?: Record<string, unknown>) =>
+    api.get<ApiResponse>(`/api/clients/${workspaceId}/analytics/heatmap`, { params }),
   sms: (workspaceId: string) =>
     api.get<ApiResponse>(`/api/clients/${workspaceId}/analytics/sms`),
   live: (workspaceId: string) =>

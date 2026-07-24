@@ -9,7 +9,35 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 if (typeof window !== 'undefined') { gsap.registerPlugin(ScrollTrigger) }
 
-function AnimatedStatCard({ label, value, delay = 0 }) {
+/**
+ * Period-over-period change. Rendered with an arrow glyph as well as colour so
+ * direction survives a greyscale or colour-blind reading.
+ */
+function Delta({ current, previous, unit = 'count', periodDays }) {
+  const hasPrior = previous != null && Number.isFinite(previous)
+  if (!hasPrior || (previous === 0 && unit === 'count' && current === 0)) {
+    return <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mt-1.5">No prior period to compare</p>
+  }
+
+  // Rates compare in percentage points; counts compare in absolute units.
+  const diff = current - previous
+  const flat = Math.abs(diff) < (unit === 'points' ? 0.05 : 0.5)
+  const up = diff > 0
+  const magnitude = unit === 'points' ? `${Math.abs(diff).toFixed(1)} pts` : Math.abs(Math.round(diff)).toLocaleString()
+  const tone = flat ? 'text-brutal-muted' : up ? 'text-brutal-green' : 'text-brutal-red'
+  const glyph = flat ? '→' : up ? '▲' : '▼'
+  const word = flat ? 'no change' : up ? 'up' : 'down'
+
+  return (
+    <p className={`text-[10px] font-bold uppercase tracking-wider mt-1.5 ${tone}`}>
+      <span aria-hidden="true">{glyph} </span>
+      {flat ? 'No change' : `${magnitude} ${word}`}
+      <span className="text-brutal-muted"> vs prior {periodDays}d</span>
+    </p>
+  )
+}
+
+function AnimatedStatCard({ label, value, delay = 0, current, previous, unit, periodDays, hint }) {
   const ref = useRef(null)
   const [displayed, setDisplayed] = useState(0)
   const numVal = typeof value === 'number' ? value : parseFloat(String(value).replace(/[^0-9.]/g, '')) || 0
@@ -18,50 +46,75 @@ function AnimatedStatCard({ label, value, delay = 0 }) {
     const el = ref.current
     if (!el) return
     gsap.fromTo(el, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, delay, ease: 'power3.out' })
-    if (numVal > 0) {
-      gsap.fromTo({ val: 0 }, { val: 0 }, {
+    if (typeof value === 'number' && numVal > 0) {
+      const proxy = { val: 0 }
+      const tw = gsap.to(proxy, {
         val: numVal, duration: 1.2, delay: delay + 0.2, ease: 'power2.out',
-        onUpdate: function () { setDisplayed(Math.round(this.targets()[0].val)) },
+        onUpdate: () => setDisplayed(Math.round(proxy.val)),
       })
-    } else {
-      setDisplayed(numVal)
+      return () => tw.kill()
     }
-  }, [numVal, delay])
+    setDisplayed(numVal)
+  }, [numVal, delay, value])
 
   return (
     <div ref={ref} className="border-3 border-brutal-fg bg-white p-6 border-t-[6px] border-t-brutal-yellow hover:shadow-brutal transition">
       <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">{label}</p>
-      <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">{typeof value === 'number' ? displayed.toLocaleString() : value}</p>
+      <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">
+        {typeof value === 'number' ? displayed.toLocaleString() : value}
+      </p>
+      {hint && <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mt-1">{hint}</p>}
+      {current != null && <Delta current={current} previous={previous} unit={unit} periodDays={periodDays} />}
     </div>
   )
 }
 
 function AnimatedGrowthChart({ points, height = 40 }) {
   const chartRef = useRef(null)
-  const max = Math.max(...points.map((p) => p.count ?? 0), 1)
+
+  // Past ~5 weeks, one bar per day is an unreadable comb. Roll days up into
+  // weeks so the trend stays legible at 90d; keep daily granularity when short.
+  const { bars, bucketed } = useMemo(() => {
+    if (points.length <= 35) return { bars: points.map(p => ({ ...p, total: p.count ?? 0 })), bucketed: false }
+    const weeks = []
+    for (let i = 0; i < points.length; i += 7) {
+      const slice = points.slice(i, i + 7)
+      weeks.push({ date: slice[0].date, total: slice.reduce((s, p) => s + (p.count ?? 0), 0) })
+    }
+    return { bars: weeks, bucketed: true }
+  }, [points])
+
+  const max = Math.max(...bars.map((b) => b.total), 1)
+  const total = points.reduce((s, p) => s + (p.count ?? 0), 0)
+  const labelEvery = Math.ceil(bars.length / 8) // keep ~8 axis labels max
 
   useEffect(() => {
-    const bars = chartRef.current?.querySelectorAll('.growth-bar')
-    if (!bars?.length) return
-    gsap.fromTo(bars, { scaleY: 0, transformOrigin: 'bottom' }, {
+    const els = chartRef.current?.querySelectorAll('.growth-bar')
+    if (!els?.length) return
+    gsap.fromTo(els, { scaleY: 0, transformOrigin: 'bottom' }, {
       scaleY: 1, duration: 0.6, stagger: 0.03, ease: 'power3.out',
       scrollTrigger: { trigger: chartRef.current, start: 'top 90%' },
     })
-  }, [points])
+  }, [bars])
 
   return (
     <div ref={chartRef} className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
-      <h3 className="font-heading text-xl uppercase tracking-wide mb-6">Subscriber Growth</h3>
-      <div className="flex items-end gap-2" style={{ height: `${height * 4}px` }}>
-        {points.map((p, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
+      <div className="flex items-baseline justify-between mb-6">
+        <h3 className="font-heading text-xl uppercase tracking-wide">Subscriber Growth</h3>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">
+          +{total.toLocaleString()} total{bucketed ? ' · weekly' : ' · daily'} · peak {max.toLocaleString()}
+        </span>
+      </div>
+      <div className="flex items-end gap-1.5" style={{ height: `${height * 4}px` }}>
+        {bars.map((b, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center gap-2 min-w-0">
             <div
               className="growth-bar w-full bg-brutal-yellow border-2 border-brutal-fg hover:bg-brutal-yellow-dark transition cursor-pointer"
-              style={{ height: `${Math.max((p.count / max) * 100, 2)}%` }}
-              title={`${p.count} on ${p.date}`}
+              style={{ height: `${Math.max((b.total / max) * 100, 2)}%` }}
+              title={`${b.total.toLocaleString()} ${bucketed ? 'in week of' : 'on'} ${new Date(b.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
             />
-            <span className="text-[10px] font-bold text-brutal-muted whitespace-nowrap">
-              {new Date(p.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            <span className="text-[10px] font-bold text-brutal-muted whitespace-nowrap h-3">
+              {i % labelEvery === 0 ? new Date(b.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
             </span>
           </div>
         ))}
@@ -70,9 +123,39 @@ function AnimatedGrowthChart({ points, height = 40 }) {
   )
 }
 
-function CampaignPerformance({ campaigns, onSelect }) {
+/**
+ * A single 0–100% rate track with a marker showing the workspace average, so a
+ * campaign reads as "beat/missed your normal" rather than a bare percentage.
+ */
+function RateBar({ label, rate, average, colorClass }) {
+  const pct = Math.min(Math.max(rate ?? 0, 0), 100)
+  const avgPct = Math.min(Math.max(average ?? 0, 0), 100)
+  const beats = (rate ?? 0) >= (average ?? 0)
+  return (
+    <div>
+      <div className="flex justify-between text-[10px] font-bold mb-0.5">
+        <span className="text-brutal-muted uppercase tracking-wider">{label}</span>
+        <span className={beats ? 'text-brutal-green' : 'text-brutal-muted'}>
+          {pct.toFixed(1)}%
+          <span className="text-brutal-muted"> · avg {avgPct.toFixed(1)}%</span>
+        </span>
+      </div>
+      <div className="relative h-4 border-2 border-brutal-fg bg-brutal-surface overflow-hidden">
+        <div className={`absolute inset-y-0 left-0 ${colorClass} transition-all`} style={{ width: `${pct}%` }} />
+        {avgPct > 0 && (
+          <div
+            className="absolute inset-y-0 w-0.5 bg-brutal-fg"
+            style={{ left: `${avgPct}%` }}
+            title={`Your average: ${avgPct.toFixed(1)}%`}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+function CampaignPerformance({ campaigns, onFocus, focusedId, avgOpen, avgClick }) {
   const ref = useRef(null)
-  const maxSent = Math.max(...campaigns.map(c => c.sent ?? 0), 1)
 
   useEffect(() => {
     const rows = ref.current?.querySelectorAll('.perf-row')
@@ -85,33 +168,117 @@ function CampaignPerformance({ campaigns, onSelect }) {
 
   return (
     <div ref={ref} className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
-      <h3 className="font-heading text-xl uppercase tracking-wide mb-6">📊 Campaign Performance</h3>
-      <div className="space-y-3">
-        {campaigns.map((c, i) => (
-          <button
-            key={c.id ?? i}
-            type="button"
-            onClick={() => onSelect?.(c)}
-            className="perf-row w-full text-left space-y-1.5 cursor-pointer hover:bg-brutal-yellow/10 transition p-1 -m-1"
-          >
-            <div className="flex justify-between text-xs font-bold">
-              <span className="truncate">{c.name}</span>
-              <span className="text-brutal-muted shrink-0 ml-2">{c.sent.toLocaleString()} sent</span>
-            </div>
-            <div className="flex gap-1 h-5">
-              <div className="relative flex-1 border-2 border-brutal-fg bg-brutal-surface overflow-hidden">
-                <div className="absolute inset-y-0 left-0 bg-brutal-green transition-all" style={{ width: `${Math.min(c.open_rate ?? 0, 100)}%` }} title={`${(c.open_rate ?? 0).toFixed(1)}% opened`} />
+      <h3 className="font-heading text-xl uppercase tracking-wide mb-1">Campaign Performance</h3>
+      <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-5">
+        Bars are 0–100%. The vertical line marks your average.
+      </p>
+      <div className="space-y-4">
+        {campaigns.map((c, i) => {
+          const isFocused = c.id === focusedId
+          return (
+            <button
+              key={c.id ?? i}
+              type="button"
+              onClick={() => onFocus?.(isFocused ? null : c.id)}
+              aria-pressed={isFocused}
+              className={`perf-row w-full text-left space-y-2 cursor-pointer transition p-2 -m-0.5 border-2 ${
+                isFocused ? 'border-brutal-fg bg-brutal-yellow/20' : 'border-transparent hover:bg-brutal-yellow/10'
+              }`}
+            >
+              <div className="flex justify-between text-xs font-bold">
+                <span className="truncate">{c.name}</span>
+                <span className="text-brutal-muted shrink-0 ml-2">{(c.sent ?? 0).toLocaleString()} sent</span>
               </div>
-              <div className="relative flex-1 border-2 border-brutal-fg bg-brutal-surface overflow-hidden">
-                <div className="absolute inset-y-0 left-0 bg-brutal-yellow transition-all" style={{ width: `${Math.min(c.click_rate ?? 0, 100)}%` }} title={`${(c.click_rate ?? 0).toFixed(1)}% clicked`} />
-              </div>
+              <RateBar label="Open" rate={c.open_rate} average={avgOpen} colorClass="bg-brutal-green" />
+              <RateBar label="Click" rate={c.click_rate} average={avgClick} colorClass="bg-brutal-yellow" />
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const DAY_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+function fmtHour(h) {
+  const period = h < 12 ? 'am' : 'pm'
+  const hour12 = h % 12 === 0 ? 12 : h % 12
+  return `${hour12}${period}`
+}
+
+function OpenTimeHeatmap({ heatmap, loading, error, days }) {
+  if (loading) {
+    return <div className="border-3 border-brutal-fg bg-white p-6"><p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">Loading open times…</p></div>
+  }
+  if (error) {
+    return <div className="border-3 border-brutal-fg bg-white p-6"><p className="text-xs font-bold text-brutal-red uppercase tracking-wider">Couldn't load open times</p></div>
+  }
+  // Explain the section instead of vanishing when there's nothing to show yet.
+  if (!heatmap || !heatmap.totalOpens) {
+    return (
+      <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
+        <h3 className="font-heading text-xl uppercase tracking-wide mb-2">When They Open</h3>
+        <p className="text-sm text-brutal-muted leading-relaxed">
+          Once your broadcasts collect opens in this window, this shows the hours and days
+          your audience is most active — so you know when to hit send.
+        </p>
+      </div>
+    )
+  }
+
+  const tzName = (() => {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone } catch { return null }
+  })()
+
+  return (
+    <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
+      <div className="flex items-baseline justify-between gap-2 mb-3">
+        <h3 className="font-heading text-xl uppercase tracking-wide">When They Open</h3>
+        <span className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted shrink-0">
+          {heatmap.totalOpens.toLocaleString()} opens · {days}d
+        </span>
+      </div>
+
+      {/* Recommendation, phrased as an action */}
+      <div className="border-2 border-brutal-green bg-brutal-green/5 px-3 py-2 mb-5">
+        <p className="text-xs font-bold">
+          <span className="text-brutal-green">Best time to send:</span>{' '}
+          {DAY_NAMES[heatmap.bestDay]} around {fmtHour(heatmap.bestHour)}
+        </p>
+        {tzName && <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted mt-0.5">Times shown in {tzName}</p>}
+      </div>
+
+      <div className="mb-5">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">By Hour</p>
+        <div className="flex items-end gap-0.5 h-20">
+          {heatmap.hours.map((h) => (
+            <div key={h.hour} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
+              <div
+                className={`w-full border border-brutal-fg transition ${h.hour === heatmap.bestHour ? 'bg-brutal-green' : 'bg-brutal-green/40 hover:bg-brutal-green/70'}`}
+                style={{ height: `${Math.max(h.pct, 2)}%` }}
+                title={`${h.count.toLocaleString()} opens at ${fmtHour(h.hour)}`}
+              />
+              {h.hour % 6 === 0 && <span className="text-[8px] font-bold text-brutal-muted">{fmtHour(h.hour)}</span>}
             </div>
-            <div className="flex justify-between text-[10px] font-bold text-brutal-muted">
-              <span>🟢 {(c.open_rate ?? 0).toFixed(1)}% open</span>
-              <span>🟡 {(c.click_rate ?? 0).toFixed(1)}% click</span>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">By Day</p>
+        <div className="flex items-end gap-1 h-14">
+          {heatmap.days.map((d) => (
+            <div key={d.day} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
+              <div
+                className={`w-full border border-brutal-fg transition ${d.day === heatmap.bestDay ? 'bg-brutal-yellow-dark' : 'bg-brutal-yellow/50 hover:bg-brutal-yellow'}`}
+                style={{ height: `${Math.max(d.pct, 4)}%` }}
+                title={`${d.count.toLocaleString()} opens on ${DAY_NAMES[d.day]}`}
+              />
+              <span className="text-[8px] font-bold text-brutal-muted">{DAY_SHORT[d.day]}</span>
             </div>
-          </button>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -255,7 +422,8 @@ function LivePulse({ workspaceId }) {
 
     async function fetchLive() {
       try {
-        const { data } = await analyticsAPI.live(workspaceId)
+        const { data: body } = await analyticsAPI.live(workspaceId)
+        const data = body?.data ?? body
         if (!cancelled && data?.events?.length) {
           setEvents(prev => {
             const existing = new Set(prev.map((e) => `${e.email}-${e.timestamp}`))
@@ -318,8 +486,6 @@ export default function AnalyticsPage() {
   const [smsStats, setSmsStats] = useState(null)
   const [heatmapLoading, setHeatmapLoading] = useState(false)
   const [heatmapError, setHeatmapError] = useState(null)
-  const [smsLoading, setSmsLoading] = useState(false)
-  const [smsError, setSmsError] = useState(null)
   const [showSms, setShowSms] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
 
@@ -339,8 +505,12 @@ export default function AnalyticsPage() {
         }
       }
 
-      const { data } = await analyticsAPI.overview(workspaceId, { days })
-      try { sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() })) } catch {}
+      const { data: body } = await analyticsAPI.overview(workspaceId, { days })
+      // This route wraps its payload as { data: ... } (apiSuccess) while the
+      // sibling analytics routes return it flat. Unwrap tolerantly so the page
+      // works with either envelope instead of silently rendering zeros.
+      const data = body?.data ?? body
+      try { sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() })) } catch { /* quota */ }
       setOverview(data)
     } catch (err) {
       console.error('Failed to load analytics:', err)
@@ -354,12 +524,11 @@ export default function AnalyticsPage() {
   useEffect(() => {
     if (!workspaceId) return
     document.title = 'Analytics | Veloce'
-    const controller = new AbortController()
     loadOverview()
     // Auto-refresh every 60 seconds
     const interval = setInterval(() => loadOverview(true), 60000)
-    return () => { controller.abort(); clearInterval(interval) }
-  }, [workspaceId, days])
+    return () => clearInterval(interval)
+  }, [workspaceId, days, loadOverview])
 
   useEffect(() => {
     if (!workspaceId) return
@@ -369,8 +538,11 @@ export default function AnalyticsPage() {
       setHeatmapLoading(true)
       setHeatmapError(null)
       try {
-        const { data } = await analyticsAPI.heatmap(workspaceId)
-        if (!cancelled) setHeatmap(data)
+        const { data: body } = await analyticsAPI.heatmap(workspaceId, {
+          days,
+          tzOffset: new Date().getTimezoneOffset(),
+        })
+        if (!cancelled) setHeatmap(body?.data ?? body)
       } catch {
         if (!cancelled) setHeatmapError(true)
       } finally {
@@ -378,27 +550,53 @@ export default function AnalyticsPage() {
       }
     }
 
+    // SMS is an optional channel — the panel stays hidden unless it's set up
+    // and has reach, so there's no separate loading/error surface to track.
     async function loadSms() {
-      setSmsLoading(true)
-      setSmsError(null)
       try {
-        const { data } = await analyticsAPI.sms(workspaceId)
-        if (!cancelled) setSmsStats(data)
-      } catch {
-        if (!cancelled) setSmsError(true)
-      } finally {
-        if (!cancelled) setSmsLoading(false)
-      }
+        const { data: body } = await analyticsAPI.sms(workspaceId)
+        if (!cancelled) setSmsStats(body?.data ?? body)
+      } catch { /* SMS panel simply stays hidden */ }
     }
 
     loadHeatmap()
     loadSms()
     return () => { cancelled = true }
-  }, [workspaceId])
+  }, [workspaceId, days])
 
-  const growth = overview?.subscriber_growth || []
-  const topCampaigns = overview?.top_campaigns || []
+  const prev = overview?.previous
   const [detailCampaign, setDetailCampaign] = useState(null)
+  const [focusedCampaignId, setFocusedCampaignId] = useState(null)
+  const [sort, setSort] = useState({ key: 'open_rate', dir: 'desc' })
+
+  // Workspace averages act as the reference line campaigns are measured against.
+  const avgOpen = overview?.avg_open_rate ?? 0
+  const avgClick = overview?.avg_click_rate ?? 0
+
+  // Memoize the derived arrays so their references stay stable across renders —
+  // otherwise the sort memo below recomputes every render (and the compiler bails).
+  const growth = useMemo(() => overview?.subscriber_growth || [], [overview])
+  const allCampaigns = useMemo(() => overview?.top_campaigns || [], [overview])
+
+  // Cross-filter: focusing a campaign scopes the campaign-level views to it.
+  const focused = useMemo(() => allCampaigns.find(c => c.id === focusedCampaignId) || null, [allCampaigns, focusedCampaignId])
+  const topCampaigns = useMemo(() => (focused ? [focused] : allCampaigns), [focused, allCampaigns])
+
+  const sortedCampaigns = useMemo(() => {
+    const rows = [...topCampaigns]
+    const { key, dir } = sort
+    rows.sort((a, b) => {
+      const av = key === 'name' ? String(a.name || '') : (a[key] ?? 0)
+      const bv = key === 'name' ? String(b.name || '') : (b[key] ?? 0)
+      if (typeof av === 'string') return dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av)
+      return dir === 'asc' ? av - bv : bv - av
+    })
+    return rows
+  }, [topCampaigns, sort])
+
+  function toggleSort(key) {
+    setSort(s => s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'desc' })
+  }
 
   return (
     <div className="space-y-8">
@@ -445,15 +643,73 @@ export default function AnalyticsPage() {
         />
       ) : (
         <div className="space-y-8">
+          {/* Active cross-filter */}
+          {focused && (
+            <div className="border-3 border-brutal-fg bg-brutal-yellow px-4 py-2.5 flex items-center gap-3 flex-wrap">
+              <span className="text-[10px] font-bold uppercase tracking-wider">Focused on</span>
+              <span className="text-xs font-bold truncate">{focused.name}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-brutal-fg/70">
+                {(focused.open_rate ?? 0).toFixed(1)}% open vs {avgOpen.toFixed(1)}% average
+              </span>
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  onClick={() => setDetailCampaign(focused)}
+                  className="px-3 py-1.5 border-2 border-brutal-fg bg-white text-[10px] font-bold uppercase tracking-wider hover:shadow-brutal transition"
+                >
+                  View details
+                </button>
+                <button
+                  onClick={() => setFocusedCampaignId(null)}
+                  className="px-3 py-1.5 border-2 border-brutal-fg bg-white text-[10px] font-bold uppercase tracking-wider hover:bg-brutal-red/10 transition"
+                >
+                  Clear filter ✕
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* LIVE PULSE - top priority, first thing you see */}
           <ErrorBoundary><LivePulse workspaceId={workspaceId} /></ErrorBoundary>
 
           {/* STAT CARDS */}
           <div className="grid md:grid-cols-4 gap-5">
-            <AnimatedStatCard label="Contacts" value={overview?.total_subscribers ?? 0} delay={0} />
-            <AnimatedStatCard label="Broadcasts Sent" value={overview?.campaigns_sent ?? 0} delay={0.1} />
-            <AnimatedStatCard label="Avg Open Rate" value={overview?.avg_open_rate != null ? `${overview.avg_open_rate.toFixed(1)}%` : '--'} delay={0.2} />
-            <AnimatedStatCard label="Avg Click Rate" value={overview?.avg_click_rate != null ? `${overview.avg_click_rate.toFixed(1)}%` : '--'} delay={0.3} />
+            <AnimatedStatCard
+              label="Contacts"
+              value={overview?.total_subscribers ?? 0}
+              hint={`${(overview?.new_subscribers ?? 0).toLocaleString()} new in ${days}d`}
+              current={overview?.new_subscribers}
+              previous={prev?.new_subscribers}
+              unit="count"
+              periodDays={days}
+              delay={0}
+            />
+            <AnimatedStatCard
+              label={`Broadcasts Sent (${days}d)`}
+              value={overview?.campaigns_sent ?? 0}
+              current={overview?.campaigns_sent}
+              previous={prev?.campaigns_sent}
+              unit="count"
+              periodDays={days}
+              delay={0.1}
+            />
+            <AnimatedStatCard
+              label="Avg Open Rate"
+              value={overview?.avg_open_rate != null ? `${overview.avg_open_rate.toFixed(1)}%` : '--'}
+              current={overview?.avg_open_rate}
+              previous={prev?.avg_open_rate}
+              unit="points"
+              periodDays={days}
+              delay={0.2}
+            />
+            <AnimatedStatCard
+              label="Avg Click Rate"
+              value={overview?.avg_click_rate != null ? `${overview.avg_click_rate.toFixed(1)}%` : '--'}
+              current={overview?.avg_click_rate}
+              previous={prev?.avg_click_rate}
+              unit="points"
+              periodDays={days}
+              delay={0.3}
+            />
           </div>
 
           {/* GROWTH CHART */}
@@ -470,45 +726,20 @@ export default function AnalyticsPage() {
           <div className="grid lg:grid-cols-2 gap-6">
             {/* Email Open Heatmap */}
             <ErrorBoundary>
-              {heatmapLoading ? (
-                <div className="border-3 border-brutal-fg bg-white p-6"><p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">Loading heatmap...</p></div>
-              ) : heatmapError ? (
-                <div className="border-3 border-brutal-fg bg-white p-6"><p className="text-xs font-bold text-brutal-red uppercase tracking-wider">Couldn't load heatmap</p></div>
-              ) : heatmap && heatmap.totalOpens > 0 ? (
-                <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
-                  <h3 className="font-heading text-xl uppercase tracking-wide mb-4">When They Open</h3>
-                  <p className="text-xs text-brutal-muted mb-4">
-                    Best time: <strong className="text-brutal-green">{heatmap.bestHour}:00</strong> · Best day: <strong className="text-brutal-green">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][heatmap.bestDay]}</strong> · {heatmap.totalOpens.toLocaleString()} opens
-                  </p>
-                  <div className="mb-4">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">By Hour</p>
-                    <div className="flex items-end gap-0.5 h-16">
-                      {heatmap.hours.map((h) => (
-                        <div key={h.hour} className="flex-1 flex flex-col items-center gap-1 group">
-                          <div className="w-full bg-brutal-green border border-brutal-fg hover:bg-brutal-green-light transition" style={{ height: `${Math.max(h.pct, 2)}%`, opacity: h.pct / 100 + 0.15 }} title={`${h.count} opens at ${h.hour}:00`} />
-                          <span className="text-[8px] font-bold text-brutal-muted">{h.hour}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">By Day</p>
-                    <div className="flex items-end gap-1 h-12">
-                      {heatmap.days.map((d) => (
-                        <div key={d.day} className="flex-1 flex flex-col items-center gap-1 group">
-                          <div className="w-full bg-brutal-yellow border border-brutal-fg hover:bg-brutal-yellow-dark transition" style={{ height: `${Math.max(d.pct, 4)}%`, opacity: d.pct / 100 + 0.2 }} title={`${d.count} opens on ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.day]}`} />
-                          <span className="text-[8px] font-bold text-brutal-muted">{['S','M','T','W','T','F','S'][d.day]}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : null}
+              <OpenTimeHeatmap heatmap={heatmap} loading={heatmapLoading} error={heatmapError} days={days} />
             </ErrorBoundary>
 
             {/* Campaign Performance */}
             {topCampaigns.length > 0 && (
-              <ErrorBoundary><CampaignPerformance campaigns={topCampaigns} onSelect={setDetailCampaign} /></ErrorBoundary>
+              <ErrorBoundary>
+                <CampaignPerformance
+                  campaigns={topCampaigns}
+                  onFocus={setFocusedCampaignId}
+                  focusedId={focusedCampaignId}
+                  avgOpen={avgOpen}
+                  avgClick={avgClick}
+                />
+              </ErrorBoundary>
             )}
           </div>
 
@@ -557,16 +788,50 @@ export default function AnalyticsPage() {
               <table className="w-full text-sm border-collapse">
                 <thead>
                   <tr className="border-b-3 border-brutal-fg bg-brutal-bg">
-                    <th className="text-left p-3 font-bold text-xs uppercase tracking-wider">Broadcast</th>
-                    <th className="text-right p-3 font-bold text-xs uppercase tracking-wider">Sent</th>
-                    <th className="text-right p-3 font-bold text-xs uppercase tracking-wider">Open Rate</th>
-                    <th className="text-right p-3 font-bold text-xs uppercase tracking-wider">Click Rate</th>
+                    {[
+                      { key: 'name', label: 'Broadcast', align: 'left' },
+                      { key: 'sent', label: 'Sent', align: 'right' },
+                      { key: 'open_rate', label: 'Open Rate', align: 'right' },
+                      { key: 'click_rate', label: 'Click Rate', align: 'right' },
+                    ].map(col => {
+                      const active = sort.key === col.key
+                      return (
+                        <th
+                          key={col.key}
+                          scope="col"
+                          aria-sort={active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                          className={`p-0 font-bold text-xs uppercase tracking-wider text-${col.align}`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => toggleSort(col.key)}
+                            className={`w-full p-3 font-bold text-xs uppercase tracking-wider hover:bg-brutal-yellow/20 transition flex items-center gap-1 ${
+                              col.align === 'right' ? 'justify-end' : 'justify-start'
+                            }`}
+                          >
+                            {col.label}
+                            <span aria-hidden="true" className={active ? 'text-brutal-green' : 'text-brutal-fg/25'}>
+                              {active ? (sort.dir === 'asc' ? '▲' : '▼') : '↕'}
+                            </span>
+                          </button>
+                        </th>
+                      )
+                    })}
                   </tr>
                 </thead>
                 <tbody>
-                  {topCampaigns.map((c, i) => (
-                    <tr key={c.id ?? i} className="border-t border-brutal-fg hover:bg-brutal-yellow/10 transition cursor-pointer" onClick={() => setDetailCampaign(c)}>
-                      <td className="p-3 font-bold">{c.name}</td>
+                  {sortedCampaigns.map((c, i) => (
+                    <tr key={c.id ?? i} className={`border-t border-brutal-fg transition ${c.id === focusedCampaignId ? 'bg-brutal-yellow/20' : 'hover:bg-brutal-yellow/10'}`}>
+                      <td className="p-0 font-bold">
+                        {/* A button rather than a row click, so the same action is reachable by keyboard */}
+                        <button
+                          type="button"
+                          onClick={() => setDetailCampaign(c)}
+                          className="w-full text-left p-3 font-bold hover:underline underline-offset-2"
+                        >
+                          {c.name}
+                        </button>
+                      </td>
                       <td className="p-3 text-right font-bold">{fmt(c.sent)}</td>
                       <td className="p-3 text-right font-bold">{fmtPct(c.open_rate)}</td>
                       <td className="p-3 text-right font-bold">{fmtPct(c.click_rate)}</td>
