@@ -10,15 +10,18 @@ export async function resolveZip(zip) {
   const clean = zip.trim()
   if (!/^\d{5}(-\d{4})?$/.test(clean)) return null
 
+  // Shared cache key — declared once so every fallback branch can write to it.
+  // (Previously scoped inside the read block, so cache writes threw silently.)
+  const cacheKey = `geo-zip-${clean}`
+
   // Check cache (24h TTL)
   try {
-    const cacheKey = `geo-zip-${clean}`
     const cached = localStorage.getItem(cacheKey)
     if (cached) {
       const parsed = JSON.parse(cached)
       if (Date.now() - parsed.ts < 86400000) return parsed.data
     }
-  } catch {}
+  } catch { /* localStorage may be blocked */ }
 
   // Try zippopotam.us (free, reliable, no key needed)
   try {
@@ -76,6 +79,38 @@ export async function resolveZip(zip) {
   } catch {}
 
   return null
+}
+
+/**
+ * Forward-geocode free text (city, town, neighborhood, address) to a list of
+ * US location suggestions for the location search box. Returns up to 5 results
+ * shaped like resolveZip output plus a display `label` and any known `zip`.
+ */
+export async function searchPlaces(query) {
+  const q = (query || '').trim()
+  if (q.length < 3) return []
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(q)}&countrycodes=us&limit=5&addressdetails=1`,
+      { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(6000) }
+    )
+    if (!res.ok) return []
+    const data = await res.json()
+    return (Array.isArray(data) ? data : [])
+      .map((r) => {
+        const a = r.address || {}
+        const city = a.city || a.town || a.village || a.hamlet || a.county || ''
+        const state = a.state || ''
+        const zip = a.postcode || ''
+        const label =
+          [city, state].filter(Boolean).join(', ') ||
+          (r.display_name ? r.display_name.split(',').slice(0, 2).join(', ').trim() : 'Location')
+        return { lat: parseFloat(r.lat), lng: parseFloat(r.lon), city, state, zip, label }
+      })
+      .filter((x) => Number.isFinite(x.lat) && Number.isFinite(x.lng))
+  } catch {
+    return []
+  }
 }
 
 /**

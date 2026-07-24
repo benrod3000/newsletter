@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { MapPin, Loader2, Plus, X } from 'lucide-react'
-import { resolveZip } from '../lib/geo'
+import { MapPin, Loader2, X, Search, LocateFixed, Users } from 'lucide-react'
+import { resolveZip, searchPlaces } from '../lib/geo'
 import gsap from 'gsap'
 import L from 'leaflet'
 
@@ -10,30 +10,54 @@ const MAX_LOCATIONS = 5
 const GEO_FILTER_KEY = 'geo-filter-state'
 
 /**
- * GeoFilter // multi-ZIP radius filter with GSAP-driven animations.
+ * Animated integer — tweens from its previous value to the new one whenever
+ * `value` changes, so the in-range count rolls as you drag the radius.
+ */
+function AnimatedStat({ value }) {
+  const ref = useRef(null)
+  const prev = useRef(0)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const proxy = { n: prev.current }
+    const tw = gsap.to(proxy, {
+      n: value, duration: 0.5, ease: 'power2.out',
+      onUpdate: () => { el.textContent = Math.round(proxy.n).toLocaleString() },
+      onComplete: () => { prev.current = value },
+    })
+    return () => { tw.kill(); prev.current = value }
+  }, [value])
+  return <span ref={ref}>{value.toLocaleString()}</span>
+}
+
+/**
+ * GeoFilter // multi-location radius filter with a live map.
  *
+ * Entry is by city/place search, ZIP, "use my location", or clicking the map.
  * Props:
- *   onChange({ locations: [{lat,lng,city,state,zip}], radius }): called when user applies
- *   onClear(): called when user clears the filter
- *   loading?: boolean // shows spinner on apply button
- *   active?: boolean // highlights the toggle when filter is active
+ *   onChange({ locations: [{lat,lng,city,state,zip,radius}] }): called on apply
+ *   onClear(): called when the filter is cleared
+ *   loading?: boolean // spinner on the apply button
+ *   active?: boolean  // highlights the toggle when a filter is active
+ *   subscribers?: [{ id, latitude, longitude, health_score }] // plotted + counted
  */
 export default function GeoFilter({ onChange, onClear, loading = false, active = false, subscribers = [] }) {
   const [open, setOpen] = useState(false)
-  const [zip, setZip] = useState('')
-  const [pending, setPending] = useState(null) // { lat, lng, city, state, zip }
-  const [resolving, setResolving] = useState(false)
+  const [query, setQuery] = useState('')
+  const [suggestions, setSuggestions] = useState([])
+  const [searching, setSearching] = useState(false)
+  const [geoLocating, setGeoLocating] = useState(false)
   const [selectedLocIdx, setSelectedLocIdx] = useState(0)
   const panelRef = useRef(null)
-  const resolveTimer = useRef(null)
+  const searchTimer = useRef(null)
   const mapRef = useRef(null)
   const markersRef = useRef([])
   const circlesRef = useRef([])
   const subscriberLayerRef = useRef(null)
   const chipsRef = useRef([])
-  const addBtnRef = useRef(null)
-  const pendingPulse = useRef(null)
   const gsapTweens = useRef([])
+  const addLocationRef = useRef(() => {})
+  const locationsRef = useRef([])
 
   // Rehydrate from localStorage via lazy initializers (avoids setState-in-effect)
   const [locations, setLocations] = useState(() => {
@@ -85,97 +109,100 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
-  // ─── Debounced ZIP resolution ───
-  const handleZipChange = useCallback((value) => {
-    setZip(value)
-    setPending(null)
-    if (resolveTimer.current) clearTimeout(resolveTimer.current)
+  // Mirror locations into a ref so async callers (map click, geolocation) always
+  // read the current list without going stale.
+  useEffect(() => { locationsRef.current = locations }, [locations])
 
-    // Kill pending pulse
-    if (pendingPulse.current) { pendingPulse.current.kill(); pendingPulse.current = null }
-    if (addBtnRef.current) gsap.set(addBtnRef.current, { clearProps: 'boxShadow' })
-
+  // ─── Debounced search: ZIP → resolveZip, otherwise forward-geocode ───
+  const handleQueryChange = useCallback((value) => {
+    setQuery(value)
+    if (searchTimer.current) clearTimeout(searchTimer.current)
     const clean = value.trim()
-    if (!/^\d{5}(-\d{4})?$/.test(clean)) return
+    if (clean.length < 3) { setSuggestions([]); setSearching(false); return }
 
-    resolveTimer.current = setTimeout(async () => {
-      setResolving(true)
+    searchTimer.current = setTimeout(async () => {
+      setSearching(true)
       try {
-        const cacheKey = `geo-zip-${clean}`
-        const cached = localStorage.getItem(cacheKey)
-        if (cached) {
-          const parsed = JSON.parse(cached)
-          if (Date.now() - parsed.ts < 86400000) {
-            setPending({ ...parsed.data, zip: clean })
-            setResolving(false)
-            return
-          }
-        }
-
-        const result = await resolveZip(clean)
-        if (result) {
-          localStorage.setItem(cacheKey, JSON.stringify({ data: result, ts: Date.now() }))
-          setPending({ ...result, zip: clean })
+        let results = []
+        if (/^\d{5}(-\d{4})?$/.test(clean)) {
+          const r = await resolveZip(clean)
+          if (r) results = [{ ...r, zip: clean, label: [r.city, r.state].filter(Boolean).join(', ') || `ZIP ${clean}` }]
         } else {
-          setPending(null)
+          results = await searchPlaces(clean)
         }
+        setSuggestions(results)
       } catch (err) {
-        console.error('[GeoFilter] ZIP resolution failed:', err);
-        setPending(null)
+        console.error('[GeoFilter] search failed:', err)
+        setSuggestions([])
       } finally {
-        setResolving(false)
+        setSearching(false)
       }
-    }, 600)
+    }, 450)
   }, [])
 
-  // ─── Pulse the Add button when a ZIP is pending ───
-  useEffect(() => {
-    if (pendingPulse.current) { pendingPulse.current.kill(); pendingPulse.current = null }
-    if (addBtnRef.current) gsap.set(addBtnRef.current, { clearProps: 'boxShadow' })
+  // ─── Add a location (dedupes by ZIP or proximity; caps at MAX_LOCATIONS) ───
+  const addLocation = useCallback((loc) => {
+    if (!loc || !Number.isFinite(loc.lat) || !Number.isFinite(loc.lng)) return
+    const prev = locationsRef.current
+    setQuery('')
+    setSuggestions([])
+    if (prev.length >= MAX_LOCATIONS) return
 
-    if (pending && addBtnRef.current) {
-      pendingPulse.current = gsap.to(addBtnRef.current, {
-        boxShadow: '0 0 0 5px rgba(47,127,95,0.25)',
-        duration: 0.9,
-        repeat: -1,
-        yoyo: true,
-        ease: 'power1.inOut',
-      })
-    }
-
-    return () => { if (pendingPulse.current) pendingPulse.current.kill() }
-  }, [pending])
-
-  // ─── Add a pending location ───
-  function addLocation() {
-    if (!pending) return
-    if (locations.length >= MAX_LOCATIONS) return
-    if (locations.some(l => l.zip === pending.zip)) {
-      // Flash the existing chip
-      const idx = locations.findIndex(l => l.zip === pending.zip)
-      if (chipsRef.current[idx]) {
-        gsap.fromTo(chipsRef.current[idx], { scale: 1 }, { scale: 1.1, duration: 0.1, yoyo: true, repeat: 1 })
-      }
-      setZip('')
-      setPending(null)
+    const dupIdx = prev.findIndex((l) =>
+      (loc.zip && l.zip && l.zip === loc.zip) ||
+      (Math.abs(l.lat - loc.lat) < 0.01 && Math.abs(l.lng - loc.lng) < 0.01)
+    )
+    if (dupIdx >= 0) {
+      const el = chipsRef.current[dupIdx]
+      if (el) gsap.fromTo(el, { scale: 1 }, { scale: 1.12, duration: 0.12, yoyo: true, repeat: 1 })
+      setSelectedLocIdx(dupIdx)
       return
     }
-    const newLoc = { ...pending, radius: 10 }
-    setZip('')
-    setPending(null)
-    setLocations(prev => [...prev, newLoc])
-    setSelectedLocIdx(locations.length)
-  }
 
-  // Press Enter to add
+    const next = [...prev, { ...loc, radius: loc.radius ?? 10 }]
+    locationsRef.current = next
+    setLocations(next)
+    setSelectedLocIdx(next.length - 1) // focus the one just added
+  }, [])
+
+  // Keep a live ref so the once-bound map click handler always adds correctly
+  useEffect(() => { addLocationRef.current = addLocation }, [addLocation])
+
+  // Press Enter to add the top suggestion
   function handleKeyDown(e) {
-    if (e.key === 'Enter' && pending) {
+    if (e.key === 'Enter' && suggestions.length) {
       e.preventDefault()
-      addLocation()
+      addLocation(suggestions[0])
     }
   }
 
-  // ─── Remove a location with GSAP exit (guard against double-remove) ───
+  // ─── "Use my location" via the browser geolocation API ───
+  function useMyLocation() {
+    if (!navigator.geolocation) return
+    setGeoLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords
+        let city = '', state = '', zip = ''
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`,
+            { headers: { Accept: 'application/json' } }
+          )
+          const data = await res.json()
+          city = data.address?.city || data.address?.town || data.address?.village || ''
+          state = data.address?.state || ''
+          zip = data.address?.postcode || ''
+        } catch { /* reverse geocode is best-effort */ }
+        setGeoLocating(false)
+        addLocation({ lat: latitude, lng: longitude, city, state, zip })
+      },
+      () => { setGeoLocating(false) },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+    )
+  }
+
+  // ─── Remove a location with a GSAP exit (guard against double-remove) ───
   function removeLocation(index) {
     const chipEl = chipsRef.current[index]
     if (!chipEl || chipEl.dataset.removing === 'true') return
@@ -213,6 +240,11 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     return set.size
   })() : 0
 
+  const hasPlottable = subscribers.some(s => s.latitude && s.longitude)
+  const maxRadius = locations.length ? Math.max(...locations.map(l => l.radius ?? 10)) : 0
+  // Derived (not synced) so removing a location can never leave a stale index.
+  const safeIdx = locations.length ? Math.min(selectedLocIdx, locations.length - 1) : 0
+
   // ─── Helper: add subscriber pins to a Leaflet layer ───
   function addSubscriberPins(layer) {
     subscribers.forEach(s => {
@@ -228,7 +260,6 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
 
   // ─── Rebuild all circles on the map ───
   function rebuildCircles(map) {
-    // Kill any running GSAP circle animations first
     gsapTweens.current.forEach(t => t.kill())
     gsapTweens.current = []
 
@@ -237,7 +268,6 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
 
     if (locations.length === 0) return
 
-    // Compute bounds from all locations + their max radius
     const lats = locations.map(l => l.lat)
     const lngs = locations.map(l => l.lng)
     const maxDegOffset = Math.max(...locations.map(l => ((l.radius ?? 10) * 1609.34) / 111320))
@@ -261,14 +291,14 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     try { map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 }) } catch { /* bounds may be empty */ }
   }
 
-// ─── Helper: create a draggable marker at a location ───
+  // ─── Helper: create a draggable marker at a location ───
   function createMarker(map, loc, index, onDragEnd) {
     const color = CIRCLE_COLORS[index % CIRCLE_COLORS.length]
     const marker = L.marker([loc.lat, loc.lng], {
       draggable: true,
       icon: L.divIcon({
         className: '',
-        html: `<div style="width:16px;height:16px;background:${color};border:3px solid #0a0a0a;border-radius:50%;cursor:grab;"></div>`,
+        html: `<div style="width:16px;height:16px;background:${color};border:3px solid #0a0a0a;border-radius:50%;cursor:grab;box-shadow:0 0 0 3px rgba(255,255,255,0.6);"></div>`,
         iconSize: [16, 16], iconAnchor: [8, 8],
       }),
     }).addTo(map)
@@ -276,13 +306,12 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       const pos = e.target.getLatLng()
       try {
         const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.lat}&lon=${pos.lng}&zoom=10`, {
-          headers: { 'User-Agent': 'VeloceNewsletter/1.0' }
+          headers: { Accept: 'application/json' }
         })
         const data = await res.json()
         const pc = data.address?.postcode || ''
         const city = data.address?.city || data.address?.town || data.address?.village || ''
         const state = data.address?.state || ''
-        if (pc) setZip(pc)
         onDragEnd(index, { lat: pos.lat, lng: pos.lng, city, state, zip: pc })
       } catch {
         onDragEnd(index, { lat: pos.lat, lng: pos.lng })
@@ -293,7 +322,6 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
 
   // ─── Rebuild all markers on the map ───
   function rebuildMarkers(map, locs) {
-    // Remove old markers
     markersRef.current.forEach(m => { try { map.removeLayer(m) } catch { /* already removed */ } })
     markersRef.current = []
 
@@ -343,33 +371,24 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
         mapRef.current = map
         map.invalidateSize()
 
-        // Click-to-place: reverse geocode click and add as pending
+        // Click-to-place: reverse geocode the click, then add via the live ref
         map.on('click', async (e) => {
+          let loc = { lat: e.latlng.lat, lng: e.latlng.lng, city: '', state: '', zip: '' }
           try {
             const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}&zoom=10`, {
-              headers: { 'User-Agent': 'VeloceNewsletter/1.0' }
+              headers: { Accept: 'application/json' }
             })
             const data = await res.json()
-            const pc = data.address?.postcode || ''
-            const city = data.address?.city || data.address?.town || data.address?.village || ''
-            const state = data.address?.state || ''
-            const loc = { lat: e.latlng.lat, lng: e.latlng.lng, city, state, zip: pc }
-            if (locations.length < MAX_LOCATIONS) {
-              setLocations(prev => [...prev, loc])
-            } else {
-              setPending(loc)
+            loc = {
+              lat: e.latlng.lat, lng: e.latlng.lng,
+              city: data.address?.city || data.address?.town || data.address?.village || '',
+              state: data.address?.state || '',
+              zip: data.address?.postcode || '',
             }
-          } catch {
-            const loc = { lat: e.latlng.lat, lng: e.latlng.lng, city: '', state: '', zip: '' }
-            if (locations.length < MAX_LOCATIONS) {
-              setLocations(prev => [...prev, loc])
-            } else {
-              setPending(loc)
-            }
-          }
+          } catch { /* keep bare coords */ }
+          addLocationRef.current(loc)
         })
 
-        // Draw circles, markers, pins
         rebuildCircles(map)
         rebuildMarkers(map, locations)
 
@@ -381,7 +400,6 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       return
     }
 
-    // Map exists - update circles, markers, pins
     const map = mapRef.current
     rebuildCircles(map)
     rebuildMarkers(map, locations)
@@ -401,7 +419,6 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       if (n[index]) n[index] = { ...n[index], radius: newRadius }
       return n
     })
-    // Animate the specific circle
     if (mapRef.current && circlesRef.current[index]) {
       const circle = circlesRef.current[index]
       const proxy = { r: 0 }
@@ -422,11 +439,14 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   }
 
   function clearFilter() {
-    setZip(''); setPending(null); setLocations([])
+    setQuery(''); setSuggestions([]); setLocations([])
     setApplied(false); setOpen(false)
     onClear?.()
     try { localStorage.removeItem(GEO_FILTER_KEY) } catch { /* localStorage may be blocked */ }
   }
+
+  const selRadius = locations[safeIdx]?.radius ?? 10
+  const fillPct = ((selRadius - 1) / 99) * 100
 
   // ─── Render ───
   return (
@@ -442,52 +462,65 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       >
         <MapPin size={14} />
         {applied && locations.length > 0
-          ? `📍 ${locations[0].city}, ${locations[0].state}${locations.length > 1 ? ` +${locations.length - 1} more` : ''} · ${locations[0]?.radius ?? 10} mi`
-          : '📍 Radius filter'}
+          ? `${locations[0].city || 'Pin'}, ${locations[0].state || '-'}${locations.length > 1 ? ` +${locations.length - 1} more` : ''} · ${locations[0]?.radius ?? 10} mi`
+          : 'Radius filter'}
         <span className="ml-auto text-[10px] opacity-60">{open ? '▲' : '▼'}</span>
       </button>
 
       <div ref={panelRef} style={{ height: '0px', overflow: 'hidden' }} className="border-t-3 border-brutal-fg">
-        <div className="p-6 space-y-6">
-          {/* ZIP input + Add button */}
+        <div className="p-5 sm:p-6 space-y-5">
+          {/* Search: city / place / ZIP + use my location */}
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
-              Add ZIP Code
+              Add a city, place, or ZIP
             </label>
             <div className="flex gap-2">
-              <input
-                type="text"
-                value={zip}
-                onChange={e => handleZipChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={locations.length >= MAX_LOCATIONS}
-                placeholder={locations.length >= MAX_LOCATIONS ? `Max ${MAX_LOCATIONS} locations` : "e.g. 78701"}
-                maxLength={10}
-                className="flex-1 px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition"
-              />
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brutal-muted">
+                  {searching ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
+                </span>
+                <input
+                  type="text"
+                  value={query}
+                  onChange={e => handleQueryChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={locations.length >= MAX_LOCATIONS}
+                  placeholder={locations.length >= MAX_LOCATIONS ? `Max ${MAX_LOCATIONS} locations` : 'e.g. Austin, TX or 78701'}
+                  className="w-full pl-9 pr-3 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition disabled:opacity-50"
+                />
+              </div>
               <button
-                ref={addBtnRef}
-                onClick={addLocation}
-                disabled={!pending}
-                className="px-3 py-2.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider disabled:opacity-30 disabled:cursor-not-allowed transition active:translate-y-0.5"
-                aria-label="Add location"
+                onClick={useMyLocation}
+                disabled={locations.length >= MAX_LOCATIONS || geoLocating}
+                className="shrink-0 px-3 py-2.5 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-[10px] uppercase tracking-wider hover:bg-brutal-yellow/20 disabled:opacity-40 disabled:cursor-not-allowed transition active:translate-y-0.5 flex items-center gap-1.5"
+                title="Use my location"
+                aria-label="Use my location"
               >
-                <Plus size={16} />
+                {geoLocating ? <Loader2 size={14} className="animate-spin" /> : <LocateFixed size={14} />}
+                <span className="hidden sm:inline">Near me</span>
               </button>
             </div>
-            {resolving && (
-              <p className="flex items-center gap-1.5 mt-1.5 text-[10px] font-bold text-brutal-muted uppercase tracking-wider">
-                <Loader2 size={10} className="animate-spin" /> Resolving...
-              </p>
+
+            {/* Suggestions */}
+            {suggestions.length > 0 && (
+              <ul className="mt-2 border-3 border-brutal-fg divide-y divide-brutal-fg/15 bg-white animate-fade-in">
+                {suggestions.map((s, i) => (
+                  <li key={`${s.lat},${s.lng},${i}`}>
+                    <button
+                      onClick={() => addLocation(s)}
+                      className="w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-brutal-yellow/20 transition"
+                    >
+                      <MapPin size={13} className="text-brutal-green shrink-0" />
+                      <span className="text-xs font-bold">{s.label || `${s.city}, ${s.state}`}</span>
+                      {s.zip && <span className="text-[10px] text-brutal-muted ml-auto">{s.zip}</span>}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
-            {pending && !resolving && (
-              <p className="mt-1.5 text-[10px] font-bold text-brutal-green uppercase tracking-wider animate-fade-in">
-                ✓ {pending.city}, {pending.state} · Add
-              </p>
-            )}
-            {!pending && !resolving && zip.length >= 5 && (
-              <p className="mt-1.5 text-[10px] font-bold text-brutal-red uppercase tracking-wider animate-fade-in">
-                ZIP not found
+            {!searching && query.trim().length >= 3 && suggestions.length === 0 && (
+              <p className="mt-1.5 text-[10px] font-bold text-brutal-red uppercase tracking-wider">
+                No matches — try a city name or 5-digit ZIP
               </p>
             )}
           </div>
@@ -497,7 +530,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
             <div className="flex flex-wrap gap-2 items-center">
               {locations.map((loc, i) => {
                 const color = CIRCLE_COLORS[i % CIRCLE_COLORS.length]
-                const isSelected = i === selectedLocIdx
+                const isSelected = i === safeIdx
                 const locRadius = loc.radius ?? 10
                 return (
                   <div
@@ -512,12 +545,11 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
                   >
                     <span className="inline-block w-2 h-2 rounded-full border border-brutal-fg shrink-0" style={{ background: color }} />
                     <span>{loc.city || 'Pin'}, {loc.state || '-'}</span>
-                    <span className="text-brutal-muted">· {loc.zip || 'no ZIP'}</span>
                     <span className="text-brutal-green">· {locRadius}mi</span>
                     <button
                       onClick={(e) => { e.stopPropagation(); removeLocation(i) }}
                       className="ml-0.5 p-0.5 hover:bg-brutal-red/10 rounded transition-colors"
-                      aria-label={`Remove ${loc.city}`}
+                      aria-label={`Remove ${loc.city || 'location'}`}
                     >
                       <X size={12} />
                     </button>
@@ -525,7 +557,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
                 )
               })}
               {locations.length > 1 && (
-                <button onClick={() => { setLocations([]); setZip('') }}
+                <button onClick={() => { setLocations([]); setQuery('') }}
                   className="px-2 py-1.5 border-2 border-brutal-fg text-[9px] font-bold uppercase tracking-wider text-brutal-red hover:bg-brutal-red/10 transition">
                   Clear all
                 </button>
@@ -533,53 +565,76 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
             </div>
           )}
 
-          {/* Live map - always visible when panel is open */}
+          {/* Live map */}
           <div className="border-3 border-brutal-fg overflow-hidden">
             <div className="bg-brutal-fg text-white px-3 py-1.5 flex flex-wrap items-center justify-between text-[10px] font-bold uppercase tracking-wider gap-x-3 gap-y-1">
-              <span>{locations.length} location{locations.length !== 1 ? 's' : ''}{locations.length === 0 ? ' - click the map to add' : ''}</span>
-              {subscribers.some(s => s.latitude && s.longitude) && (
-                  <span className="hidden sm:flex items-center gap-2">
-                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#2b7657'}} /> Active</span>
-                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#f5e642'}} /> Risk</span>
-                    <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#e03131'}} /> Cold</span>
-                  </span>
-                )}
-                <span className="text-white/60 whitespace-nowrap">☌ {totalInRange} in range</span>
-              </div>
-              <div id="geo-filter-map" className="h-[220px] sm:h-[260px]" style={{ width: '100%', background: '#e8e8e0', touchAction: 'auto' }} />
+              <span>{locations.length === 0 ? 'Click the map to drop a pin' : `${locations.length} location${locations.length !== 1 ? 's' : ''}`}</span>
+              {hasPlottable && (
+                <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#2b7657'}} /> Active</span>
+                  <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#f5e642'}} /> Risk</span>
+                  <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#e03131'}} /> Cold</span>
+                </span>
+              )}
             </div>
+            <div id="geo-filter-map" className="h-[300px] sm:h-[360px]" style={{ width: '100%', background: '#e8e8e0', touchAction: 'auto' }} />
+          </div>
+          <p className="text-[10px] text-brutal-muted -mt-2">
+            Tip: click the map to drop a pin, or drag a pin to fine-tune it.
+          </p>
+
+          {/* Hero count / coverage summary */}
+          {locations.length > 0 && (
+            hasPlottable ? (
+              <div className="border-3 border-brutal-fg bg-brutal-green text-white px-4 py-3 flex items-center justify-between gap-3">
+                <div className="flex items-baseline gap-2 min-w-0">
+                  <Users size={20} className="shrink-0 self-center" />
+                  <span className="font-heading text-4xl sm:text-5xl leading-none"><AnimatedStat value={totalInRange} /></span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider opacity-90">subscribers<br className="hidden sm:inline" /> in range</span>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-80 text-right shrink-0">
+                  {locations.length} area{locations.length !== 1 ? 's' : ''}<br />up to {maxRadius} mi
+                </span>
+              </div>
+            ) : (
+              <div className="border-3 border-brutal-fg bg-brutal-surface px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-brutal-fg/70 flex items-center gap-2">
+                <MapPin size={14} className="text-brutal-green" />
+                Targeting {locations.length} area{locations.length !== 1 ? 's' : ''} · up to {maxRadius} mi radius
+              </div>
+            )
+          )}
 
           {/* Per-location radius slider */}
-          {locations.length > 0 && locations[selectedLocIdx] && (
+          {locations.length > 0 && locations[safeIdx] && (
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-fg/60 mb-2">
-                Radius {locations.length > 1 ? `(${locations[selectedLocIdx].city || '#'}${selectedLocIdx + 1})` : ''}: <span className="text-brutal-green font-heading text-base">{locations[selectedLocIdx].radius ?? 10} mi</span>
+                Radius {locations.length > 1 ? `· ${locations[safeIdx].city || `#${safeIdx + 1}`}` : ''}: <span className="text-brutal-green font-heading text-base">{selRadius} mi</span>
               </label>
               <input
                 type="range" min={1} max={100}
-                value={locations[selectedLocIdx].radius ?? 10}
-                onChange={e => updateLocationRadius(selectedLocIdx, Number(e.target.value))}
-                className="w-full h-2 bg-brutal-surface border-2 border-brutal-fg appearance-none cursor-pointer
+                value={selRadius}
+                onChange={e => updateLocationRadius(safeIdx, Number(e.target.value))}
+                className="w-full h-2.5 border-2 border-brutal-fg appearance-none cursor-pointer
                   [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
                   [&::-webkit-slider-thumb]:bg-brutal-green [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-brutal-fg
                   [&::-webkit-slider-thumb]:shadow-brutal [&::-webkit-slider-thumb]:cursor-pointer
                   [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:bg-brutal-green
                   [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-brutal-fg [&::-moz-range-thumb]:cursor-pointer"
-                style={{ accentColor: '#2b7657' }}
+                style={{ background: `linear-gradient(to right, #2b7657 0%, #2b7657 ${fillPct}%, #e8e8e0 ${fillPct}%, #e8e8e0 100%)` }}
               />
             </div>
           )}
 
           {/* Preset chips */}
-          {locations.length > 0 && locations[selectedLocIdx] && (
+          {locations.length > 0 && locations[safeIdx] && (
             <div className="flex flex-wrap gap-2">
               <span className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted self-center">Quick:</span>
               {PRESETS.map(mi => (
                 <button
                   key={mi}
-                  onClick={() => updateLocationRadius(selectedLocIdx, mi)}
-                  className={`px-3 py-1 border-2 text-[10px] font-bold uppercase tracking-wider transition ${
-                    (locations[selectedLocIdx].radius ?? 10) === mi
+                  onClick={() => updateLocationRadius(safeIdx, mi)}
+                  className={`px-3 py-1.5 border-2 text-[10px] font-bold uppercase tracking-wider transition ${
+                    selRadius === mi
                       ? 'border-brutal-fg bg-brutal-green text-white'
                       : 'border-brutal-fg/30 text-brutal-muted hover:border-brutal-fg hover:text-brutal-fg'
                   }`}
@@ -597,7 +652,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
               disabled={locations.length === 0 || loading}
               className="flex-1 px-4 py-2.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal disabled:opacity-40 disabled:cursor-not-allowed transition active:translate-y-0.5"
             >
-              {loading ? 'Loading...' : 'Show subscribers'}
+              {loading ? 'Loading...' : hasPlottable && locations.length > 0 ? `Show ${totalInRange} subscribers` : 'Show subscribers'}
             </button>
             {applied && (
               <button

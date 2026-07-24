@@ -33,6 +33,28 @@ const mockSubscribers = [
   { email: 'tom.mueller@example.com', location: 'Berlin, DE', joined: 'Feb 25, 2026', opens: 39, clicks: 9 },
 ]
 
+// Deterministic sample audience clustered around Austin, TX. Powers the live
+// radius-filter demo — map pins + in-range count — with no backend. Seeded so
+// the picture is identical on every load.
+const DEMO_GEO_SUBSCRIBERS = (() => {
+  let seed = 20260723
+  const rand = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff }
+  const CENTER = { lat: 30.2672, lng: -97.7431 }
+  const out = []
+  for (let i = 0; i < 180; i++) {
+    // Average of three uniforms → triangular spread, denser toward the center.
+    const g = () => (rand() + rand() + rand()) / 3 - 0.5
+    const r = rand()
+    out.push({
+      id: `demo-${i}`,
+      latitude: CENTER.lat + g() * 0.62,   // ~±0.31° ≈ ±21 mi
+      longitude: CENTER.lng + g() * 0.72,
+      health_score: r < 0.62 ? 'active' : r < 0.86 ? 'at_risk' : 'cold',
+    })
+  }
+  return out
+})()
+
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
   { id: 'campaigns', label: 'Campaigns', icon: Mail },
@@ -131,9 +153,8 @@ export default function DemoPage() {
                   ))}
                 </div>
 
-                <Panel title="📍 Radius Filter" accent="bg-brutal-green text-white">
-                  <GeoFilter onChange={() => {}} onClear={() => {}} active={false} />
-                </Panel>
+                {/* GeoFilter renders its own titled toggle — no wrapper title needed */}
+                <GeoFilter onChange={() => {}} onClear={() => {}} active={false} subscribers={DEMO_GEO_SUBSCRIBERS} />
 
                 <Panel title="Recent Campaigns">
                   <div className="divide-y-2 divide-brutal-fg/10">
