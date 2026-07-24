@@ -90,6 +90,9 @@ export default function DemoPage() {
         <Link to="/login" className="px-5 py-2.5 border-3 border-brutal-fg bg-brutal-yellow font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
           Sign In
         </Link>
+        <a href="/samples/conversation-newsletter.html" target="_blank" rel="noopener" className="px-5 py-2.5 border-3 border-brutal-fg bg-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
+          See a sample newsletter →
+        </a>
       </div>
 
       <Panel title="Demo Workspace · 12,453 subscribers" accent="bg-brutal-fg text-white">
