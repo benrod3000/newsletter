@@ -50,6 +50,31 @@ export function generateSubjects(name, content) {
   ]
 }
 
+// Built-in starting points offered on a blank "New Broadcast", so users don't
+// have to face an empty editor. Kept to nodes the TipTap editor (StarterKit +
+// Link + Image) actually renders — no tables/floats — since anything else
+// gets silently stripped on parse.
+export const STARTER_TEMPLATES = [
+  {
+    key: 'two-voice-update',
+    name: 'Friendly two-voice update',
+    description: 'A casual, two-person voice for a weekly or monthly check-in.',
+    subject: "This week's update",
+    html: `<h1>Hey {{first_name}} 👋</h1>
+<p><strong>Frankie:</strong> Quick one from us this week —</p>
+<p><strong>Nadia:</strong> we've got a few things worth your time.</p>
+<h2>What's new</h2>
+<ul>
+  <li>First highlight goes here</li>
+  <li>Second highlight goes here</li>
+  <li>Third highlight goes here</li>
+</ul>
+<p><a href="https://example.com">Read the full story →</a></p>
+<p><em>See you next time,<br>Frankie &amp; Nadia</em></p>
+<p><a href="{{unsubscribe_url}}">Unsubscribe</a></p>`,
+  },
+]
+
 export function getAudienceLabel(a, lists) {
   if (a?.startsWith('list:')) return lists.find((l) => l.id === a.slice(5))?.name || a
   const match = AUDIENCE_OPTIONS.find((opt) => opt.value === a)

@@ -12,7 +12,7 @@ const GeoFilter = lazy(() => import('../../components/GeoFilter'))
 import ConfirmModal from '../../components/ConfirmModal'
 import PromptModal from '../../components/PromptModal'
 import { useCommandAction } from '../../components/useCommandAction'
-import { STATUS_STYLES, STATUS_LABELS, AUDIENCE_OPTIONS, generateSubjects, getAudienceLabel } from './Campaigns/constants'
+import { STATUS_STYLES, STATUS_LABELS, AUDIENCE_OPTIONS, STARTER_TEMPLATES, generateSubjects, getAudienceLabel } from './Campaigns/constants'
 
 export default function CampaignsPage() {
   const { workspaceId, email } = useAuthStore()
@@ -49,6 +49,7 @@ export default function CampaignsPage() {
   const [confirmAction, setConfirmAction] = useState(null) // { title, message, onConfirm, danger }
   const [confirmDiscard, setConfirmDiscard] = useState(false)
   const [templatePromptOpen, setTemplatePromptOpen] = useState(false)
+  const [savedTemplates, setSavedTemplates] = useState([])
   const [inlineEditId, setInlineEditId] = useState(null)
   const [inlineEditVal, setInlineEditVal] = useState('')
   const { action, consume } = useCommandAction()
@@ -137,6 +138,21 @@ export default function CampaignsPage() {
     setEditAudience('confirmed')
     setGeoAudience(null)
     setShowAddForm(false)
+    try {
+      const { data } = await templatesAPI.list(workspaceId)
+      setSavedTemplates(data.templates || [])
+    } catch {
+      setSavedTemplates([])
+    }
+  }
+
+  // Seeds a blank draft from either a built-in starter ({ subject, html }) or
+  // a saved template ({ subject, editor_html, audience }) — same shape either
+  // way once picked apart here.
+  function applyTemplate(tpl) {
+    setEditContent(tpl.html ?? tpl.editor_html ?? '')
+    if (tpl.subject) setEditSubject(tpl.subject)
+    if (tpl.audience) setEditAudience(tpl.audience)
   }
 
   async function sendNow(id) {
@@ -558,6 +574,40 @@ export default function CampaignsPage() {
                 )}
               </div>
             </div>
+
+            {/* Starting points — only while the draft is still blank; picking one or
+                just typing (which fills editContent) makes this go away on its own. */}
+            {editingId === 'new' && !editContent && (savedTemplates.length > 0 || STARTER_TEMPLATES.length > 0) && (
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">
+                  Start from a template
+                </label>
+                <div className="flex flex-wrap gap-3">
+                  {STARTER_TEMPLATES.map((tpl) => (
+                    <button
+                      key={tpl.key}
+                      type="button"
+                      onClick={() => applyTemplate(tpl)}
+                      className="text-left px-4 py-3 border-3 border-brutal-fg bg-white max-w-[240px] hover:shadow-brutal hover:bg-brutal-yellow/10 transition"
+                    >
+                      <span className="block text-xs font-bold uppercase tracking-wider">{tpl.name}</span>
+                      <span className="block text-[10px] text-brutal-muted mt-1">{tpl.description}</span>
+                    </button>
+                  ))}
+                  {savedTemplates.map((tpl) => (
+                    <button
+                      key={tpl.id}
+                      type="button"
+                      onClick={() => applyTemplate(tpl)}
+                      className="text-left px-4 py-3 border-3 border-brutal-fg bg-white max-w-[240px] hover:shadow-brutal hover:bg-brutal-yellow/10 transition"
+                    >
+                      <span className="block text-xs font-bold uppercase tracking-wider">{tpl.name}</span>
+                      <span className="block text-[10px] text-brutal-muted mt-1">Your saved template{tpl.subject ? ` · ${tpl.subject}` : ''}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* TipTap Editor */}
             <div>
