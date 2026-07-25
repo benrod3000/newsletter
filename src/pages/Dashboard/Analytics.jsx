@@ -41,27 +41,28 @@ function AnimatedStatCard({ label, value, delay = 0, current, previous, unit, pe
   const ref = useRef(null)
   const [displayed, setDisplayed] = useState(0)
   const numVal = typeof value === 'number' ? value : parseFloat(String(value).replace(/[^0-9.]/g, '')) || 0
+  // Only the tweened branch needs state; the non-animated case renders numVal
+  // directly so the effect never has to setState synchronously on mount.
+  const shown = typeof value === 'number' && numVal > 0 ? displayed : numVal
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
     gsap.fromTo(el, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, delay, ease: 'power3.out' })
-    if (typeof value === 'number' && numVal > 0) {
-      const proxy = { val: 0 }
-      const tw = gsap.to(proxy, {
-        val: numVal, duration: 1.2, delay: delay + 0.2, ease: 'power2.out',
-        onUpdate: () => setDisplayed(Math.round(proxy.val)),
-      })
-      return () => tw.kill()
-    }
-    setDisplayed(numVal)
+    if (typeof value !== 'number' || numVal <= 0) return
+    const proxy = { val: 0 }
+    const tw = gsap.to(proxy, {
+      val: numVal, duration: 1.2, delay: delay + 0.2, ease: 'power2.out',
+      onUpdate: () => setDisplayed(Math.round(proxy.val)),
+    })
+    return () => tw.kill()
   }, [numVal, delay, value])
 
   return (
     <div ref={ref} className="border-3 border-brutal-fg bg-white p-6 border-t-[6px] border-t-brutal-yellow hover:shadow-brutal transition">
       <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">{label}</p>
       <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">
-        {typeof value === 'number' ? displayed.toLocaleString() : value}
+        {typeof value === 'number' ? shown.toLocaleString() : value}
       </p>
       {hint && <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mt-1">{hint}</p>}
       {current != null && <Delta current={current} previous={previous} unit={unit} periodDays={periodDays} />}
@@ -71,6 +72,9 @@ function AnimatedStatCard({ label, value, delay = 0, current, previous, unit, pe
 
 function AnimatedGrowthChart({ points, height = 40 }) {
   const chartRef = useRef(null)
+  const [dragStart, setDragStart] = useState(null)
+  const [dragging, setDragging] = useState(false)
+  const [selection, setSelection] = useState(null) // { start, end } bar indices, inclusive
 
   // Past ~5 weeks, one bar per day is an unreadable comb. Roll days up into
   // weeks so the trend stays legible at 90d; keep daily granularity when short.
@@ -87,6 +91,31 @@ function AnimatedGrowthChart({ points, height = 40 }) {
   const max = Math.max(...bars.map((b) => b.total), 1)
   const total = points.reduce((s, p) => s + (p.count ?? 0), 0)
   const labelEvery = Math.ceil(bars.length / 8) // keep ~8 axis labels max
+  const barAvg = bars.length ? total / bars.length : 0
+  const avgLinePct = Math.min((barAvg / max) * 100, 100)
+
+  const range = selection ? [Math.min(selection.start, selection.end), Math.max(selection.start, selection.end)] : null
+  const rangeBars = range ? bars.slice(range[0], range[1] + 1) : []
+  const rangeTotal = rangeBars.reduce((s, b) => s + b.total, 0)
+  const rangeAvg = rangeBars.length ? rangeTotal / rangeBars.length : 0
+
+  // A brief drag (or a plain click) collapses to a single-bar selection, which
+  // still reads fine as "vs your average" for that one day/week.
+  function finishDrag(endIndex) {
+    if (dragStart == null) return
+    setSelection({ start: dragStart, end: endIndex })
+    setDragStart(null)
+    setDragging(false)
+  }
+
+  // Only listening while an actual drag is in progress, so a mouseup anywhere
+  // on the page (not just on a bar) still ends the selection cleanly.
+  useEffect(() => {
+    if (!dragging) return
+    const onUp = () => setDragging(false)
+    window.addEventListener('mouseup', onUp)
+    return () => window.removeEventListener('mouseup', onUp)
+  }, [dragging])
 
   useEffect(() => {
     const els = chartRef.current?.querySelectorAll('.growth-bar')
@@ -98,27 +127,76 @@ function AnimatedGrowthChart({ points, height = 40 }) {
   }, [bars])
 
   return (
-    <div ref={chartRef} className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
-      <div className="flex items-baseline justify-between mb-6">
+    <div className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
+      <div className="flex items-baseline justify-between mb-1 flex-wrap gap-2">
         <h3 className="font-heading text-xl uppercase tracking-wide">Subscriber Growth</h3>
         <span className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">
           +{total.toLocaleString()} total{bucketed ? ' · weekly' : ' · daily'} · peak {max.toLocaleString()}
         </span>
       </div>
-      <div className="flex items-end gap-1.5" style={{ height: `${height * 4}px` }}>
-        {bars.map((b, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-2 min-w-0">
+      <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted mb-5">
+        Drag across bars to compare a range against the period average.
+      </p>
+      <div
+        ref={chartRef}
+        className="relative flex items-end gap-1.5 select-none"
+        style={{ height: `${height * 4}px` }}
+        onMouseLeave={() => { if (dragging) finishDrag(selection?.end ?? dragStart) }}
+      >
+        {/* Average reference line — every bar reads against this without hovering */}
+        <div
+          className="absolute left-0 right-0 border-t-2 border-dashed border-brutal-fg/50 z-10 pointer-events-none"
+          style={{ bottom: `${avgLinePct}%` }}
+          title={`Average: ${barAvg.toFixed(1)}/${bucketed ? 'wk' : 'day'}`}
+        />
+        {bars.map((b, i) => {
+          const inRange = range && i >= range[0] && i <= range[1]
+          const vsAvg = b.total - barAvg
+          const vsAvgLabel = Math.abs(vsAvg) < 0.5 ? 'even with avg' : `${vsAvg > 0 ? '+' : ''}${vsAvg.toFixed(1)} vs avg`
+          return (
             <div
-              className="growth-bar w-full bg-brutal-yellow border-2 border-brutal-fg hover:bg-brutal-yellow-dark transition cursor-pointer"
-              style={{ height: `${Math.max((b.total / max) * 100, 2)}%` }}
-              title={`${b.total.toLocaleString()} ${bucketed ? 'in week of' : 'on'} ${new Date(b.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
-            />
-            <span className="text-[10px] font-bold text-brutal-muted whitespace-nowrap h-3">
-              {i % labelEvery === 0 ? new Date(b.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
-            </span>
-          </div>
-        ))}
+              key={i}
+              className="flex-1 flex flex-col items-center gap-2 min-w-0"
+              onMouseDown={() => { setSelection(null); setDragStart(i); setDragging(true) }}
+              onMouseEnter={() => { if (dragging) setSelection({ start: dragStart, end: i }) }}
+              onMouseUp={() => finishDrag(i)}
+            >
+              <div
+                className={`growth-bar w-full border-2 border-brutal-fg transition cursor-pointer ${
+                  inRange ? 'bg-brutal-fg' : 'bg-brutal-yellow hover:bg-brutal-yellow-dark'
+                }`}
+                style={{ height: `${Math.max((b.total / max) * 100, 2)}%` }}
+                title={`${b.total.toLocaleString()} ${bucketed ? 'in week of' : 'on'} ${new Date(b.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} (${vsAvgLabel})`}
+              />
+              <span className="text-[10px] font-bold text-brutal-muted whitespace-nowrap h-3">
+                {i % labelEvery === 0 ? new Date(b.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
+              </span>
+            </div>
+          )
+        })}
       </div>
+      {range && (
+        <div className="mt-4 border-2 border-brutal-fg bg-brutal-yellow/20 px-3 py-2 flex items-center gap-3 flex-wrap">
+          <span className="text-[10px] font-bold uppercase tracking-wider">
+            {new Date(bars[range[0]].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            {range[1] > range[0] && ` – ${new Date(bars[range[1]].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
+          </span>
+          <span className="text-xs font-bold">
+            {rangeTotal.toLocaleString()} total
+            <span className="text-brutal-muted font-bold"> · {rangeAvg.toFixed(1)}/{bucketed ? 'wk' : 'day'} avg</span>
+            <span className={`font-bold ${rangeAvg >= total / bars.length ? 'text-brutal-green' : 'text-brutal-red'}`}>
+              {' '}vs {(total / bars.length).toFixed(1)} overall
+            </span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelection(null)}
+            className="ml-auto px-2 py-0.5 border-2 border-brutal-fg bg-white text-[9px] font-bold uppercase tracking-wider hover:bg-brutal-red/10 transition"
+          >
+            Clear ✕
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -208,6 +286,19 @@ function fmtHour(h) {
 }
 
 function OpenTimeHeatmap({ heatmap, loading, error, days }) {
+  const [selectedHour, setSelectedHour] = useState(null)
+
+  // Clicking an hour re-derives the day-of-week breakdown from the raw
+  // day x hour matrix, so "By Day" answers "who opens at 3pm specifically"
+  // instead of always showing the all-hours aggregate.
+  const dayBreakdown = useMemo(() => {
+    if (selectedHour == null || !heatmap?.matrix?.length) return heatmap?.days ?? []
+    const counts = heatmap.matrix.map((row) => row.counts[selectedHour] ?? 0)
+    const max = Math.max(...counts, 1)
+    return counts.map((count, day) => ({ day, count, pct: Math.round((count / max) * 100) }))
+  }, [selectedHour, heatmap])
+  const selectedHourTotal = useMemo(() => dayBreakdown.reduce((s, d) => s + d.count, 0), [dayBreakdown])
+
   if (loading) {
     return <div className="border-3 border-brutal-fg bg-white p-6"><p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">Loading open times…</p></div>
   }
@@ -250,35 +341,72 @@ function OpenTimeHeatmap({ heatmap, loading, error, days }) {
       </div>
 
       <div className="mb-5">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">By Hour</p>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">By Hour</p>
+          <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">Click an hour to filter days</p>
+        </div>
         <div className="flex items-end gap-0.5 h-20">
-          {heatmap.hours.map((h) => (
-            <div key={h.hour} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
-              <div
-                className={`w-full border border-brutal-fg transition ${h.hour === heatmap.bestHour ? 'bg-brutal-green' : 'bg-brutal-green/40 hover:bg-brutal-green/70'}`}
-                style={{ height: `${Math.max(h.pct, 2)}%` }}
-                title={`${h.count.toLocaleString()} opens at ${fmtHour(h.hour)}`}
-              />
-              {h.hour % 6 === 0 && <span className="text-[8px] font-bold text-brutal-muted">{fmtHour(h.hour)}</span>}
-            </div>
-          ))}
+          {heatmap.hours.map((h) => {
+            const isSelected = h.hour === selectedHour
+            return (
+              <button
+                key={h.hour}
+                type="button"
+                onClick={() => setSelectedHour(isSelected ? null : h.hour)}
+                aria-pressed={isSelected}
+                className="flex-1 flex flex-col items-center justify-end gap-1 h-full cursor-pointer group"
+              >
+                <div
+                  className={`w-full border transition ${
+                    isSelected
+                      ? 'bg-brutal-fg border-brutal-fg'
+                      : h.hour === heatmap.bestHour
+                        ? 'bg-brutal-green border-brutal-fg'
+                        : 'bg-brutal-green/40 border-brutal-fg group-hover:bg-brutal-green/70'
+                  }`}
+                  style={{ height: `${Math.max(h.pct, 2)}%` }}
+                  title={`${h.count.toLocaleString()} opens at ${fmtHour(h.hour)}`}
+                />
+                {h.hour % 6 === 0 && <span className="text-[8px] font-bold text-brutal-muted">{fmtHour(h.hour)}</span>}
+              </button>
+            )
+          })}
         </div>
       </div>
 
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">By Day</p>
-        <div className="flex items-end gap-1 h-14">
-          {heatmap.days.map((d) => (
-            <div key={d.day} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
-              <div
-                className={`w-full border border-brutal-fg transition ${d.day === heatmap.bestDay ? 'bg-brutal-yellow-dark' : 'bg-brutal-yellow/50 hover:bg-brutal-yellow'}`}
-                style={{ height: `${Math.max(d.pct, 4)}%` }}
-                title={`${d.count.toLocaleString()} opens on ${DAY_NAMES[d.day]}`}
-              />
-              <span className="text-[8px] font-bold text-brutal-muted">{DAY_SHORT[d.day]}</span>
-            </div>
-          ))}
+        <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">
+            By Day{selectedHour != null && <span className="text-brutal-fg"> — at {fmtHour(selectedHour)}</span>}
+          </p>
+          {selectedHour != null && (
+            <button
+              type="button"
+              onClick={() => setSelectedHour(null)}
+              className="px-2 py-0.5 border-2 border-brutal-fg bg-brutal-yellow/20 text-[9px] font-bold uppercase tracking-wider hover:bg-brutal-red/10 transition"
+            >
+              Clear ✕
+            </button>
+          )}
         </div>
+        {selectedHour != null && selectedHourTotal === 0 ? (
+          <p className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider mb-2">
+            No opens recorded at {fmtHour(selectedHour)} in this window.
+          </p>
+        ) : (
+          <div className="flex items-end gap-1 h-14">
+            {dayBreakdown.map((d) => (
+              <div key={d.day} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
+                <div
+                  className={`w-full border border-brutal-fg transition ${d.day === heatmap.bestDay && selectedHour == null ? 'bg-brutal-yellow-dark' : 'bg-brutal-yellow/50 hover:bg-brutal-yellow'}`}
+                  style={{ height: `${Math.max(d.pct, 4)}%` }}
+                  title={`${d.count.toLocaleString()} opens on ${DAY_NAMES[d.day]}${selectedHour != null ? ` at ${fmtHour(selectedHour)}` : ''}`}
+                />
+                <span className="text-[8px] font-bold text-brutal-muted">{DAY_SHORT[d.day]}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -435,7 +563,9 @@ function LivePulse({ workspaceId }) {
             return [...newEvents, ...prev].slice(0, 10)
           })
         }
-      } catch {}
+      } catch (err) {
+        console.error('Live pulse poll failed:', err)
+      }
     }
 
     fetchLive()
@@ -524,7 +654,9 @@ export default function AnalyticsPage() {
   useEffect(() => {
     if (!workspaceId) return
     document.title = 'Analytics | Veloce'
-    loadOverview()
+    // Deferred so the effect body itself never calls setState synchronously —
+    // loadOverview sets loading/overview state before its first await.
+    queueMicrotask(() => loadOverview())
     // Auto-refresh every 60 seconds
     const interval = setInterval(() => loadOverview(true), 60000)
     return () => clearInterval(interval)
@@ -714,7 +846,7 @@ export default function AnalyticsPage() {
 
           {/* GROWTH CHART */}
           {growth.length > 0 ? (
-            <AnimatedGrowthChart points={growth} />
+            <AnimatedGrowthChart key={days} points={growth} />
           ) : (
             <EmptyState
               title="No growth data yet"
@@ -726,7 +858,7 @@ export default function AnalyticsPage() {
           <div className="grid lg:grid-cols-2 gap-6">
             {/* Email Open Heatmap */}
             <ErrorBoundary>
-              <OpenTimeHeatmap heatmap={heatmap} loading={heatmapLoading} error={heatmapError} days={days} />
+              <OpenTimeHeatmap key={days} heatmap={heatmap} loading={heatmapLoading} error={heatmapError} days={days} />
             </ErrorBoundary>
 
             {/* Campaign Performance */}
