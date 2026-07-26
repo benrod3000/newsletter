@@ -6,8 +6,34 @@ import { normalizeAuthError, requiresNewSecurityCheck } from '../lib/authErrors'
 import { useRetryCountdown } from '../hooks/use-retry-countdown'
 import axios from 'axios'
 import Btn from '../components/ui/Button'
+import Input from '../components/ui/Input'
 import Turnstile from '../components/Turnstile'
 import { ShieldCheck } from 'lucide-react'
+
+/** Keyed by the oauth_error values the two callback routes redirect with. */
+const OAUTH_ERROR_MESSAGES = {
+  csrf: 'That sign-in link expired or was tampered with. Please try again.',
+  access_denied: 'Sign-in was cancelled.',
+  no_code: "Sign-in didn't complete. Please try again.",
+  token_exchange_failed: 'Could not complete sign-in with the provider. Please try again.',
+  missing_params: "Sign-in didn't complete. Please try again.",
+  default: 'Sign-in failed. Please try again.',
+}
+
+/**
+ * Where to send the user after a successful login: wherever they were headed
+ * before being bounced here, or the dashboard by default.
+ *
+ * Only a same-site path is accepted - `redirect` arrives via a URL query
+ * param, so an unvalidated value would let a crafted login link send the
+ * user's session on to an attacker's origin after they authenticate.
+ */
+function resolvePostLoginDestination(location) {
+  if (location.state?.from) return location.state.from
+  const redirect = new URLSearchParams(window.location.search).get('redirect')
+  if (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) return redirect
+  return '/dashboard'
+}
 
 export default function LoginPage() {
   const location = useLocation()
@@ -41,10 +67,19 @@ export default function LoginPage() {
       setTotpRequired(true)
       setPartialToken(params.get('partial_token') || '')
     }
+    const search = new URLSearchParams(window.location.search)
+
     // Set by the api client's 401 interceptor so an expired session explains
     // itself instead of silently dumping the user at a login form.
-    if (new URLSearchParams(window.location.search).get('expired') === '1') {
+    if (search.get('expired') === '1') {
       setError({ message: 'Your session expired. Please sign in again.' })
+    }
+
+    // Set by the OAuth callback routes on failure - previously this landed the
+    // user back on a blank login form with no explanation.
+    const oauthError = search.get('oauth_error')
+    if (oauthError) {
+      setError({ message: OAUTH_ERROR_MESSAGES[oauthError] || OAUTH_ERROR_MESSAGES.default })
     }
   }, [])
 
@@ -98,7 +133,7 @@ export default function LoginPage() {
         role: data.role,
         workspaceName: data.workspace_name,
       })
-      navigate('/dashboard')
+      navigate(resolvePostLoginDestination(location))
     } catch (err) {
       setError(normalizeAuthError(err, { fallback: 'Login failed. Try again.' }))
       // Only a rejected challenge needs re-solving; a wrong password does not.
@@ -134,7 +169,7 @@ export default function LoginPage() {
         role: data.role,
         workspaceName: data.workspace_name,
       })
-      navigate('/dashboard')
+      navigate(resolvePostLoginDestination(location))
     } catch {
       setError({ message: 'Verification failed. Try again.' })
     } finally {
@@ -176,34 +211,32 @@ export default function LoginPage() {
 
           {!totpRequired ? (
             <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5" htmlFor="login-email">Email</label>
-                <input
-                  id="login-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); if (fieldErrors.email) setFieldErrors({}) }}
-                  className={`w-full bg-white border-3 px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition ${fieldErrors.email ? 'border-brutal-red' : 'border-brutal-fg'}`}
-                  placeholder="you@example.com"
-                  required
-                  autoFocus
-                  aria-describedby={error ? 'login-error' : undefined}
-                />
-                {fieldErrors.email && <p className="mt-1 text-[9px] font-bold text-brutal-red uppercase tracking-wider">{fieldErrors.email}</p>}
-              </div>
+              <Input
+                id="login-email"
+                label="Email"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); if (fieldErrors.email) setFieldErrors({}) }}
+                placeholder="you@example.com"
+                required
+                autoFocus
+                error={fieldErrors.email}
+                aria-describedby={error ? 'login-error' : undefined}
+              />
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5" htmlFor="login-password">Password</label>
-                <input
+                <Input
                   id="login-password"
+                  label="Password"
                   type="password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); if (fieldErrors.password) setFieldErrors({}) }}
-                  className={`w-full bg-white border-3 px-4 py-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition ${fieldErrors.password ? 'border-brutal-red' : 'border-brutal-fg'}`}
                   placeholder="••••••••"
                   required
+                  error={fieldErrors.password}
                 />
-                {fieldErrors.password && <p className="mt-1 text-[9px] font-bold text-brutal-red uppercase tracking-wider">{fieldErrors.password}</p>}
                 <div className="mt-2">
                   <Link to="/forgot-password" className="text-xs font-bold text-brutal-green underline underline-offset-2 hover:text-brutal-fg transition">
                     Forgot password?
@@ -261,7 +294,10 @@ export default function LoginPage() {
                   onChange={(e) => setTotpCode(e.target.value)}
                   className="w-full bg-white border-3 border-brutal-fg px-4 py-3 text-sm font-mono tracking-widest text-center text-lg focus:outline-none focus:bg-brutal-yellow/10 transition"
                   placeholder="000000"
-                  maxLength={6}
+                  // 10 chars fits a recovery code (5 random bytes as hex); the old
+                  // maxLength of 6 made recovery codes impossible to type here at all.
+                  maxLength={10}
+                  autoComplete="one-time-code"
                   autoFocus
                   required
                   aria-describedby={error ? 'login-error' : undefined}

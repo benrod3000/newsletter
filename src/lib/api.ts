@@ -52,7 +52,8 @@ api.interceptors.response.use(
     if (status === 401 && !isAuthEndpoint) {
       useAuthStore.getState().clearAuth()
       if (!window.location.pathname.startsWith('/login')) {
-        window.location.href = '/login?expired=1'
+        const redirect = encodeURIComponent(window.location.pathname + window.location.search)
+        window.location.href = `/login?expired=1&redirect=${redirect}`
       }
     }
     return Promise.reject(error)

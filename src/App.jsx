@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom'
 import { useAuthStore } from './stores/authStore'
 import { lazy, Suspense, useEffect } from 'react'
 import { ToastProvider } from './components/Toast'
@@ -75,11 +75,14 @@ function PublicLayout({ children }) {
 // Protected Route Component
 function ProtectedRoute({ children }) {
   const token = useAuthStore((state) => state.token)
-  
+  const location = useLocation()
+
   if (!token) {
-    return <Navigate to="/login" replace />
+    // So the login page can send them back where they were headed instead of
+    // always dropping them on the dashboard.
+    return <Navigate to="/login" state={{ from: location.pathname + location.search }} replace />
   }
-  
+
   return children
 }
 

@@ -117,6 +117,7 @@ export default function SignupPage() {
             <Input
               label="Email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => { setEmail(e.target.value); if (fieldErrors.email) setFieldErrors({}) }}
               placeholder="you@example.com"
@@ -127,6 +128,7 @@ export default function SignupPage() {
             <Input
               label="Password"
               type="password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => { setPassword(e.target.value); if (fieldErrors.password) setFieldErrors({}) }}
               placeholder={`${MIN_PASSWORD_LENGTH}+ characters`}
@@ -144,6 +146,7 @@ export default function SignupPage() {
             <Input
               label={<span>Workspace Name <span className="text-brutal-muted font-normal">(optional)</span></span>}
               type="text"
+              autoComplete="organization"
               value={workspaceName}
               onChange={(e) => setWorkspaceName(e.target.value)}
               placeholder="My Newsletter"

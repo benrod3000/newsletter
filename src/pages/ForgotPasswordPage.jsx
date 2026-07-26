@@ -4,6 +4,7 @@ import axios from 'axios'
 import Btn from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Turnstile from '../components/Turnstile'
+import { requiresNewSecurityCheck } from '../lib/authErrors'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
@@ -24,11 +25,13 @@ export default function ForgotPasswordPage() {
     if (!turnstileToken && !turnstileError) { setError('Please complete the security check.'); return }
     setLoading(true)
     try {
-      await axios.post(`${API_URL}/api/auth/forgot-password`, { email })
+      await axios.post(`${API_URL}/api/auth/forgot-password`, { email, turnstile_token: turnstileToken })
       setSent(true)
     } catch (err) {
       const apiErr = err?.response?.data?.error
       setError(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Something went wrong.')
+      // A used or rejected token can't be replayed; anything else leaves it valid.
+      if (requiresNewSecurityCheck(err)) setTurnstileToken('')
     } finally {
       setLoading(false)
     }
@@ -68,10 +71,12 @@ export default function ForgotPasswordPage() {
             <Input
               label="Email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
+              autoFocus
             />
             {!sent && <div className="flex justify-center">
             <Turnstile
