@@ -1,6 +1,10 @@
 # Veloce — Claude Handoff Notes
 
-_Last updated: 2026-07-24. This file is the pickup point for continuing work in a new Claude Code session (e.g. VS Code)._
+_Last updated: 2026-07-26. This file is the pickup point for continuing work in a new Claude Code session (e.g. VS Code)._
+
+> **Target architecture and roadmap: [`newsletter-core/ARCHITECTURE.md`](../newsletter-core/ARCHITECTURE.md).**
+> Read it before any structural change. This file covers current working state; that
+> file covers where things are going and which decisions are irreversible.
 
 ## Two repos (both deploy to Vercel on push to `main`)
 - **Frontend** — `/Users/benrodriguez/Websites/newsletter` — Vite + React 19 + Tailwind v4 + React Router. Neobrutalist design system. Live at `https://newsletter.brod3000.com`.

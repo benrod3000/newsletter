@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push supersedes an in-flight run on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: typecheck · lint · build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # Capped baseline: fails if the warning count grows. See eslint.config.js.
+      - name: Lint
+        run: npm run lint:ci
+
+      # No test step: this repo has no test runner yet. ~13k lines of product UI
+      # with zero coverage is the largest single gap in the codebase — adding
+      # Vitest + Testing Library, starting with Campaigns and Analytics, is the
+      # next thing to land here.
+      - name: Build
+        run: npm run build

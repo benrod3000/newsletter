@@ -23,7 +23,33 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      /**
+       * A capped baseline, not an endorsement.
+       *
+       * These are pre-existing violations. Blocking CI on them today would mean
+       * choosing between having no CI at all and changing behaviour across the
+       * dashboard with zero test coverage to catch a mistake — both worse than
+       * the debt itself.
+       *
+       * They are warnings, and `npm run lint:ci` caps the total warning count, so
+       * the debt can shrink but never grow. Fix some, then lower the cap in
+       * package.json. Never raise it.
+       *
+       * Worth knowing what is in here:
+       * - `no-empty` is 11 empty catch blocks — failures currently vanish with no
+       *   log and no user feedback. Each needs a per-site decision (report, toast,
+       *   or an explicit comment saying why it is safe to swallow).
+       * - `set-state-in-effect` and `exhaustive-deps` are real render-correctness
+       *   smells, mostly in the five oversized dashboard pages.
+       */
+      'no-unused-vars': ['warn', {
+        varsIgnorePattern: '^[A-Z_]',
+        argsIgnorePattern: '^_',
+        caughtErrors: 'none',
+      }],
+      'no-empty': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-refresh/only-export-components': 'warn',
     },
   },
 ])
