@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Btn from './ui/Button'
 
 /**
- * Single-field input dialog — the replacement for window.prompt.
+ * Single-field input dialog - the replacement for window.prompt.
  *
  * Beyond the styling and thread-blocking problems native prompts have, they
  * cannot validate before accepting: the caller gets whatever was typed and has

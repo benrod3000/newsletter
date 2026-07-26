@@ -33,7 +33,7 @@ export default function LoginPage() {
 
   useEffect(() => { document.title = 'Sign In | Veloce' }, [])
 
-  // Declared after the state it sets — previously these effects sat above the
+  // Declared after the state it sets - previously these effects sat above the
   // useState calls and referenced the setters before declaration.
   useEffect(() => {
     const params = new URLSearchParams(window.location.hash.replace('#', ''))
@@ -62,7 +62,7 @@ export default function LoginPage() {
     if (Object.keys(fe).length) { setFieldErrors(fe); return }
 
     // Only block when the widget is working but unfinished. If it failed to
-    // load, let the request through — the server verifies the token anyway,
+    // load, let the request through - the server verifies the token anyway,
     // and a broken widget must not be an unrecoverable lockout.
     if (!turnstileToken && !turnstileError) {
       setError({ message: 'Please complete the security check.' })

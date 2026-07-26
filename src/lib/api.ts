@@ -191,7 +191,7 @@ export const usersAPI = {
 // ── Deliverability ──
 
 // These previously called /api/admin/deliverability/*, which sits behind admin
-// Basic Auth — the dashboard's bearer token always 401'd, so the page never
+// Basic Auth - the dashboard's bearer token always 401'd, so the page never
 // worked. The workspace-scoped routes share the same implementation.
 export const deliverabilityAPI = {
   overview: (workspaceId: string) =>

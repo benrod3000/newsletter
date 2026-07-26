@@ -5,7 +5,7 @@ import { EmptyState, LoadingState } from '../../components/ux'
 import Btn from '../../components/ui/Button'
 import { useToast } from '../../components/Toast'
 // The rich-text editor pulls in TipTap and dominates this route's bundle, but
-// it is only rendered while editing a campaign — most visits here are to read
+// it is only rendered while editing a campaign - most visits here are to read
 // the list. Loading it on demand keeps the list view light.
 const EmailEditor = lazy(() => import('../../components/EmailEditor'))
 const GeoFilter = lazy(() => import('../../components/GeoFilter'))
@@ -147,7 +147,7 @@ export default function CampaignsPage() {
   }
 
   // Seeds a blank draft from either a built-in starter ({ subject, html }) or
-  // a saved template ({ subject, editor_html, audience }) — same shape either
+  // a saved template ({ subject, editor_html, audience }) - same shape either
   // way once picked apart here.
   function applyTemplate(tpl) {
     setEditContent(tpl.html ?? tpl.editor_html ?? '')
@@ -575,7 +575,7 @@ export default function CampaignsPage() {
               </div>
             </div>
 
-            {/* Starting points — only while the draft is still blank; picking one or
+            {/* Starting points - only while the draft is still blank; picking one or
                 just typing (which fills editContent) makes this go away on its own. */}
             {editingId === 'new' && !editContent && (savedTemplates.length > 0 || STARTER_TEMPLATES.length > 0) && (
               <div>

@@ -34,7 +34,7 @@ const mockSubscribers = [
 ]
 
 // Deterministic sample audience clustered around Austin, TX. Powers the live
-// radius-filter demo — map pins + in-range count — with no backend. Seeded so
+// radius-filter demo - map pins + in-range count - with no backend. Seeded so
 // the picture is identical on every load.
 const DEMO_GEO_SUBSCRIBERS = (() => {
   let seed = 20260723
@@ -153,7 +153,7 @@ export default function DemoPage() {
                   ))}
                 </div>
 
-                {/* GeoFilter renders its own titled toggle — no wrapper title needed */}
+                {/* GeoFilter renders its own titled toggle - no wrapper title needed */}
                 <GeoFilter onChange={() => {}} onClear={() => {}} active={false} subscribers={DEMO_GEO_SUBSCRIBERS} />
 
                 <Panel title="Recent Campaigns">
@@ -349,7 +349,7 @@ export default function DemoPage() {
       </Panel>
 
       {/* The only CTAs used to sit above the demo. Anyone who actually explored
-          it — the most interested visitors — reached the end with nothing to
+          it - the most interested visitors - reached the end with nothing to
           act on and had to scroll back up. */}
       <div className="border-3 border-brutal-fg bg-white p-6 sm:p-8 text-center space-y-4 shadow-brutal">
         <h2 className="font-heading text-2xl sm:text-3xl uppercase tracking-tight leading-none">

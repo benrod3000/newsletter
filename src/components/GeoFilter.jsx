@@ -10,7 +10,7 @@ const MAX_LOCATIONS = 5
 const GEO_FILTER_KEY = 'geo-filter-state'
 
 /**
- * Animated integer — tweens from its previous value to the new one whenever
+ * Animated integer - tweens from its previous value to the new one whenever
  * `value` changes, so the in-range count rolls as you drag the radius.
  */
 function AnimatedStat({ value }) {
@@ -520,7 +520,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
             )}
             {!searching && query.trim().length >= 3 && suggestions.length === 0 && (
               <p className="mt-1.5 text-[10px] font-bold text-brutal-red uppercase tracking-wider">
-                No matches — try a city name or 5-digit ZIP
+                No matches - try a city name or 5-digit ZIP
               </p>
             )}
           </div>

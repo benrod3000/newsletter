@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
  *
  * The script can fail to load for reasons that have nothing to do with the user
  * being a bot: ad blockers, privacy extensions, corporate DNS, strict CSP, or a
- * Cloudflare outage. Previously that failure was silent — no token was ever
+ * Cloudflare outage. Previously that failure was silent - no token was ever
  * produced, and any form gating its submit button on that token became
  * permanently unusable with no explanation.
  *
@@ -29,7 +29,7 @@ export default function Turnstile({ onVerify, onExpire, onError }) {
   const [ready, setReady] = useState(false);
 
   // Keep the latest callbacks without re-running the render effect. Assigned in
-  // an effect rather than during render — refs must not be written while
+  // an effect rather than during render - refs must not be written while
   // rendering.
   const handlers = useRef({ onVerify, onExpire, onError });
   useEffect(() => {

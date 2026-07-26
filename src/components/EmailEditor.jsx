@@ -8,7 +8,7 @@ import DOMPurify from 'dompurify'
 import { getAuthToken } from '../lib/api'
 import PromptModal from './PromptModal'
 
-/** Reject anything that isn't an http(s) URL — notably javascript: hrefs. */
+/** Reject anything that isn't an http(s) URL - notably javascript: hrefs. */
 function validateUrl(value) {
   if (!value) return 'Enter a URL'
   try {

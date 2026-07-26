@@ -136,7 +136,7 @@ export default function LandingPage() {
           <div className="h-2 w-24 bg-brutal-yellow border-2 border-brutal-fg" aria-hidden="true" />
 
           <p className="text-lg sm:text-xl text-brutal-fg/80 leading-relaxed max-w-2xl font-medium">
-            The newsletter platform where you own the list and bring your own sending — Resend, SES, or SendGrid. One audience, reachable by email, SMS, or RCS.
+            The newsletter platform where you own the list and bring your own sending - Resend, SES, or SendGrid. One audience, reachable by email, SMS, or RCS.
           </p>
 
           <Annotation>audience ownership · bring your own Resend / SES / SendGrid · free to start</Annotation>

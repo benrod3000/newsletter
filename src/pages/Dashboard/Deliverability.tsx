@@ -271,7 +271,7 @@ export default function DeliverabilityPage() {
             {/* DNS Score */}
             <div className="border-3 border-brutal-fg bg-white p-6 border-t-[6px] border-t-brutal-green">
               <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">DNS Health</p>
-              <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">{data?.dnsScore ?? '—'}</p>
+              <p className="text-3xl font-bold mt-2 text-brutal-fg font-heading tracking-tight">{data?.dnsScore ?? 'N/A'}</p>
               <p className="text-[10px] text-brutal-muted mt-1 font-bold">SPF · DKIM · DMARC · MX</p>
             </div>
 
@@ -296,7 +296,7 @@ export default function DeliverabilityPage() {
               <div className="border-b-3 border-brutal-fg bg-brutal-fg text-white px-6 py-3">
                 <h3 className="font-heading text-lg uppercase tracking-wide flex items-center gap-2">
                   <Shield size={18} />
-                  DNS Configuration — {dnsHealth.domain}
+                  DNS Configuration - {dnsHealth.domain}
                 </h3>
               </div>
               <div className="p-6 space-y-3">

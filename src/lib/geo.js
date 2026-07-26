@@ -10,7 +10,7 @@ export async function resolveZip(zip) {
   const clean = zip.trim()
   if (!/^\d{5}(-\d{4})?$/.test(clean)) return null
 
-  // Shared cache key — declared once so every fallback branch can write to it.
+  // Shared cache key - declared once so every fallback branch can write to it.
   // (Previously scoped inside the read block, so cache writes threw silently.)
   const cacheKey = `geo-zip-${clean}`
 

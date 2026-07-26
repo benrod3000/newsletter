@@ -7,7 +7,7 @@ gsap.registerPlugin(ScrollTrigger)
 /**
  * These hooks animate content in from opacity 0, which means the content is
  * INVISIBLE until the animation runs. Anything that stops it running leaves a
- * blank page — observed on the landing hero, where the headline and call to
+ * blank page - observed on the landing hero, where the headline and call to
  * action failed to appear at all on some loads.
  *
  * Two safeguards, both of which favour "visible but unanimated" over "hidden":

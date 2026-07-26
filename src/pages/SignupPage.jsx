@@ -57,8 +57,8 @@ export default function SignupPage() {
       }
       setError(normalized)
 
-      // A used or rejected token can't be replayed. Anything else — a duplicate
-      // email, a rate limit — leaves the solved challenge valid, and clearing it
+      // A used or rejected token can't be replayed. Anything else - a duplicate
+      // email, a rate limit - leaves the solved challenge valid, and clearing it
       // would force a pointless re-solve on the retry.
       if (requiresNewSecurityCheck(err)) setTurnstileToken('')
     } finally {

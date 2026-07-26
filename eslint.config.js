@@ -28,7 +28,7 @@ export default defineConfig([
        *
        * These are pre-existing violations. Blocking CI on them today would mean
        * choosing between having no CI at all and changing behaviour across the
-       * dashboard with zero test coverage to catch a mistake — both worse than
+       * dashboard with zero test coverage to catch a mistake - both worse than
        * the debt itself.
        *
        * They are warnings, and `npm run lint:ci` caps the total warning count, so
@@ -36,7 +36,7 @@ export default defineConfig([
        * package.json. Never raise it.
        *
        * Worth knowing what is in here:
-       * - `no-empty` is 11 empty catch blocks — failures currently vanish with no
+       * - `no-empty` is 11 empty catch blocks - failures currently vanish with no
        *   log and no user feedback. Each needs a per-site decision (report, toast,
        *   or an explicit comment saying why it is safe to swallow).
        * - `set-state-in-effect` and `exhaustive-deps` are real render-correctness

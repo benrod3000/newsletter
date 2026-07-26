@@ -9,7 +9,7 @@
  *
  * The server currently identifies failures by status code plus a human message.
  * If it ever grows machine-readable codes, `code` is read first and the
- * status/message matching below becomes the fallback — callers don't change.
+ * status/message matching below becomes the fallback - callers don't change.
  */
 
 /**
@@ -46,7 +46,7 @@ export function normalizeAuthError(err, { fallback = 'Something went wrong. Try 
   const status = response?.status
   const serverMessage = readMessage(response?.data)
 
-  // No response at all: the request never landed. Distinguishing this matters —
+  // No response at all: the request never landed. Distinguishing this matters -
   // "check your connection" is actionable, "signup failed" is not.
   if (!response) {
     return {

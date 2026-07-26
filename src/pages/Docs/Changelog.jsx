@@ -12,7 +12,7 @@ export default function Changelog() {
         },
         {
           title: 'Start from a template',
-          body: 'New broadcasts now offer a starting point instead of a blank editor — pick the built-in two-voice template or any of your own saved templates.',
+          body: 'New broadcasts now offer a starting point instead of a blank editor - pick the built-in two-voice template or any of your own saved templates.',
         },
       ],
     },
@@ -21,7 +21,7 @@ export default function Changelog() {
       items: [
         {
           title: 'More ways to send',
-          body: 'Amazon SES now works alongside Resend and SendGrid, sending raw MIME so one-click unsubscribe headers are preserved, with automatic fallback to your backup provider on transient errors. Every option is named clearly wherever you look — the homepage, previews, and docs — so choosing is about your audience, not guesswork.',
+          body: 'Amazon SES now works alongside Resend and SendGrid, sending raw MIME so one-click unsubscribe headers are preserved, with automatic fallback to your backup provider on transient errors. Every option is named clearly wherever you look - the homepage, previews, and docs - so choosing is about your audience, not guesswork.',
         },
         {
           title: 'Better brand consistency',
@@ -33,7 +33,7 @@ export default function Changelog() {
         },
         {
           title: 'A clearer demo experience',
-          body: '"Watch Demo" is now "See Live Demo" — it opens an interactive product tour, not a video.',
+          body: '"Watch Demo" is now "See Live Demo" - it opens an interactive product tour, not a video.',
         },
         {
           title: 'New newsletter example',
@@ -86,7 +86,7 @@ export default function Changelog() {
         },
         {
           title: 'Better testing tools',
-          body: 'Added Sandbox Mode so you can test campaigns without sending real emails — preview engagement, analytics, and campaign behavior before going live.',
+          body: 'Added Sandbox Mode so you can test campaigns without sending real emails - preview engagement, analytics, and campaign behavior before going live.',
         },
         {
           title: 'Faster platform performance',
@@ -126,7 +126,7 @@ export default function Changelog() {
         },
         {
           title: 'Smarter capture forms',
-          body: 'Forms now adapt based on what you are collecting — coupons reveal coupon codes, feedback forms collect responses, and lead magnets deliver downloads.',
+          body: 'Forms now adapt based on what you are collecting - coupons reveal coupon codes, feedback forms collect responses, and lead magnets deliver downloads.',
         },
         {
           title: 'Better location tools',
@@ -156,7 +156,7 @@ export default function Changelog() {
       items: [
         {
           title: 'More control over capture forms',
-          body: 'Added full styling customization for widgets — colors, appearance, size, and embed behavior.',
+          body: 'Added full styling customization for widgets - colors, appearance, size, and embed behavior.',
         },
         {
           title: 'Audience targeting improvements',

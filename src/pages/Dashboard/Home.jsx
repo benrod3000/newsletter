@@ -112,7 +112,7 @@ export default function DashboardHome() {
           <div className="flex-1">
             <p className="text-sm font-bold">You have contacts but no broadcasts yet</p>
             <p className="text-xs text-brutal-muted mt-1">Your people are waiting. Create your first broadcast to start engaging your audience.</p>
-            {/* Router navigation, not window.location — a full reload here
+            {/* Router navigation, not window.location - a full reload here
                 re-downloads the app in the middle of onboarding. */}
             <Link to="/dashboard/campaigns" className="inline-block mt-3 px-4 py-2 border-3 border-brutal-fg bg-brutal-yellow font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
               Write Your First Broadcast →

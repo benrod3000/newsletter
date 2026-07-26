@@ -3,7 +3,7 @@ import Btn from './ui/Button'
 
 /**
  * Confirmation dialog. Use this for every destructive action rather than
- * window.confirm — native dialogs block the main thread, cannot be styled, and
+ * window.confirm - native dialogs block the main thread, cannot be styled, and
  * are suppressed outright in some embedded and in-app-browser contexts, which
  * would silently skip the confirmation step altogether.
  */

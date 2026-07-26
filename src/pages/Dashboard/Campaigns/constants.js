@@ -52,7 +52,7 @@ export function generateSubjects(name, content) {
 
 // Built-in starting points offered on a blank "New Broadcast", so users don't
 // have to face an empty editor. Kept to nodes the TipTap editor (StarterKit +
-// Link + Image) actually renders — no tables/floats — since anything else
+// Link + Image) actually renders - no tables/floats - since anything else
 // gets silently stripped on parse.
 export const STARTER_TEMPLATES = [
   {
@@ -61,7 +61,7 @@ export const STARTER_TEMPLATES = [
     description: 'A casual, two-person voice for a weekly or monthly check-in.',
     subject: "This week's update",
     html: `<h1>Hey {{first_name}} 👋</h1>
-<p><strong>Frankie:</strong> Quick one from us this week —</p>
+<p><strong>Frankie:</strong> Quick one from us this week -</p>
 <p><strong>Nadia:</strong> we've got a few things worth your time.</p>
 <h2>What's new</h2>
 <ul>

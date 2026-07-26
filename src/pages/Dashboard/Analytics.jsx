@@ -143,7 +143,7 @@ function AnimatedGrowthChart({ points, height = 40 }) {
         style={{ height: `${height * 4}px` }}
         onMouseLeave={() => { if (dragging) finishDrag(selection?.end ?? dragStart) }}
       >
-        {/* Average reference line — every bar reads against this without hovering */}
+        {/* Average reference line - every bar reads against this without hovering */}
         <div
           className="absolute left-0 right-0 border-t-2 border-dashed border-brutal-fg/50 z-10 pointer-events-none"
           style={{ bottom: `${avgLinePct}%` }}
@@ -312,7 +312,7 @@ function OpenTimeHeatmap({ heatmap, loading, error, days }) {
         <h3 className="font-heading text-xl uppercase tracking-wide mb-2">When They Open</h3>
         <p className="text-sm text-brutal-muted leading-relaxed">
           Once your broadcasts collect opens in this window, this shows the hours and days
-          your audience is most active — so you know when to hit send.
+          your audience is most active - so you know when to hit send.
         </p>
       </div>
     )
@@ -377,7 +377,7 @@ function OpenTimeHeatmap({ heatmap, loading, error, days }) {
       <div>
         <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
           <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">
-            By Day{selectedHour != null && <span className="text-brutal-fg"> — at {fmtHour(selectedHour)}</span>}
+            By Day{selectedHour != null && <span className="text-brutal-fg"> - at {fmtHour(selectedHour)}</span>}
           </p>
           {selectedHour != null && (
             <button
@@ -654,7 +654,7 @@ export default function AnalyticsPage() {
   useEffect(() => {
     if (!workspaceId) return
     document.title = 'Analytics | Veloce'
-    // Deferred so the effect body itself never calls setState synchronously —
+    // Deferred so the effect body itself never calls setState synchronously -
     // loadOverview sets loading/overview state before its first await.
     queueMicrotask(() => loadOverview())
     // Auto-refresh every 60 seconds
@@ -682,7 +682,7 @@ export default function AnalyticsPage() {
       }
     }
 
-    // SMS is an optional channel — the panel stays hidden unless it's set up
+    // SMS is an optional channel - the panel stays hidden unless it's set up
     // and has reach, so there's no separate loading/error surface to track.
     async function loadSms() {
       try {
@@ -705,7 +705,7 @@ export default function AnalyticsPage() {
   const avgOpen = overview?.avg_open_rate ?? 0
   const avgClick = overview?.avg_click_rate ?? 0
 
-  // Memoize the derived arrays so their references stay stable across renders —
+  // Memoize the derived arrays so their references stay stable across renders -
   // otherwise the sort memo below recomputes every render (and the compiler bails).
   const growth = useMemo(() => overview?.subscriber_growth || [], [overview])
   const allCampaigns = useMemo(() => overview?.top_campaigns || [], [overview])

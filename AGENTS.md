@@ -4,11 +4,11 @@ React 19 + Vite 8 SPA. Tailwind CSS v4 (CSS-first config). Zustand for auth stat
 
 ## Key files
 
-- `src/lib/api.js` — Axios client, all API calls go through here
-- `src/stores/authStore.js` — Zustand store, JWT token management
-- `src/components/CommandPalette.jsx` — Cmd+K search
-- `src/components/GeoFilter.jsx` — Multi-ZIP radius filter with Leaflet map
-- `src/layouts/DashboardLayout.jsx` — Sidebar navigation
+- `src/lib/api.js` - Axios client, all API calls go through here
+- `src/stores/authStore.js` - Zustand store, JWT token management
+- `src/components/CommandPalette.jsx` - Cmd+K search
+- `src/components/GeoFilter.jsx` - Multi-ZIP radius filter with Leaflet map
+- `src/layouts/DashboardLayout.jsx` - Sidebar navigation
 
 ## Design system
 
