@@ -10,6 +10,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { CommandActionProvider } from './components/CommandActionContext'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Analytics } from '@vercel/analytics/react'
+import { isChunkErrorMessage } from './lib/chunk-error'
 
 // Pages // code-split dashboard for faster initial load
 const LandingPage = lazy(() => import('./pages/LandingPage'))
@@ -92,12 +93,9 @@ function App() {
     function handleChunkError(e) {
       // Check script/link error events
       const srcMatch = e.target?.src?.includes('/assets/')
-      // Check unhandled rejections (e.reason may be string or Error)
-      const reasonStr = typeof e.reason === 'string' ? e.reason : e.reason?.message || ''
-      const reasonMatch = reasonStr.includes('Failed to fetch dynamically imported module')
-      // Check error event message (e.g. script error on fallback paths)
-      const msgMatch = typeof e.message === 'string' && e.message.includes('Failed to fetch dynamically imported module')
-      if (srcMatch || reasonMatch || msgMatch) {
+      // Check unhandled rejections (e.reason may be string or Error) and error
+      // event messages (e.g. script error on fallback paths)
+      if (srcMatch || isChunkErrorMessage(e.reason) || isChunkErrorMessage(e.message)) {
         window.location.reload()
       }
     }

@@ -1,13 +1,6 @@
 import { Component } from 'react'
 import EmptyState from './ux/EmptyState'
-
-/** Detect stale code-split chunks (after deploy) */
-function isChunkError(error) {
-  const msg = typeof error === 'string' ? error : error?.message || ''
-  return msg.includes('Failed to fetch dynamically imported module')
-    || msg.includes('Importing a module script failed')
-    || msg.includes('Loading chunk')
-}
+import { isChunkErrorMessage } from '../lib/chunk-error'
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -22,7 +15,7 @@ export default class ErrorBoundary extends Component {
   componentDidCatch(error, errorInfo) {
     console.error('ErrorBoundary caught:', error, errorInfo)
     // Auto-recover on stale chunk errors
-    if (isChunkError(error)) {
+    if (isChunkErrorMessage(error)) {
       window.location.reload()
     }
     this.props.onError?.(error, errorInfo)
