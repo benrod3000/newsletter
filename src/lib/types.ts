@@ -37,7 +37,7 @@ export interface AnalyticsOverview {
 /** Campaign shape */
 export interface Campaign {
   id: string;
-  client_id: string;
+  workspace_id: string;
   title?: string;
   name?: string;
   subject: string;
@@ -63,7 +63,7 @@ export interface Subscriber {
   first_name?: string | null;
   last_name?: string | null;
   confirmed: boolean;
-  client_id: string;
+  workspace_id: string;
   country?: string | null;
   region?: string | null;
   city?: string | null;

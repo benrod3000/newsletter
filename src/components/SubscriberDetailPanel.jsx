@@ -14,7 +14,7 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove })
   const [editingName, setEditingName] = useState(false)
   const [editFirst, setEditFirst] = useState(subscriber?.first_name || '')
   const [editLast, setEditLast] = useState(subscriber?.last_name || '')
-  const workspaceId = subscriber?.client_id
+  const workspaceId = subscriber?.workspace_id
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
