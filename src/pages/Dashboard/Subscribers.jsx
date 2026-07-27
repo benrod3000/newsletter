@@ -581,12 +581,18 @@ export default function SubscribersPage() {
                       setBulkMoving(true)
                       try {
                         const token = getAuthToken()
-                        await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscriber-lists/${list.id}/members`, {
+                        const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscriber-lists/${list.id}/members`, {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                           body: JSON.stringify({ subscriber_ids: Array.from(selectedIds) }),
                         })
-                        toast.addToast(`Moved ${selectedIds.size} subscribers to "${list.name}"`, 'success')
+                        // fetch only rejects on network failure, so without this a
+                        // 403 or 500 still reported success. Reachable now that the
+                        // endpoint requires the editor role.
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+                        const body = await res.json().catch(() => null)
+                        const added = body?.added ?? selectedIds.size
+                        toast.addToast(`Moved ${added} subscribers to "${list.name}"`, 'success')
                         setSelectedIds(new Set())
                       } catch {
                         toast.addToast('Failed to move subscribers', 'error')
