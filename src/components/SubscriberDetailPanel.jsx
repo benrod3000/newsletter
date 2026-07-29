@@ -14,7 +14,12 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove })
   const [editingName, setEditingName] = useState(false)
   const [editFirst, setEditFirst] = useState(subscriber?.first_name || '')
   const [editLast, setEditLast] = useState(subscriber?.last_name || '')
-  const workspaceId = subscriber?.workspace_id
+  // Accept both spellings for one release. The backend renames client_id to
+  // workspace_id in migration 048, but the two repos deploy independently, so
+  // there is a window where either side is ahead of the other. Without the
+  // fallback this reads undefined in that window and the panel silently renders
+  // nothing. Drop the client_id half once the backend rename is live and stable.
+  const workspaceId = subscriber?.workspace_id ?? subscriber?.client_id
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
