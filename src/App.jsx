@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom'
+import { withSentryReactRouterV7Routing } from '@sentry/react'
 import { useAuthStore } from './stores/authStore'
 import { lazy, Suspense, useEffect } from 'react'
 import { ToastProvider } from './components/Toast'
@@ -11,6 +12,11 @@ import { CommandActionProvider } from './components/CommandActionContext'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Analytics } from '@vercel/analytics/react'
 import { isChunkErrorMessage } from './lib/chunk-error'
+
+// Reports navigations under their route pattern rather than the resolved URL.
+// Without it every subscriber or campaign detail page is a separate transaction
+// name in Sentry, which makes per-route timings meaningless.
+const SentryRoutes = withSentryReactRouterV7Routing(Routes)
 
 // Pages // code-split dashboard for faster initial load
 const LandingPage = lazy(() => import('./pages/LandingPage'))
@@ -118,7 +124,7 @@ function App() {
         <KeyboardShortcuts />
         <HelpPanel />
         <Suspense fallback={<PageLoader />}>
-        <Routes>
+        <SentryRoutes>
           {/* Public Routes */}
           <Route
             path="/"
@@ -246,7 +252,7 @@ function App() {
               </div>
             </main>
           } />
-        </Routes>
+        </SentryRoutes>
         </Suspense>
         </ErrorBoundary>
         </CommandActionProvider>
