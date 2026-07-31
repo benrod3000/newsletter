@@ -142,16 +142,36 @@ export default function SettingsPage() {
       const res = await fetch(base + '/api/clients/' + workspaceId + '/audit-logs?limit=10', {
         headers: { Authorization: 'Bearer ' + token },
       })
-      const data = await res.json()
-      setAuditLogs(data.logs || [])
+      // Wrapped as { data: { logs, total, ... } }, unlike the automation endpoints
+      // above, which return their payload bare. Reading data.logs here always
+      // produced an empty list.
+      const body = await res.json()
+      setAuditLogs(body.data?.logs || [])
     } catch {}
     setAuditLogLoading(false)
+  }
+
+  /**
+   * The branding endpoint wraps its payload as { data: ... } and returns only the
+   * columns it reads back: secrets come back as has_* booleans rather than values,
+   * and the two provider-key columns do not exist server-side at all. Replacing
+   * state with the response therefore dropped the shape this form renders against,
+   * and brand_colors going undefined threw on every render of the color inputs.
+   * Merging onto current state keeps the defaults for whatever the API omits.
+   */
+  function mergeBranding(payload) {
+    if (!payload) return
+    setBranding((prev) => ({
+      ...prev,
+      ...payload,
+      brand_colors: { ...prev.brand_colors, ...(payload.brand_colors ?? {}) },
+    }))
   }
 
   async function loadBranding() {
     try {
       const { data } = await brandingAPI.get(workspaceId)
-      setBranding(data)
+      mergeBranding(data?.data)
     } catch (error) {
       console.error('Failed to load branding:', error)
     } finally {
@@ -181,7 +201,7 @@ export default function SettingsPage() {
     setLoading(true)
     try {
       const { data } = await brandingAPI.update(workspaceId, branding)
-      setBranding(data)
+      mergeBranding(data?.data)
       loadProviderStatus()
       toast.addToast('Branding updated successfully!', 'success')
     } catch (error) {
