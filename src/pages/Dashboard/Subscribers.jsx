@@ -433,6 +433,9 @@ export default function SubscribersPage() {
           {importResult && (
             <div className="border border-brutal-fg p-3 bg-brutal-bg text-sm">
               <span className="font-bold">Imported: {importResult.processed}</span>
+              {importResult.duplicates > 0 && (
+                <span className="text-brutal-muted ml-3">Duplicates merged: {importResult.duplicates}</span>
+              )}
               {importResult.skipped > 0 && (
                 <span className="text-brutal-muted ml-3">Skipped: {importResult.skipped}</span>
               )}
