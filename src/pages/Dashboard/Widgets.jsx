@@ -196,13 +196,16 @@ export default function WidgetsPage() {
     } finally { setRemovingId(null) }
   }
 
-  function copyEmbed(slug, widgetSize, fieldCount) {
+  // Keyed by widget id, not slug. Slug is unique per workspace
+  // (widgets_workspace_id_slug_key), so it cannot identify a widget from a
+  // public URL - two customers naming a form the same thing would collide.
+  function copyEmbed(widgetId, widgetSize, fieldCount) {
     const fieldH = Math.max(1, fieldCount || 1) * 60 + 200
     const heights = { small: Math.max(fieldH, 280), medium: Math.max(fieldH, 360), large: Math.max(fieldH, 500) }
     const h = heights[widgetSize] || heights.medium
-    const code = `<iframe src="${EMBED_BASE}/${slug}"\n  width="100%" height="${h}"\n  frameborder="0"\n  style="border:3px solid #0a0a0a">\n</iframe>`
+    const code = `<iframe src="${EMBED_BASE}/${widgetId}"\n  width="100%" height="${h}"\n  frameborder="0"\n  style="border:3px solid #0a0a0a">\n</iframe>`
     navigator.clipboard.writeText(code)
-    setCopiedId(slug)
+    setCopiedId(widgetId)
     toast.addToast('Embed code copied!', 'success')
     setTimeout(() => setCopiedId(null), 2000)
   }
@@ -280,7 +283,9 @@ export default function WidgetsPage() {
                   Form URL
                 </label>
                 <p className="text-[10px] font-bold text-brutal-muted mb-1.5">
-                  {EMBED_BASE}/{form.slug || '...'}
+                  {editingId
+                    ? `${EMBED_BASE}/${editingId}`
+                    : 'Generated once the widget is saved'}
                 </p>
                 {errors.slug && <p className="text-xs font-bold text-brutal-red mt-1">{errors.slug}</p>}
               </div>
@@ -736,11 +741,11 @@ export default function WidgetsPage() {
                             onClick={() => {
                               const fields = w.fields || { email: { required: true } }
                               const count = Object.keys(fields).length
-                              copyEmbed(w.slug, w.size, count)
+                              copyEmbed(w.id, w.size, count)
                             }}
                             className="px-3 py-1 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition"
                           >
-                            {copiedId === w.slug ? 'Copied!' : 'Copy Code'}
+                            {copiedId === w.id ? 'Copied!' : 'Copy Code'}
                           </button>
                           <button
                             onClick={() => setShowEmbed(null)}
@@ -752,7 +757,7 @@ export default function WidgetsPage() {
                       </div>
                       <pre className="bg-brutal-fg text-brutal-yellow p-4 text-xs font-mono overflow-x-auto whitespace-pre select-all">
 {`<iframe
-  src="${EMBED_BASE}/${w.slug}"
+  src="${EMBED_BASE}/${w.id}"
   width="100%"
   height="${(() => {
     const fields = w.fields || { email: { required: true } }

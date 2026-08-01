@@ -212,7 +212,7 @@ function App() {
           </Route>
 
           {/* Public widget form // no layout wrapper */}
-          <Route path="/w/:slug" element={<ErrorBoundary><WidgetFormPage /></ErrorBoundary>} />
+          <Route path="/w/:id" element={<ErrorBoundary><WidgetFormPage /></ErrorBoundary>} />
 
           {/* Public newsletter archive // no layout wrapper */}
           <Route path="/newsletter/:slug" element={<ErrorBoundary><PublicNewsletterPage /></ErrorBoundary>} />
