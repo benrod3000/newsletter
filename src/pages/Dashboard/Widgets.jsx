@@ -681,8 +681,11 @@ export default function WidgetsPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-heading text-xl uppercase tracking-wide truncate">{w.name}</h3>
+                          {/* The slug names the widget within the workspace; it is not
+                              the public address, which is /w/{id}. Showing the slug as
+                              a path implied a URL that does not resolve. */}
                           <span className="shrink-0 px-2 py-0.5 border-2 border-brutal-fg bg-brutal-yellow text-[10px] font-mono font-bold uppercase">
-                            /w/{w.slug}
+                            {w.slug}
                           </span>
                         </div>
                         <p className="text-sm text-brutal-fg/60 mb-1">{w.headline}</p>
@@ -696,7 +699,7 @@ export default function WidgetsPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <a href={`/w/${w.slug}`} target="_blank" rel="noopener noreferrer"
+                        <a href={`/w/${w.id}`} target="_blank" rel="noopener noreferrer"
                           className="px-3 py-1.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition inline-block">
                           View Live
                         </a>

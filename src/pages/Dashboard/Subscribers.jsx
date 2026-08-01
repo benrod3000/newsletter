@@ -45,6 +45,7 @@ export default function SubscribersPage() {
   const [importConfirmed, setImportConfirmed] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState(null)
+  const [importProgress, setImportProgress] = useState(null)
   const [dragActive, setDragActive] = useState(false)
 
   // Bulk selection
@@ -276,20 +277,62 @@ export default function SubscribersPage() {
     }
   }
 
+  /**
+   * Rows per request. The CSV is sent as a JSON string and Vercel rejects
+   * bodies over roughly 4.5 MB at the edge, before the function runs, so a
+   * large file cannot go up in one piece however high the server's row limit
+   * is. 5,000 rows is well under that ceiling and matches the server's cap.
+   */
+  const IMPORT_CHUNK_ROWS = 5000
+
   async function importSubscribers() {
     if (!importCsvText.trim()) { toast.addToast('Paste CSV data first', 'warning'); return }
+
+    const lines = importCsvText.trim().split('\n')
+    if (lines.length < 2) { toast.addToast('CSV needs a header row and at least one data row', 'warning'); return }
+
+    const header = lines[0]
+    const dataRows = lines.slice(1)
+    const chunks = []
+    for (let i = 0; i < dataRows.length; i += IMPORT_CHUNK_ROWS) {
+      chunks.push([header, ...dataRows.slice(i, i + IMPORT_CHUNK_ROWS)].join('\n'))
+    }
+
     setImporting(true)
     setImportResult(null)
+    setImportProgress({ done: 0, total: chunks.length, rows: dataRows.length })
+
+    // Totals accumulate across chunks so the panel reports the whole file
+    // rather than whichever piece happened to go last.
+    const totals = { processed: 0, duplicates: 0, skipped: 0, skippedDetails: [] }
+
     try {
-      const { data } = await subscribersAPI.importCsv(workspaceId, importCsvText, importConfirmed)
-      setImportResult(data)
+      for (let i = 0; i < chunks.length; i++) {
+        const { data } = await subscribersAPI.importCsv(workspaceId, chunks[i], importConfirmed)
+        totals.processed += data?.processed || 0
+        totals.duplicates += data?.duplicates || 0
+        totals.skipped += data?.skipped || 0
+        if (data?.skippedDetails?.length && totals.skippedDetails.length < 20) {
+          totals.skippedDetails.push(...data.skippedDetails.slice(0, 20 - totals.skippedDetails.length))
+        }
+        setImportProgress({ done: i + 1, total: chunks.length, rows: dataRows.length })
+      }
+      setImportResult(totals)
       setImportCsvText('')
-      toast.addToast(`Imported ${data.processed} subscriber(s)`, 'success')
+      toast.addToast(`Imported ${totals.processed.toLocaleString()} subscriber(s)`, 'success')
     } catch (err) {
       const apiErr = err?.response?.data?.error
-      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Import failed', 'error')
+      const msg = typeof apiErr === 'object' ? apiErr?.message : apiErr
+      // Earlier chunks already committed, so say what landed rather than
+      // implying the whole file failed.
+      setImportResult(totals)
+      toast.addToast(
+        `${msg || 'Import failed'}${totals.processed ? ` (${totals.processed.toLocaleString()} imported before the failure)` : ''}`,
+        'error'
+      )
     } finally {
       setImporting(false)
+      setImportProgress(null)
     }
   }
 
@@ -430,14 +473,27 @@ export default function SubscribersPage() {
               Mark as confirmed (skip verification emails)
             </label>
           </div>
+          {importProgress && importProgress.total > 1 && (
+            <div className="border border-brutal-fg p-3 bg-brutal-bg text-sm space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider">
+                <span>Uploading {importProgress.rows.toLocaleString()} rows</span>
+                <span className="text-brutal-muted">Part {importProgress.done} of {importProgress.total}</span>
+              </div>
+              <div className="h-2 border-2 border-brutal-fg bg-white" role="progressbar"
+                aria-valuenow={importProgress.done} aria-valuemin={0} aria-valuemax={importProgress.total}>
+                <div className="h-full bg-brutal-green transition-all"
+                  style={{ width: `${Math.round((importProgress.done / importProgress.total) * 100)}%` }} />
+              </div>
+            </div>
+          )}
           {importResult && (
             <div className="border border-brutal-fg p-3 bg-brutal-bg text-sm">
-              <span className="font-bold">Imported: {importResult.processed}</span>
+              <span className="font-bold">Imported: {importResult.processed.toLocaleString()}</span>
               {importResult.duplicates > 0 && (
-                <span className="text-brutal-muted ml-3">Duplicates merged: {importResult.duplicates}</span>
+                <span className="text-brutal-muted ml-3">Duplicates merged: {importResult.duplicates.toLocaleString()}</span>
               )}
               {importResult.skipped > 0 && (
-                <span className="text-brutal-muted ml-3">Skipped: {importResult.skipped}</span>
+                <span className="text-brutal-muted ml-3">Skipped: {importResult.skipped.toLocaleString()}</span>
               )}
             </div>
           )}
@@ -448,7 +504,11 @@ export default function SubscribersPage() {
             disabled={importing || !importCsvText.trim()}
             loading={importing}
           >
-            {importing ? 'Importing...' : 'Import Subscribers'}
+            {importing
+              ? (importProgress && importProgress.total > 1
+                  ? `Importing ${importProgress.done}/${importProgress.total}...`
+                  : 'Importing...')
+              : 'Import Subscribers'}
           </Btn>
         </div>
       )}
