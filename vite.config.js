@@ -41,9 +41,18 @@ export default defineConfig({
   ],
   build: {
     target: 'esnext',
-    // Required for the upload above to have anything to send. Paired with the
-    // delete-after-upload rule so nothing extra is published.
-    sourcemap: true,
+    /**
+     * Generated only when there is a token to upload them with, and 'hidden'
+     * so no //# sourceMappingURL comment is emitted.
+     *
+     * Plain `true` was wrong in the no-token case: it both published the .map
+     * files and pointed at them from the bundle, which hands out readable
+     * source to anyone - strictly worse than having no maps at all, which is
+     * where this started. With a token the maps are built, uploaded, and then
+     * deleted by filesToDeleteAfterUpload above, so Sentry can symbolicate
+     * while nothing extra is ever served.
+     */
+    sourcemap: sentryAuthToken ? 'hidden' : false,
   },
   define: {
     'import.meta.env.VITE_SENTRY_RELEASE': JSON.stringify(release),
