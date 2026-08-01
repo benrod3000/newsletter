@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom'
+import * as Sentry from '@sentry/react'
 import { withSentryReactRouterV7Routing } from '@sentry/react'
 import { useAuthStore } from './stores/authStore'
 import { lazy, Suspense, useEffect } from 'react'
@@ -94,6 +95,30 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
+  // Identify who an error happened to, and which workspace they were in.
+  // Without this every event is anonymous, so there is no way to tell one
+  // customer hitting a bug repeatedly from many customers hitting it once, and
+  // no way to filter a tenant-specific problem.
+  //
+  // Only the operator's own account is sent - never subscriber data, which is
+  // the personal information this product is responsible for.
+  const sentryEmail = useAuthStore((state) => state.email)
+  const sentryWorkspaceId = useAuthStore((state) => state.workspaceId)
+  const sentryRole = useAuthStore((state) => state.role)
+
+  useEffect(() => {
+    if (sentryWorkspaceId || sentryEmail) {
+      Sentry.setUser({ id: sentryWorkspaceId ?? undefined, email: sentryEmail ?? undefined })
+      Sentry.setTag('workspace_id', sentryWorkspaceId ?? undefined)
+      Sentry.setTag('role', sentryRole ?? undefined)
+    } else {
+      // Signed out: stop attributing later events to the previous session.
+      Sentry.setUser(null)
+      Sentry.setTag('workspace_id', undefined)
+      Sentry.setTag('role', undefined)
+    }
+  }, [sentryEmail, sentryWorkspaceId, sentryRole])
+
   // Auto-recover from stale code-split chunks after deployment
   useEffect(() => {
     function handleChunkError(e) {

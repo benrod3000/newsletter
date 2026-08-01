@@ -52,4 +52,17 @@ export default defineConfig([
       'react-refresh/only-export-components': 'warn',
     },
   },
+  {
+    /**
+     * Build configuration runs in Node, not the browser. Without this the
+     * browser globals above are the only ones in scope, so reading
+     * process.env - which is how the Sentry release and auth token reach the
+     * build - is reported as `'process' is not defined`. These are errors
+     * rather than warnings, so they would fail lint:ci outright.
+     */
+    files: ['vite.config.js', 'eslint.config.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])

@@ -25,6 +25,10 @@ Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
   enabled: !!import.meta.env.VITE_SENTRY_DSN,
   environment: import.meta.env.VITE_VERCEL_ENV || import.meta.env.MODE || 'development',
+  // Injected at build time from VERCEL_GIT_COMMIT_SHA (see vite.config.js).
+  // This is what ties an event to the deploy that produced it and to the source
+  // maps uploaded for that build; without it every event reads as "unknown".
+  release: import.meta.env.VITE_SENTRY_RELEASE || undefined,
   integrations: [
     // Router-aware rather than the generic browser tracing integration, so a
     // navigation is reported as its route pattern. Keyed by raw URL instead,
