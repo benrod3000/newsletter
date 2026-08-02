@@ -21,6 +21,8 @@ export default function WidgetFormPage() {
   const [message, setMessage] = useState('')
   const [geoCoords, setGeoCoords] = useState(null)
   const [geoLoading, setGeoLoading] = useState(false)
+  // Ask at most once per visit, whether or not the answer was yes.
+  const [geoRequested, setGeoRequested] = useState(false)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -50,17 +52,46 @@ export default function WidgetFormPage() {
 
   useEffect(() => { loadWidget() }, [loadWidget])
 
-  function requestGeolocation() {
-    if (!navigator.geolocation) return;
-    setGeoLoading(true);
+  /**
+   * Ask the browser for coordinates without the visitor pressing anything.
+   *
+   * Fails quietly on purpose. Denial is the common case, and it is not an error
+   * worth showing: the submit endpoint geolocates the request IP anyway, so a
+   * refusal costs precision rather than the location itself. Nothing here can
+   * block or fail a signup.
+   *
+   * Embedded widgets additionally need allow="geolocation" on the iframe -
+   * cross-origin frames are denied this API by default - which the generated
+   * embed snippet now includes.
+   */
+  const requestGeolocation = useCallback(() => {
+    if (!navigator.geolocation || geoCoords || geoRequested) return
+    setGeoRequested(true)
+    setGeoLoading(true)
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setGeoCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
-        setGeoLoading(false);
+        setGeoCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude })
+        setGeoLoading(false)
       },
       () => setGeoLoading(false),
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 300000 }
-    );
+    )
+  }, [geoCoords, geoRequested])
+
+  /**
+   * Called from the email field rather than from an effect.
+   *
+   * The prompt fires once the address looks real, so it appears when someone is
+   * actually signing up rather than the instant the widget renders - asking on
+   * mount trains people to dismiss it, and Chrome suppresses prompts it has
+   * seen dismissed repeatedly. Driving it from the change handler also keeps it
+   * out of an effect, which is where it belongs: this reacts to something the
+   * visitor did, it does not synchronise state with anything.
+   */
+  function maybeRequestGeolocation(value) {
+    if (!collectLocation) return
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) return
+    requestGeolocation()
   }
 
   async function handleSubmit(e) {
@@ -116,27 +147,40 @@ export default function WidgetFormPage() {
     )
   }
 
+  // 'slim' is a single strip: field and button on one row, no header,
+  // description, chrome or footer. 'small' still renders as a card, just
+  // without the headline block.
+  const isSlim = widget.size === 'slim'
   const isSmall = widget.size === 'small'
   const isLarge = widget.size === 'large'
+  const isCompact = isSlim || isSmall
   const sizeClasses = {
+    slim: 'max-w-lg',
     small: 'max-w-xs',
     medium: 'max-w-md',
     large: 'max-w-lg',
   }
   const sizeCls = sizeClasses[widget.size] || 'max-w-md'
-  const headerPad = isLarge ? 'px-8 py-6' : isSmall ? 'px-3 py-2' : 'px-6 py-4'
-  const bodyPad = isLarge ? 'p-8' : isSmall ? 'p-3' : 'p-6'
-  const headlineSize = isLarge ? 'text-3xl sm:text-4xl' : isSmall ? 'text-sm' : 'text-2xl sm:text-3xl'
-  const inputPad = isLarge ? 'px-4 py-3.5' : isSmall ? 'px-3 py-2' : 'px-4 py-3'
-  const buttonPad = isLarge ? 'py-3.5 text-sm' : isSmall ? 'py-2 text-[11px]' : 'py-3 text-sm'
-  const inputCls = 'w-full px-4 py-3 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition'
+  const headerPad = isLarge ? 'px-8 py-6' : isCompact ? 'px-3 py-2' : 'px-6 py-4'
+  const bodyPad = isSlim ? 'p-2' : isLarge ? 'p-8' : isSmall ? 'p-3' : 'p-6'
+  const headlineSize = isLarge ? 'text-3xl sm:text-4xl' : isCompact ? 'text-sm' : 'text-2xl sm:text-3xl'
+  const inputPad = isLarge ? 'px-4 py-3.5' : isCompact ? 'px-3 py-2' : 'px-4 py-3'
+  const buttonPad = isLarge ? 'py-3.5 text-sm' : isCompact ? 'py-2 text-[11px]' : 'py-3 text-sm'
+  const inputCls = `w-full ${isSlim ? 'px-3 py-2' : 'px-4 py-3'} bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition`
+
+  // Anything taller than its content would leave the host page reserving space
+  // for nothing, so the slim strip sizes to what it actually renders instead of
+  // filling the iframe viewport.
+  const pageCls = isSlim
+    ? 'flex items-center justify-center p-1'
+    : `min-h-screen flex items-center justify-center ${isSmall ? 'p-2' : 'p-6'}`
 
   return (
-    <div className={`min-h-screen flex items-center justify-center ${isSmall ? 'p-2' : 'p-6'} animate-fade-up`} style={{ backgroundColor: styles.bg_color || '#f5f5f0' }}>
+    <div className={`${pageCls} animate-fade-up`} style={{ backgroundColor: styles.bg_color || '#f5f5f0' }}>
       <div className={`w-full ${sizeCls}`}>
-        <div className="border-3 shadow-brutal" style={{ borderColor: styles.border_color || '#0a0a0a', backgroundColor: '#fff' }}>
+        <div className={isSlim ? 'border-3' : 'border-3 shadow-brutal'} style={{ borderColor: styles.border_color || '#0a0a0a', backgroundColor: '#fff' }}>
           {/* Header - hidden in compact mode */}
-          {!isSmall && (
+          {!isCompact && (
             <div className={`border-b-3 ${headerPad}`} style={{ backgroundColor: styles.primary_color || '#f5e642', borderColor: styles.border_color || '#0a0a0a' }}>
               <h1 className={`font-heading ${headlineSize} uppercase tracking-tight leading-none`}>
                 {widget.headline}
@@ -145,7 +189,7 @@ export default function WidgetFormPage() {
           )}
 
           {/* Body */}
-          <div className={`${bodyPad} space-y-${isSmall ? '2' : '5'}`}>
+          <div className={`${bodyPad} ${isSlim ? '' : `space-y-${isSmall ? '2' : '5'}`}`}>
             {submitted ? (
               <div className="space-y-3" role="status" aria-live="polite">
                 <div className="h-1 w-12" style={{ backgroundColor: widgetType === 'coupon' ? '#f5e642' : '#2b7657' }} />
@@ -172,13 +216,13 @@ export default function WidgetFormPage() {
             ) : (
               <>
                 {/* Description - hidden in compact mode */}
-                {!isSmall && (
+                {!isCompact && (
                   <p className="text-sm leading-relaxed" style={{ color: styles.text_color || 'inherit' }}>
                     {widget.description}
                   </p>
                 )}
 
-                <form onSubmit={handleSubmit} className={`space-y-${isSmall ? '2' : '4'}`}>
+                <form onSubmit={handleSubmit} className={isSlim ? 'flex items-stretch gap-2' : `space-y-${isSmall ? '2' : '4'}`}>
                   {fields.first_name?.required && (
                     <div>
                       <label htmlFor="wf-first-name" className="sr-only">First name</label>
@@ -219,7 +263,8 @@ export default function WidgetFormPage() {
                       name="email"
                       autoComplete="email"
                       value={email}
-                      onChange={e => { setEmail(e.target.value); setError('') }}
+                      onChange={e => { setEmail(e.target.value); setError(''); maybeRequestGeolocation(e.target.value) }}
+                      onBlur={e => maybeRequestGeolocation(e.target.value)}
                       placeholder={widget.placeholder || 'you@example.com'}
                       className={`w-full ${inputPad} bg-white border-3 text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition ${error ? 'border-brutal-red' : 'border-brutal-fg'}`}
                       required
@@ -288,49 +333,47 @@ export default function WidgetFormPage() {
                       />
                     </div>
                   )}
-                  {collectLocation && (
-                    <div>
-                      <button
-                        type="button"
-                        onClick={requestGeolocation}
-                        disabled={geoLoading || !!geoCoords}
-                        className={`w-full border-3 text-xs font-bold uppercase tracking-wider py-2.5 transition ${
-                          geoCoords
-                            ? 'border-brutal-green bg-brutal-green text-white'
-                            : 'border-brutal-fg bg-white text-brutal-fg hover:bg-brutal-yellow/20'
-                        } disabled:opacity-50`}
-                      >
-                        {geoLoading ? '📍 Locating...' : geoCoords ? '📍 Location shared' : '📍 Use my location'}
-                      </button>
-                      <p className="text-[9px] text-brutal-muted font-bold uppercase tracking-wider mt-1 text-center">
-                        {geoCoords ? 'Content will be personalized near you' : 'Optional: personalize content near you'}
-                      </p>
-                    </div>
+                  {/* No button: the browser is asked automatically once the
+                      address looks valid. This is only a status line, and only
+                      where there is room for one. */}
+                  {collectLocation && !isSlim && (geoLoading || geoCoords) && (
+                    <p className="text-[9px] text-brutal-muted font-bold uppercase tracking-wider text-center">
+                      {geoLoading ? '📍 Locating...' : '📍 Content will be personalized near you'}
+                    </p>
                   )}
 
-                  {error && (
+                  {error && !isSlim && (
                     <p id="wf-error" role="alert" className="text-[10px] font-bold text-brutal-red uppercase tracking-wider">{error}</p>
                   )}
 
                   <button
                     type="submit"
                     disabled={submitting}
-                    className={`w-full border-3 text-white font-bold ${buttonPad} uppercase tracking-wider hover:shadow-brutal disabled:opacity-50 transition active:translate-y-0.5`}
+                    className={`${isSlim ? 'shrink-0 px-4' : 'w-full'} border-3 text-white font-bold ${buttonPad} uppercase tracking-wider hover:shadow-brutal disabled:opacity-50 transition active:translate-y-0.5`}
                     style={{ backgroundColor: styles.primary_color || '#0a0a0a', borderColor: styles.border_color || '#0a0a0a', color: styles.button_text_color || '#ffffff' }}
                   >
                     {submitting ? 'Sending...' : widget.button_text}
                   </button>
                 </form>
+                {/* Slim has no room inline, so errors sit under the strip. */}
+                {error && isSlim && (
+                  <p id="wf-error" role="alert" className="mt-1 text-[10px] font-bold text-brutal-red uppercase tracking-wider">{error}</p>
+                )}
               </>
             )}
           </div>
 
-          {/* Footer - only advertises location sharing when it is actually offered */}
-          <div className="px-6 py-3 border-t-3" style={{ borderColor: styles.border_color || '#0a0a0a' }}>
-            <p className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider text-center">
-              {collectLocation ? '📍 Optional: share your location for nearby content · ' : ''}No spam. Unsubscribe anytime.
-            </p>
-          </div>
+          {/* Footer - dropped entirely in slim, where it would roughly double
+              the height of the strip. Location is no longer described as
+              optional here because it is no longer a button the visitor picks;
+              the browser's own permission prompt is the point of consent. */}
+          {!isSlim && (
+            <div className="px-6 py-3 border-t-3" style={{ borderColor: styles.border_color || '#0a0a0a' }}>
+              <p className="text-[10px] font-bold text-brutal-muted uppercase tracking-wider text-center">
+                No spam. Unsubscribe anytime.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

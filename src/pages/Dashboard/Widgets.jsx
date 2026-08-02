@@ -201,9 +201,20 @@ export default function WidgetsPage() {
   // public URL - two customers naming a form the same thing would collide.
   function copyEmbed(widgetId, widgetSize, fieldCount) {
     const fieldH = Math.max(1, fieldCount || 1) * 60 + 200
-    const heights = { small: Math.max(fieldH, 280), medium: Math.max(fieldH, 360), large: Math.max(fieldH, 500) }
+    // Slim is one row of controls plus its border, and grows only if extra
+    // fields are configured - it must not inherit the card sizes' floor, which
+    // is what made "compact" reserve 280px for about 100px of content.
+    const heights = {
+      slim: 64 + Math.max(0, (fieldCount || 1) - 1) * 52,
+      small: Math.max(fieldH, 280),
+      medium: Math.max(fieldH, 360),
+      large: Math.max(fieldH, 500),
+    }
     const h = heights[widgetSize] || heights.medium
-    const code = `<iframe src="${EMBED_BASE}/${widgetId}"\n  width="100%" height="${h}"\n  frameborder="0"\n  style="border:3px solid #0a0a0a">\n</iframe>`
+    // allow="geolocation" is required for the form to ask for coordinates at
+    // all: cross-origin iframes are denied that API by default, so without it
+    // the request fails as PERMISSION_DENIED before the visitor sees a prompt.
+    const code = `<iframe src="${EMBED_BASE}/${widgetId}"\n  width="100%" height="${h}"\n  frameborder="0"\n  allow="geolocation"\n  style="border:3px solid #0a0a0a">\n</iframe>`
     navigator.clipboard.writeText(code)
     setCopiedId(widgetId)
     toast.addToast('Embed code copied!', 'success')
@@ -387,6 +398,7 @@ export default function WidgetsPage() {
               <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Form Size</label>
               <div className="flex border-3 border-brutal-fg overflow-hidden">
                 {[
+                  { value: 'slim', label: 'Slim', desc: 'One row: field and button side by side. Inline strip.' },
                   { value: 'small', label: 'Compact', desc: 'Email only, no headline. Fits tight spaces.' },
                   { value: 'medium', label: 'Standard', desc: 'Full form with headline and description.' },
                   { value: 'large', label: 'Large', desc: 'Bigger text and padding. Great for landing pages.' },
