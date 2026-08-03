@@ -577,7 +577,31 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
                 </span>
               )}
             </div>
-            <div id="geo-filter-map" className="h-[300px] sm:h-[360px]" style={{ width: '100%', background: '#e8e8e0', touchAction: 'auto' }} />
+            {/*
+              `isolation: isolate` is what keeps the map under the dashboard header.
+
+              Leaflet assigns its own stacking: panes sit at z-index 400-700 and
+              controls at 1000, all set by leaflet.css. This container previously
+              had no position, z-index or isolation, so it created no stacking
+              context and those values competed directly against the header's
+              `z-40` (DashboardLayout.jsx) in the root context. 400 beats 40, so
+              scrolling up drew the map over the nav.
+
+              Isolating here forms a stacking context whose children cannot
+              escape it, so Leaflet's internal ordering stays internal and the
+              whole map composites as one layer at the container's own level.
+
+              Deliberately not fixed by raising the header instead: the header
+              would then have to outrank 1000, and the mobile drawer at z-50 and
+              the modals above it would each need raising to stay above the
+              header. Containing the one component that imports foreign CSS is
+              the smaller and more durable change.
+            */}
+            <div
+              id="geo-filter-map"
+              className="h-[300px] sm:h-[360px]"
+              style={{ width: '100%', background: '#e8e8e0', touchAction: 'auto', isolation: 'isolate' }}
+            />
           </div>
           <p className="text-[10px] text-brutal-muted -mt-2">
             Tip: click the map to drop a pin, or drag a pin to fine-tune it.

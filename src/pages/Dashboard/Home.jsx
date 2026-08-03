@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 import { useReveal } from '../../hooks/use-gsap'
-import { analyticsAPI } from '../../lib/api'
+import { analyticsAPI, auditAPI } from '../../lib/api'
 import { fmt, fmtPct } from '../../lib/format'
 import { LoadingState } from '../../components/ux'
 import MetricCard from '../../components/ui/MetricCard'
@@ -11,6 +11,7 @@ import Badge from '../../components/ui/Badge'
 import { Mail, Upload, Zap, Globe } from 'lucide-react'
 import Card from '../../components/ui/Card'
 import { relativeTime } from '../../lib/time'
+import { describeAudit, SENSITIVE_ACTIONS } from '../../lib/audit'
 
 export default function DashboardHome() {
   const { email, workspaceId, role, workspaceName } = useAuthStore()
@@ -20,6 +21,8 @@ export default function DashboardHome() {
   const [loading, setLoading] = useState(true)
   const [activityLoading, setActivityLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [securityLog, setSecurityLog] = useState([])
+  const [securityLoading, setSecurityLoading] = useState(true)
 
   useReveal(ref, { stagger: 0.1, y: 20 })
 
@@ -55,10 +58,26 @@ export default function DashboardHome() {
       finally { if (!cancelled) setActivityLoading(false) }
     }
 
+    async function loadSecurityLog() {
+      // Owner-gated endpoint; anyone else gets a 403 and an empty panel that is
+      // never rendered anyway. Skipping the request avoids a guaranteed 403 in
+      // the console on every dashboard load for editors and viewers.
+      if (role !== 'owner') { setSecurityLoading(false); return }
+      setSecurityLoading(true)
+      try {
+        const { data } = await auditAPI.list(workspaceId, 5)
+        if (!cancelled) setSecurityLog(data?.data?.logs || [])
+      } catch (err) {
+        console.error('Failed to load security activity:', err)
+      }
+      finally { if (!cancelled) setSecurityLoading(false) }
+    }
+
     loadOverview()
     loadActivity()
+    loadSecurityLog()
     return () => { cancelled = true }
-  }, [workspaceId])
+  }, [workspaceId, role])
 
   const greeting = () => {
     const h = new Date().getHours()
@@ -227,6 +246,48 @@ export default function DashboardHome() {
           </div>
         )}
       </Panel>
+
+      {/*
+        Owners only, because the endpoint is owner-gated: the log carries every
+        member's IP and user agent, which is the right thing to show the account
+        owner and the wrong thing to show their colleagues. Rendering it for
+        anyone else would just produce a permanently empty panel.
+      */}
+      {role === 'owner' && (
+        <Panel title="Security Activity">
+          {securityLoading ? (
+            <LoadingState label="Loading security activity" />
+          ) : securityLog.length === 0 ? (
+            <div className="text-center py-6">
+              <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">Nothing to report</p>
+              <p className="text-[10px] text-brutal-muted mt-1">Sign-ins, exports and credential changes appear here</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {securityLog.map((log) => {
+                const sensitive = SENSITIVE_ACTIONS.has(log.action)
+                return (
+                  <div key={log.id} className="flex items-center justify-between py-2 border-b-2 border-brutal-fg/10 last:border-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`h-2 w-2 shrink-0 ${sensitive ? 'bg-brutal-yellow-dark' : 'bg-brutal-green'}`} />
+                      <p className="text-xs font-bold truncate">{describeAudit(log)}</p>
+                    </div>
+                    <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider shrink-0 ml-3">
+                      {relativeTime(log.created_at)}
+                    </p>
+                  </div>
+                )
+              })}
+              <Link
+                to="/dashboard/settings"
+                className="block pt-2 text-[10px] font-bold uppercase tracking-wider text-brutal-muted hover:text-brutal-fg transition"
+              >
+                View all in Settings →
+              </Link>
+            </div>
+          )}
+        </Panel>
+      )}
     </div>
   )
 }

@@ -145,6 +145,15 @@ export const brandingAPI = {
 
 // ── Analytics ──
 
+/**
+ * Audit log. Owner-only server side, so a non-owner call returns 403 rather
+ * than an empty list; callers should gate on role instead of relying on this.
+ */
+export const auditAPI = {
+  list: (workspaceId: string, limit = 50, offset = 0) =>
+    api.get<ApiResponse>(`/api/clients/${workspaceId}/audit-logs`, { params: { limit, offset } }),
+}
+
 export const analyticsAPI = {
   overview: (workspaceId: string, params?: Record<string, unknown>) =>
     api.get<ApiResponse<AnalyticsOverview>>(`/api/clients/${workspaceId}/analytics`, { params }),
