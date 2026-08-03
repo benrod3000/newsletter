@@ -6,6 +6,72 @@ import { Eye, EyeOff, ShieldCheck, Copy, Check } from 'lucide-react'
 import Btn from '../../components/ui/Button'
 import LoadingState from '../../components/ux/LoadingState'
 
+/**
+ * An API key input that knows the difference between "not set" and "set, but the
+ * server will never show it to you".
+ *
+ * The branding endpoint returns secrets as has_* booleans and never as values, so
+ * a stored key renders as an empty box. Left alone, that reads as "no key saved"
+ * and invites the user to paste one again every visit. It also makes clearing a
+ * key impossible to express: blank means "leave unchanged" on write, precisely so
+ * that opening Settings and pressing Save cannot wipe live sending credentials.
+ *
+ * So: `null` is the clear signal, `''` is untouched, a string is a replacement.
+ */
+function ProviderKeyField({ label, hint, placeholder, value, saved, onChange }) {
+  const [reveal, setReveal] = useState(false)
+  const cleared = value === null
+  // A saved key is only "held" while the user has not started replacing or
+  // clearing it. Typing anything hands control back to the input.
+  const holding = saved && !cleared && !value
+
+  return (
+    <div className="mb-5">
+      <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+        {label}
+      </label>
+      <div className="flex gap-2">
+        <input
+          type={reveal ? 'text' : 'password'}
+          value={cleared ? '' : value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={holding ? 'Saved. Paste a new key to replace it.' : placeholder}
+          aria-label={label}
+          className={`flex-1 px-4 py-2.5 border-3 border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted ${
+            holding ? 'bg-brutal-green/5' : 'bg-brutal-bg'
+          }`}
+        />
+        <button
+          type="button"
+          onClick={() => setReveal(!reveal)}
+          className="px-3 border-3 border-brutal-fg bg-white hover:bg-brutal-yellow transition"
+          aria-label={reveal ? 'Hide key' : 'Show key'}
+        >
+          {reveal ? <EyeOff size={16} /> : <Eye size={16} />}
+        </button>
+        {saved && !cleared && (
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            className="px-3 border-3 border-brutal-fg bg-white hover:bg-brutal-red hover:text-white transition text-xs font-bold uppercase tracking-wider"
+          >
+            Remove
+          </button>
+        )}
+      </div>
+      {cleared ? (
+        <p className="text-xs font-bold text-brutal-red mt-1.5 uppercase tracking-wider">
+          Will be removed when you save.
+        </p>
+      ) : (
+        hint && (
+          <p className="text-xs font-bold text-brutal-muted mt-1.5 uppercase tracking-wider">{hint}</p>
+        )
+      )}
+    </div>
+  )
+}
+
 export default function SettingsPage() {
   const { workspaceId } = useAuthStore()
   const toast = useToast()
@@ -200,8 +266,23 @@ export default function SettingsPage() {
   async function saveBranding() {
     setLoading(true)
     try {
-      const { data } = await brandingAPI.update(workspaceId, branding)
-      mergeBranding(data?.data)
+      await brandingAPI.update(workspaceId, branding)
+      // Refetch rather than merge the PUT response: PUT selects READABLE_FIELDS,
+      // which deliberately excludes secrets, so it carries no has_* flags at all.
+      // Only GET reports whether a key is now stored.
+      await loadBranding()
+      // Secrets are write-only, so the inputs must not keep showing what was just
+      // typed - otherwise a saved key looks unsaved, and a cleared field goes on
+      // warning that it is about to be removed after it already has been.
+      // Blanking them lets the freshly-loaded has_* flags render "saved" state.
+      setBranding((prev) => ({
+        ...prev,
+        sendgrid_api_key: '',
+        resend_api_key: '',
+        ses_access_key: '',
+        ses_secret_key: '',
+        twilio_auth_token: '',
+      }))
       loadProviderStatus()
       toast.addToast('Branding updated successfully!', 'success')
     } catch (error) {
@@ -415,33 +496,14 @@ export default function SettingsPage() {
               )}
 
               {branding.email_provider === 'sendgrid' && (
-                <div className="mb-5">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
-                    SendGrid API Key
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type={showAccessKey ? 'text' : 'password'}
-                      value={branding.sendgrid_api_key || ''}
-                      onChange={(e) =>
-                        setBranding({ ...branding, sendgrid_api_key: e.target.value })
-                      }
-                      placeholder="SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                      className="flex-1 px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowAccessKey(!showAccessKey)}
-                      className="px-3 border-3 border-brutal-fg bg-white hover:bg-brutal-yellow transition"
-                      aria-label={showAccessKey ? 'Hide key' : 'Show key'}
-                    >
-                      {showAccessKey ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                  <p className="text-xs font-bold text-brutal-muted mt-1.5 uppercase tracking-wider">
-                    Create a SendGrid account at sendgrid.com, generate an API key with <strong>Full Access</strong>, and paste it here. Free tier: 100 emails/day.
-                  </p>
-                </div>
+                <ProviderKeyField
+                  label="SendGrid API Key"
+                  placeholder="SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                  hint="Create a SendGrid account at sendgrid.com, generate an API key with Full Access, and paste it here. Free tier: 100 emails/day."
+                  value={branding.sendgrid_api_key}
+                  saved={branding.has_sendgrid_api_key}
+                  onChange={(v) => setBranding({ ...branding, sendgrid_api_key: v })}
+                />
               )}
 
               {branding.email_provider === 'resend' && (
@@ -580,13 +642,14 @@ export default function SettingsPage() {
 
               {/* Resend API key field */}
               {branding.email_provider === 'resend' && (
-                <div className="mb-6">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Resend API Key</label>
-                  <input type="password" value={branding.resend_api_key || ''}
-                    onChange={(e) => setBranding({ ...branding, resend_api_key: e.target.value })}
-                    className="w-full sm:w-96 px-4 py-2.5 bg-white border-3 border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10"
-                    placeholder="re_..." />
-                </div>
+                <ProviderKeyField
+                  label="Resend API Key"
+                  placeholder="re_..."
+                  hint="A Sending access key is enough, and is the safer choice. Leave this empty to send through the shared platform account."
+                  value={branding.resend_api_key}
+                  saved={branding.has_resend_api_key}
+                  onChange={(v) => setBranding({ ...branding, resend_api_key: v })}
+                />
               )}
             </div>
 
