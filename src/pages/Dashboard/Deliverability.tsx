@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 import { deliverabilityAPI } from '../../lib/api'
 import { fmtPct } from '../../lib/format'
@@ -150,6 +151,8 @@ export default function DeliverabilityPage() {
   const [data, setData] = useState<DeliverabilityOverview | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [errorCode, setErrorCode] = useState<string | null>(null)
+  const navigate = useNavigate()
   const [refreshing, setRefreshing] = useState(false)
 
   // Custom domain check state
@@ -163,6 +166,7 @@ export default function DeliverabilityPage() {
     if (isRefresh) setRefreshing(true)
     else setLoading(true)
     setError(null)
+    setErrorCode(null)
 
     try {
       const cacheKey = `deliverability-${workspaceId}`
@@ -182,7 +186,15 @@ export default function DeliverabilityPage() {
       setData(overview || null)
     } catch (err) {
       console.error('Deliverability load error:', err)
-      setError('Could not load deliverability data.')
+      // The API answers with { error: { code, message } } and its messages are
+      // written to be read by the user - the commonest response here is a 422
+      // saying no sender email is configured, which is a setup step rather than
+      // a failure. Replacing that with a generic string threw away the only
+      // thing on screen that said what to do about it.
+      const apiErr = (err as { response?: { data?: { error?: { code?: string; message?: string } } } })
+        ?.response?.data?.error
+      setErrorCode(apiErr?.code ?? null)
+      setError(apiErr?.message || 'Could not load deliverability data.')
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -249,6 +261,16 @@ export default function DeliverabilityPage() {
       {/* ── Loading / Error / Empty states ── */}
       {loading ? (
         <LoadingState label="Loading deliverability data" />
+      ) : errorCode === 'NO_SENDER_DOMAIN' ? (
+        // Not a failure: every deliverability check keys off the sender domain,
+        // so there is nothing to measure until one is set. Offering "Retry" here
+        // just loops the user through the same message.
+        <EmptyState
+          title="Set a sender email first"
+          description="Deliverability is measured against your sending domain - SPF, DKIM, DMARC and MX all key off it. Add a sender email in Settings and this page will fill in."
+          variant="default"
+          action={{ label: 'Go to Settings', onClick: () => navigate('/dashboard/settings') }}
+        />
       ) : error ? (
         <EmptyState
           title="Couldn't load deliverability"
