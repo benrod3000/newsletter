@@ -5,6 +5,7 @@ import { useToast } from '../../components/Toast'
 import { Eye, EyeOff, ShieldCheck, Copy, Check } from 'lucide-react'
 import Btn from '../../components/ui/Button'
 import LoadingState from '../../components/ux/LoadingState'
+import { describeAudit, SENSITIVE_ACTIONS } from '../../lib/audit'
 
 /**
  * An API key input that knows the difference between "not set" and "set, but the
@@ -1172,19 +1173,23 @@ export default function SettingsPage() {
           </div>}
         </div>
 
-        {/* Login History */}
+        {/* Security Activity */}
         <div className="border-3 border-brutal-fg bg-white p-6">
           <div className="flex items-center gap-3 mb-4">
             <ShieldCheck size={20} className="text-brutal-green" />
-            <h3 className="font-heading text-xl uppercase tracking-wide">Login History</h3>
+            <h3 className="font-heading text-xl uppercase tracking-wide">Security Activity</h3>
           </div>
+          <p className="text-[10px] text-brutal-muted mb-4 uppercase tracking-wider font-bold">
+            Sign-ins, exports, imports, deletions, credential and team changes.
+          </p>
           {auditLogLoading && <p className="text-xs text-brutal-muted">Loading...</p>}
-          {!auditLogLoading && auditLogs.length === 0 && <p className="text-xs text-brutal-muted">No login history yet.</p>}
+          {!auditLogLoading && auditLogs.length === 0 && <p className="text-xs text-brutal-muted">No activity recorded yet.</p>}
           {!auditLogLoading && auditLogs.length > 0 && <div className="space-y-2">
             {auditLogs.slice(0, 10).map(function(log) {
-              return <div key={log.id} className="border-3 border-brutal-fg bg-brutal-bg p-3 flex items-start justify-between">
+              const sensitive = SENSITIVE_ACTIONS.has(log.action)
+              return <div key={log.id} className={`border-3 border-brutal-fg p-3 flex items-start justify-between ${sensitive ? 'bg-brutal-yellow/15' : 'bg-brutal-bg'}`}>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wider">{log.action.replace(/_/g, ' ')}</p>
+                  <p className="text-xs font-bold uppercase tracking-wider">{describeAudit(log)}</p>
                   <p className="text-[10px] text-brutal-muted mt-0.5">
                     {new Date(log.created_at).toLocaleString()} {'·'} {log.ip_address || 'unknown IP'}
                   </p>
