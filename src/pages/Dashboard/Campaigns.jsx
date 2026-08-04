@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback, lazy, Suspense } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { campaignsAPI, listsAPI, templatesAPI, getAuthToken } from '../../lib/api'
+import SendFlow from '../../components/SendFlow'
 import { EmptyState, LoadingState } from '../../components/ux'
 import Btn from '../../components/ui/Button'
 import { useToast } from '../../components/Toast'
@@ -47,6 +48,7 @@ export default function CampaignsPage() {
   const [geoTrigger, setGeoTrigger] = useState(false) // Location-triggered
   const [smsImages, setSmsImages] = useState('') // RCS carousel (comma-separated URLs)
   const [confirmAction, setConfirmAction] = useState(null) // { title, message, onConfirm, danger }
+  const [sendFlowCampaign, setSendFlowCampaign] = useState(null)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
   const [templatePromptOpen, setTemplatePromptOpen] = useState(false)
   const [savedTemplates, setSavedTemplates] = useState([])
@@ -155,6 +157,16 @@ export default function CampaignsPage() {
     if (tpl.audience) setEditAudience(tpl.audience)
   }
 
+  /**
+   * Opens the staged send flow rather than sending.
+   *
+   * This used to raise a one-click confirm whose three figures were all
+   * fabricated: the recipient count read `sent_count` (how many were *already*
+   * sent, so 0 on a draft, falling through to the string "all confirmed"), the
+   * cost was `(sent_count || 100) * 0.0001`, and it said "via AWS SES" whatever
+   * provider the workspace used. SendFlow replaces it with a preview, a required
+   * test send, and a real count from the same SQL predicate the send uses.
+   */
   async function sendNow(id) {
     if (id === 'new') {
       const newId = await createCampaign()
@@ -162,28 +174,36 @@ export default function CampaignsPage() {
       setEditingId(newId)
       id = newId
     }
-    const campaign = campaigns.find(c => c.id === id)
-    // Show custom confirm with cost estimate
-    const recipientCount = getAudienceLabel(campaign?.audience) === '📍 Geo-Targeted' ? 'geo-targeted' : campaign?.sent_count || 'all confirmed'
-    setConfirmAction({
-      title: 'Send Campaign?',
-      message: `"${campaign?.title || campaign?.name}" will be sent to ${recipientCount} subscribers. This cannot be undone. Estimated cost: $${Math.ceil(((campaign?.sent_count || 100) * 0.0001))} via AWS SES.`,
-      onConfirm: async () => {
-        setConfirmAction(null)
-        setBusyId(id)
-        try {
-          toast.addToast('Preparing your newsletter for delivery...', 'info')
-          await campaignsAPI.schedule(workspaceId, id)
-          await loadCampaigns()
-          toast.addToast('Your newsletter is scheduled. Tracking delivery...', 'success')
-          startPollingSend(id)
-        } catch (err) {
-          const apiErr = err?.response?.data?.error
-          toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to schedule', 'error')
-        } finally { setBusyId(null) }
-      },
-      onCancel: () => setConfirmAction(null),
-    })
+    // Read from the freshly saved draft, not from `campaigns`, which may be a
+    // render behind the editor after an autosave.
+    const saved = await refreshCampaign(id)
+    if (!saved) return
+    setSendFlowCampaign(saved)
+  }
+
+  /** The campaign as the server currently has it, which is what would be sent. */
+  async function refreshCampaign(id) {
+    try {
+      const { data } = await campaignsAPI.list(workspaceId)
+      const list = data?.campaigns || data?.data?.campaigns || []
+      const found = list.find((c) => c.id === id)
+      if (!found) toast.addToast('Could not load this newsletter', 'error')
+      setCampaigns(list)
+      return found || null
+    } catch {
+      toast.addToast('Could not load this newsletter', 'error')
+      return null
+    }
+  }
+
+  async function handleFlowSent(id) {
+    setSendFlowCampaign(null)
+    setBusyId(id)
+    try {
+      await loadCampaigns()
+      toast.addToast('Your newsletter is on its way. Tracking delivery...', 'success')
+      startPollingSend(id)
+    } finally { setBusyId(null) }
   }
 
   async function handleSendTest() {
@@ -305,6 +325,18 @@ export default function CampaignsPage() {
 
   return (
     <div className="space-y-8">
+      {/* Staged send: preview, required test, real recipient count, then send. */}
+      {sendFlowCampaign && (
+        <SendFlow
+          key={sendFlowCampaign.id}
+          campaign={sendFlowCampaign}
+          workspaceId={workspaceId}
+          ownEmail={email}
+          onClose={() => setSendFlowCampaign(null)}
+          onSent={handleFlowSent}
+        />
+      )}
+
       {/* Confirm Modal */}
       {confirmAction && (
         <ConfirmModal
@@ -670,7 +702,13 @@ export default function CampaignsPage() {
                   onClick={() => sendNow(editingId)}
                   disabled={autosaving}
                 >
-                  {editingId === 'new' ? 'Write & Send' : 'Send Now'}
+                  {/*
+                    "Send Now" was a lie about what the button does even before
+                    this change, and more so now: it opens the review flow. Both
+                    labels name a process rather than promising an immediate
+                    send, which is the point of the flow existing.
+                  */}
+                  {editingId === 'new' ? 'Write & Send' : 'Review & Send'}
                 </Btn>
               </div>
             </div>
