@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import { subscribersAPI, getAuthToken } from '../../lib/api'
+import { subscribersAPI, savedFiltersAPI, getAuthToken } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
 import SubscriberDetailPanel from '../../components/SubscriberDetailPanel'
@@ -70,6 +70,9 @@ export default function SubscribersPage() {
   // Audience segments
   const [segments, setSegments] = useState([])
   const [segmentsLoading, setSegmentsLoading] = useState(true)
+  // Which saved filter is currently applied, so the UI can show it and offer
+  // a way back. Cleared by any manual filter change below.
+  const [activeSegmentId, setActiveSegmentId] = useState(null)
   const [segmentName, setSegmentName] = useState('')
   const [savingSegment, setSavingSegment] = useState(false)
   const [page, setPage] = useState(1)
@@ -88,11 +91,13 @@ export default function SubscribersPage() {
     fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscriber-lists`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(d => setSubscriberLists(d.lists || d || [])).catch(() => {})
-    // Load saved segments
+    // Through the API client so an expired session redirects to sign in rather
+    // than silently rendering an empty filter bar.
     setSegmentsLoading(true)
-    fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/segments`, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(r => r.json()).then(d => { setSegments(d.segments || []); setSegmentsLoading(false) }).catch(() => setSegmentsLoading(false))
+    savedFiltersAPI.list(workspaceId)
+      .then(({ data }) => setSegments(data?.segments || data?.data?.segments || []))
+      .catch(() => setSegments([]))
+      .finally(() => setSegmentsLoading(false))
   }, [workspaceId])
 
   async function loadSubscribers() {
@@ -234,23 +239,20 @@ export default function SubscribersPage() {
     if (!segmentName.trim()) return
     setSavingSegment(true)
     try {
-      const token = getAuthToken()
       const filters = {}
       if (statusFilter) filters.status = statusFilter
       if (search.trim()) filters.search = search.trim()
       if (geoFilter) filters.geoFilter = geoFilter
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/segments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name: segmentName.trim(), filters }),
-      })
-      const data = await res.json()
-      if (res.ok) {
-        toast.addToast(`Segment "${segmentName.trim()}" saved`, 'success')
-        setSegmentName('')
-        setSegments(prev => [data.segment, ...prev])
-      } else toast.addToast(data.error || 'Failed to save', 'error')
-    } catch { toast.addToast('Failed to save segment', 'error') }
+      const { data } = await savedFiltersAPI.create(workspaceId, { name: segmentName.trim(), filters })
+      const saved = data?.segment || data?.data?.segment
+      toast.addToast(`Saved filter "${segmentName.trim()}"`, 'success')
+      setSegmentName('')
+      if (saved) setSegments(prev => [saved, ...prev])
+      setActiveSegmentId(saved?.id ?? null)
+    } catch (err) {
+      const apiErr = err?.response?.data?.error
+      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to save filter', 'error')
+    }
     finally { setSavingSegment(false) }
   }
 
@@ -259,6 +261,25 @@ export default function SubscribersPage() {
     setStatusFilter(f.status || '')
     setSearch(f.search || '')
     setGeoFilter(f.geoFilter || null)
+    setActiveSegmentId(s.id)
+  }
+
+  function clearSegment() {
+    setStatusFilter('')
+    setSearch('')
+    setGeoFilter(null)
+    setActiveSegmentId(null)
+  }
+
+  async function removeSegment(id, name) {
+    try {
+      await savedFiltersAPI.remove(workspaceId, id)
+      setSegments(prev => prev.filter(s => s.id !== id))
+      if (activeSegmentId === id) setActiveSegmentId(null)
+      toast.addToast(`Removed "${name}"`, 'success')
+    } catch {
+      toast.addToast('Failed to remove filter', 'error')
+    }
   }
 
   async function exportCsv() {
@@ -570,14 +591,14 @@ export default function SubscribersPage() {
         subscribers={subscribers}
       />
 
-      {/* Save current filter as a segment */}
+      {/* Save the current filter values under a name, for re-use. */}
       {(statusFilter || search.trim() || geoFilter) && (
         <div className="flex items-center gap-2">
           <input
             type="text"
             value={segmentName}
             onChange={e => setSegmentName(e.target.value)}
-            placeholder="Name this segment..."
+            placeholder="Name this filter..."
             maxLength={60}
             className="flex-1 max-w-xs px-3 py-1.5 bg-white border-3 border-brutal-fg text-xs focus:outline-none focus:bg-brutal-yellow/10"
           />
@@ -591,7 +612,16 @@ export default function SubscribersPage() {
         </div>
       )}
 
-      {/* Saved segments */}
+      {/*
+        Saved filters. Named sets of the filter values above, re-run against
+        Contacts when clicked - not a stored group of people. That is Lists,
+        which is a different thing with a different page.
+
+        Previously these rendered as unlabelled chips that appeared only once one
+        existed, with no indication that clicking one did anything or that one
+        was currently applied. Which is why "how do I browse a segment" had no
+        obvious answer: it was already possible and looked like decoration.
+      */}
       {segmentsLoading ? (
         <div className="flex gap-2">
           {[1, 2, 3].map(i => (
@@ -599,16 +629,47 @@ export default function SubscribersPage() {
           ))}
         </div>
       ) : segments.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {segments.map(s => (
-            <button
-              key={s.id}
-              onClick={() => applySegment(s)}
-              className="px-2.5 py-1 border-2 border-brutal-fg text-[9px] font-bold uppercase tracking-wider bg-white hover:bg-brutal-yellow/20 transition"
-            >
-              🔖 {s.name}
-            </button>
-          ))}
+        <div className="space-y-1.5">
+          <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">
+            Saved filters {'·'} click to apply
+          </p>
+          <div className="flex flex-wrap gap-2 items-center">
+            {segments.map(s => {
+              const active = activeSegmentId === s.id
+              return (
+                <span
+                  key={s.id}
+                  className={`inline-flex items-center border-2 border-brutal-fg text-[9px] font-bold uppercase tracking-wider transition ${
+                    active ? 'bg-brutal-yellow' : 'bg-white hover:bg-brutal-yellow/20'
+                  }`}
+                >
+                  <button
+                    onClick={() => applySegment(s)}
+                    className="px-2.5 py-1"
+                    aria-pressed={active}
+                  >
+                    {active ? '✓' : '🔖'} {s.name}
+                  </button>
+                  <button
+                    onClick={() => removeSegment(s.id, s.name)}
+                    aria-label={`Remove saved filter ${s.name}`}
+                    title="Remove this saved filter"
+                    className="px-1.5 py-1 border-l-2 border-brutal-fg hover:bg-brutal-red hover:text-white transition"
+                  >
+                    ×
+                  </button>
+                </span>
+              )
+            })}
+            {activeSegmentId && (
+              <button
+                onClick={clearSegment}
+                className="px-2.5 py-1 border-2 border-dashed border-brutal-fg/50 text-[9px] font-bold uppercase tracking-wider text-brutal-muted hover:border-brutal-fg hover:text-brutal-fg transition"
+              >
+                Clear filter
+              </button>
+            )}
+          </div>
         </div>
       )}
 

@@ -29,7 +29,7 @@ export default function ListsPage() {
 
   useEffect(() => {
     if (workspaceId) loadLists()
-    document.title = 'Segments | Veloce'
+    document.title = 'Lists | Veloce'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId])
 
@@ -79,7 +79,7 @@ export default function ListsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h2 className="text-4xl font-heading uppercase tracking-tight leading-none">
-          <span className="text-brutal-green">Segments</span>
+          <span className="text-brutal-green">Lists</span>
         </h2>
         <Btn
           variant="primary"
@@ -92,9 +92,9 @@ export default function ListsPage() {
 
       {showAddForm && (
         <div className="border-3 border-brutal-fg bg-white p-8 space-y-6">
-          <h4 className="font-heading text-xl uppercase tracking-wide">New Segment</h4>
+          <h4 className="font-heading text-xl uppercase tracking-wide">New List</h4>
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Segment Name</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">List Name</label>
             <input
               type="text"
               value={newList.name}
@@ -132,7 +132,7 @@ export default function ListsPage() {
               disabled={saving}
               loading={saving}
             >
-              {saving ? 'Creating...' : 'Create Segment'}
+              {saving ? 'Creating...' : 'Create List'}
             </Btn>
             <Btn
               variant="secondary"
@@ -155,10 +155,10 @@ export default function ListsPage() {
         />
       ) : lists.length === 0 ? (
         <EmptyState
-          title="No segments yet"
-          description="Create a segment to organize your contacts."
+          title="No lists yet"
+          description="A list is a group you put contacts into and they stay there. For a filter that re-runs itself, save one from Contacts instead."
           variant="lists"
-          action={{ label: '+ New Segment', onClick: () => setShowAddForm(true) }}
+          action={{ label: '+ New List', onClick: () => setShowAddForm(true) }}
         />
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

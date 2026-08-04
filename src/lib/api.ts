@@ -129,6 +129,25 @@ export const listsAPI = {
     api.delete<ApiResponse>(`/api/clients/${workspaceId}/subscriber-lists/${id}`),
 }
 
+// ── Saved filters ──
+
+/**
+ * `saved_segments`: a named set of filter values, re-run against Contacts when
+ * applied. Distinct from listsAPI above, which is explicit membership.
+ *
+ * These were fetched with a raw `fetch` and a hardcoded API URL, which skipped
+ * the 401 interceptor - so an expired session produced a silently empty filter
+ * bar instead of a redirect to sign in.
+ */
+export const savedFiltersAPI = {
+  list: (workspaceId: string) =>
+    api.get<ApiResponse>(`/api/clients/${workspaceId}/segments`),
+  create: (workspaceId: string, data: { name: string; filters: Record<string, unknown> }) =>
+    api.post<ApiResponse>(`/api/clients/${workspaceId}/segments`, data),
+  remove: (workspaceId: string, id: string) =>
+    api.delete<ApiResponse>(`/api/clients/${workspaceId}/segments/${id}`),
+}
+
 // ── Branding ──
 
 export const brandingAPI = {
