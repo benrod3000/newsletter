@@ -108,6 +108,14 @@ export const campaignsAPI = {
     api.post<ApiResponse>(`/api/clients/${workspaceId}/campaigns/${id}/test`, { email }),
   publish: (workspaceId: string, id: string) =>
     api.post<ApiResponse>(`/api/clients/${workspaceId}/campaigns/${id}/publish`),
+  /**
+   * How many people this campaign would actually reach right now.
+   *
+   * Backed by the same SQL predicate the send itself uses, so the number shown
+   * before confirming and the set actually mailed cannot disagree.
+   */
+  audienceEstimate: (workspaceId: string, id: string) =>
+    api.get<ApiResponse>(`/api/clients/${workspaceId}/campaigns/${id}/audience-estimate`),
 }
 
 // ── Templates ──
