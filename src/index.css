@@ -76,6 +76,20 @@
     min-height: 100vh;
   }
 
+  /*
+   * Embedded widget pages size to their content instead.
+   *
+   * Inside an iframe 100vh resolves to the frame's own height, so the rule above
+   * made the page always fill whatever the host had reserved - which both left
+   * dead space around the form and made the page impossible to measure for
+   * auto-resize, since scrollHeight just echoed the frame height back.
+   *
+   * The attribute is set by useEmbedHeight(), which runs only when framed.
+   */
+  html[data-veloce-embed] #root {
+    min-height: 0;
+  }
+
   /* Brutalist: no rounded corners */
   input, select, textarea, button {
     border-radius: 0 !important;

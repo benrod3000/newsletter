@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useEmbedHeight } from '../hooks/use-embed-height'
 import { useParams } from 'react-router-dom'
 import axios from 'axios'
 import LoadingState from '../components/ux/LoadingState'
@@ -7,6 +8,10 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.
 
 export default function WidgetFormPage() {
   useEffect(() => { document.title = 'Subscribe | Veloce' }, [])
+
+  // Tells the embedding page how tall this render actually is, so the iframe
+  // can stop relying on a height guessed when the snippet was copied.
+  useEmbedHeight()
   // Keyed by widget id, not slug: slug is only unique within a workspace, so
   // two customers naming a form the same thing would otherwise resolve to
   // whichever was created most recently.
@@ -127,7 +132,7 @@ export default function WidgetFormPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-brutal-bg flex items-center justify-center">
+      <div className="py-10 bg-brutal-bg flex items-center justify-center">
         <LoadingState label="Loading widget" />
       </div>
     )
@@ -135,7 +140,7 @@ export default function WidgetFormPage() {
 
   if (notFound || !widget) {
     return (
-      <div className="min-h-screen bg-brutal-bg flex items-center justify-center p-6">
+      <div className="py-10 bg-brutal-bg flex items-center justify-center p-6">
         <div className="border-3 border-brutal-fg bg-white shadow-brutal p-8 text-center max-w-sm space-y-3">
           <div className="h-1 w-12 bg-brutal-red mx-auto" />
           <p className="font-heading text-2xl uppercase tracking-wide">Not Found</p>
@@ -168,12 +173,19 @@ export default function WidgetFormPage() {
   const buttonPad = isLarge ? 'py-3.5 text-sm' : isCompact ? 'py-2 text-[11px]' : 'py-3 text-sm'
   const inputCls = `w-full ${isSlim ? 'px-3 py-2' : 'px-4 py-3'} bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted transition`
 
-  // Anything taller than its content would leave the host page reserving space
-  // for nothing, so the slim strip sizes to what it actually renders instead of
-  // filling the iframe viewport.
+  // No min-h-screen, at any size.
+  //
+  // Inside an iframe 100vh resolves to the iframe's own height, so the content
+  // always filled whatever box the host reserved. That produced dead space above
+  // and below the form, and it made the page impossible to measure: scrollHeight
+  // would equal the frame height no matter how little was rendered, so the
+  // auto-resize could never shrink a frame, only grow it.
+  //
+  // This route exists only to be embedded, so sizing to content is right at
+  // every size, not just for the slim strip that already did it.
   const pageCls = isSlim
     ? 'flex items-center justify-center p-1'
-    : `min-h-screen flex items-center justify-center ${isSmall ? 'p-2' : 'p-6'}`
+    : `flex items-center justify-center ${isSmall ? 'p-2' : 'p-6'}`
 
   return (
     <div className={`${pageCls} animate-fade-up`} style={{ backgroundColor: styles.bg_color || '#f5f5f0' }}>

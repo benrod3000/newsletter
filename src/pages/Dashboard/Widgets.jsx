@@ -200,6 +200,21 @@ export default function WidgetsPage() {
   // (widgets_workspace_id_slug_key), so it cannot identify a widget from a
   // public URL - two customers naming a form the same thing would collide.
   function copyEmbed(widgetId, widgetSize, fieldCount) {
+    navigator.clipboard.writeText(buildEmbedCode(widgetId, widgetSize, fieldCount))
+    setCopiedId(widgetId)
+    toast.addToast('Embed code copied!', 'success')
+    setTimeout(() => setCopiedId(null), 2000)
+  }
+
+  /**
+   * The embed snippet. One definition, used by both the copy button and the
+   * code shown on screen.
+   *
+   * Those were separate before, and had drifted: the displayed version used a
+   * different heights map with no `slim` entry, so a slim widget was shown one
+   * number and given another when copied.
+   */
+  function buildEmbedCode(widgetId, widgetSize, fieldCount) {
     const fieldH = Math.max(1, fieldCount || 1) * 60 + 200
     // Slim is one row of controls plus its border, and grows only if extra
     // fields are configured - it must not inherit the card sizes' floor, which
@@ -210,15 +225,39 @@ export default function WidgetsPage() {
       medium: Math.max(fieldH, 360),
       large: Math.max(fieldH, 500),
     }
+    // Now only the starting height, so the form looks right for the moment
+    // before the first message arrives rather than collapsing from zero.
     const h = heights[widgetSize] || heights.medium
+
     // allow="geolocation" is required for the form to ask for coordinates at
     // all: cross-origin iframes are denied that API by default, so without it
     // the request fails as PERMISSION_DENIED before the visitor sees a prompt.
-    const code = `<iframe src="${EMBED_BASE}/${widgetId}"\n  width="100%" height="${h}"\n  frameborder="0"\n  allow="geolocation"\n  style="border:3px solid #0a0a0a">\n</iframe>`
-    navigator.clipboard.writeText(code)
-    setCopiedId(widgetId)
-    toast.addToast('Embed code copied!', 'success')
-    setTimeout(() => setCopiedId(null), 2000)
+    //
+    // The script is what makes the frame fit its contents. Without it the height
+    // above is frozen at the moment this code was copied, so editing the widget
+    // later, or a narrow screen wrapping the text onto more lines, clips the
+    // form or leaves dead space beneath it.
+    //
+    // e.source === frame.contentWindow is the check that matters: it accepts
+    // messages only from this iframe, so another frame on the host page cannot
+    // resize it. The message carries a single integer and no user data.
+    const code = [
+      `<iframe id="veloce-${widgetId}" src="${EMBED_BASE}/${widgetId}"`,
+      `  width="100%" height="${h}" frameborder="0" allow="geolocation"`,
+      `  style="border:3px solid #0a0a0a; display:block"></iframe>`,
+      `<script>`,
+      `  (function () {`,
+      `    var frame = document.getElementById("veloce-${widgetId}");`,
+      `    window.addEventListener("message", function (e) {`,
+      `      if (e.source !== frame.contentWindow) return;`,
+      `      if (!e.data || e.data.type !== "veloce:height") return;`,
+      `      frame.style.height = e.data.height + "px";`,
+      `    });`,
+      `  })();`,
+      `</script>`,
+    ].join('\n')
+
+    return code
   }
 
   function generateSlug(name) {
@@ -771,22 +810,10 @@ export default function WidgetsPage() {
                         </div>
                       </div>
                       <pre className="bg-brutal-fg text-brutal-yellow p-4 text-xs font-mono overflow-x-auto whitespace-pre select-all">
-{`<iframe
-  src="${EMBED_BASE}/${w.id}"
-  width="100%"
-  height="${(() => {
-    const fields = w.fields || { email: { required: true } }
-    const count = Object.keys(fields).length
-    const fieldH = Math.max(1, count) * 60 + 200
-    const heights = { small: Math.max(fieldH, 280), medium: Math.max(fieldH, 360), large: Math.max(fieldH, 500) }
-    return heights[w.size] || heights.medium
-  })()}"
-  frameborder="0"
-  style="border:3px solid #0a0a0a">
-</iframe>`}
+{buildEmbedCode(w.id, w.size, Object.keys(w.fields || { email: {} }).length)}
                       </pre>
                       <p className="text-[10px] font-bold text-brutal-muted uppercase">
-                        Paste this anywhere on your site. Height adjusts based on selected fields.
+                        Paste this anywhere on your site. The frame resizes itself to fit the form.
                       </p>
                       <p className="text-[10px] font-bold text-brutal-green uppercase">
                         📍 This widget collects location data so you can target campaigns by radius.
