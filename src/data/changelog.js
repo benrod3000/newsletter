@@ -1,0 +1,317 @@
+/**
+ * The changelog, newest first.
+ *
+ * This used to be a literal array inside Changelog.jsx, which is why it was
+ * eight days stale: updating it meant editing a React component, so it only
+ * happened when someone remembered. It is data, so it lives here now and the
+ * page just renders it.
+ *
+ * Shape:
+ *   { date: 'Month D, YYYY', items: [{ title, body, list?: string[] }] }
+ *
+ * Two rules worth keeping:
+ *
+ * 1. Write for someone using the product, not someone who wrote it. "You can
+ *    now see how many people a broadcast will reach before sending it" - not
+ *    "added count_campaign_recipients()".
+ *
+ * 2. Never edit or delete a past entry to reflect a later change. The July 25
+ *    entry announces a template picker that no longer exists; the August 4 entry
+ *    records its removal. A changelog that quietly rewrites itself is worth
+ *    nothing to anyone trying to work out when their experience changed.
+ *
+ * Add an entry as part of shipping, not afterwards.
+ */
+export const CHANGELOG = [
+    {
+      date: 'August 4, 2026',
+      items: [
+        {
+          title: 'Radius search actually works',
+          body: 'Filtering contacts by distance from a point returned an error every time it was tried. It works now. Radius is measured consistently between filtering and sending, so the people you see are the people who get the broadcast.',
+          list: [
+            'Imported contacts need latitude and longitude columns to appear in a radius search - the CSV template now includes them',
+            'Contacts who sign up through a capture form get their location automatically',
+          ],
+        },
+        {
+          title: 'Your brand colours and logo are used',
+          body: 'Setting a logo and brand colours in Settings previously changed nothing anywhere. They now appear in the broadcasts you send and on the public web version of a broadcast.',
+        },
+        {
+          title: 'Capture forms fit the page they are on',
+          body: 'Embedded forms resize themselves to their content instead of using a fixed height guessed when you copied the code. That fixes forms being cut off on narrow screens and leaving empty space on wide ones. Re-copy your embed code to pick this up.',
+        },
+        {
+          title: 'Lists and saved filters are no longer both called segments',
+          body: 'A list is a group you put contacts into and they stay there. A saved filter re-runs itself every time you apply it. Both were called segments, which made it unclear which one you were looking at. Saved filters now show when one is applied and can be cleared or removed.',
+        },
+        {
+          title: 'The template picker has been removed',
+          body: 'New broadcasts open on an empty editor. The picker interrupted writing more than it helped, and saved templates went with it. (Announced July 25.)',
+        },
+      ],
+    },
+    {
+      date: 'August 3, 2026',
+      items: [
+        {
+          title: 'Sending now has steps',
+          body: 'Writing and sending used to be one button and one confirmation. It is now write, preview, send yourself a test, confirm who is receiving it, then send.',
+          list: [
+            'A test send is required before the final send, and editing the content afterwards asks for a fresh one',
+            'The recipient count is real - it is produced by the same rule that picks who actually receives the broadcast',
+            'The old confirmation showed an invented recipient count, an invented cost, and named the wrong email provider',
+          ],
+        },
+        {
+          title: 'Security activity on your dashboard',
+          body: 'Sign-ins, contact exports and imports, deletions, credential changes and team changes are now recorded and shown to account owners.',
+        },
+        {
+          title: 'Exports return everyone',
+          body: 'Exporting contacts silently stopped at 1,000 rows. Exports are also now limited to editors and owners, and are safe to open directly in a spreadsheet.',
+        },
+        {
+          title: 'The contacts map stays behind the menu',
+          body: 'The map on the Contacts page covered the navigation bar when scrolling up.',
+        },
+      ],
+    },
+    {
+      date: 'August 2, 2026',
+      items: [
+        {
+          title: 'Bring your own Resend or SendGrid account',
+          body: 'Your provider API key is saved against your workspace, so your broadcasts send from your own account and your own sending reputation. Previously the key field looked like it saved and did not.',
+        },
+        {
+          title: 'Deliverability tells you what is missing',
+          body: 'The deliverability page reported a generic failure when it simply had no sender email to check. It now says so, and links to where to set one.',
+        },
+      ],
+    },
+    {
+      date: 'July 25, 2026',
+      items: [
+        {
+          title: 'Deeper analytics, faster answers',
+          body: 'Click an hour on the activity heatmap to filter the day-by-day breakdown down to just that hour. Drag across the growth chart to compare any range against the period overall, and an always-visible average line makes trends easier to spot at a glance.',
+        },
+        {
+          title: 'Start from a template',
+          body: 'New broadcasts now offer a starting point instead of a blank editor - pick the built-in two-voice template or any of your own saved templates.',
+        },
+      ],
+    },
+    {
+      date: 'July 23, 2026',
+      items: [
+        {
+          title: 'More ways to send',
+          body: 'Amazon SES now works alongside Resend and SendGrid, sending raw MIME so one-click unsubscribe headers are preserved, with automatic fallback to your backup provider on transient errors. Every option is named clearly wherever you look - the homepage, previews, and docs - so choosing is about your audience, not guesswork.',
+        },
+        {
+          title: 'Better brand consistency',
+          body: 'Fixed a theme mismatch that was silently rendering headings and the Veloce wordmark in the wrong font. Everything now displays in Bebas Neue across the site.',
+        },
+        {
+          title: 'Improved accessibility',
+          body: 'Focus rings and the demo button are now visible on dark sections, and the "Skip to content" link lands on the main content instead of nowhere.',
+        },
+        {
+          title: 'A clearer demo experience',
+          body: '"Watch Demo" is now "See Live Demo" - it opens an interactive product tour, not a video.',
+        },
+        {
+          title: 'New newsletter example',
+          body: 'Added a conversational, two-voice sample template with alternating speakers and a geo-personalized greeting, ready to preview and adapt for event announcements.',
+        },
+      ],
+    },
+    {
+      date: 'July 22, 2026',
+      items: [
+        {
+          title: 'More reliable campaigns',
+          body: 'Campaign sending now runs through a durable per-recipient queue. If something interrupts a send, Veloce picks up where it left off instead of starting over.',
+        },
+        {
+          title: 'Better error messages',
+          body: 'Signup issues now tell you exactly what happened and what to do next, instead of a generic error banner.',
+        },
+        {
+          title: 'Stability improvements',
+          body: 'Fixed modal focus handling, a color-palette crash, and a contrast issue affecting secondary text.',
+        },
+      ],
+    },
+    {
+      date: 'July 21, 2026',
+      items: [
+        {
+          title: 'Introducing Deliverability Center',
+          body: 'A new dashboard for understanding and improving email health. Check your domain setup, monitor authentication, and get recommendations for improving deliverability.',
+          list: [
+            'SPF, DKIM, DMARC, and MX checks',
+            'Deliverability health scoring',
+            'Domain verification tools',
+            'Actionable, prioritized recommendations',
+          ],
+        },
+        {
+          title: 'Stronger foundations',
+          body: 'Expanded TypeScript coverage across the app and improved API reliability.',
+        },
+      ],
+    },
+    {
+      date: 'July 20, 2026',
+      items: [
+        {
+          title: 'A stronger sending foundation',
+          body: 'Rebuilt the email infrastructure to make providers interchangeable, with automatic fallback when one fails, smarter retry handling, and clearer send activity tracking.',
+        },
+        {
+          title: 'Better testing tools',
+          body: 'Added Sandbox Mode so you can test campaigns without sending real emails - preview engagement, analytics, and campaign behavior before going live.',
+        },
+        {
+          title: 'Faster platform performance',
+          body: 'Improved database performance, API consistency, and demo setup.',
+        },
+      ],
+    },
+    {
+      date: 'July 19, 2026',
+      items: [
+        {
+          title: 'Veloce becomes Audience OS',
+          body: 'The product is shifting from a newsletter tool into a complete audience ownership platform. Updated language and navigation across the app:',
+          list: [
+            'Newsletters → Broadcasts',
+            'Subscribers → Contacts',
+            'Lists → Segments',
+            'Widgets → Capture Forms',
+          ],
+        },
+        {
+          title: 'Better visibility',
+          body: 'Added error monitoring, improved analytics, login tracking, and cleaner audience insights.',
+        },
+        {
+          title: 'Cleaner experience',
+          body: 'Removed unused systems, simplified navigation, and improved overall stability.',
+        },
+      ],
+    },
+    {
+      date: 'July 18, 2026',
+      items: [
+        {
+          title: 'Stronger security',
+          body: 'Completed a security pass across the platform, including better protection for user data, safer authentication flows, improved API security, and updated dependencies.',
+        },
+        {
+          title: 'Smarter capture forms',
+          body: 'Forms now adapt based on what you are collecting - coupons reveal coupon codes, feedback forms collect responses, and lead magnets deliver downloads.',
+        },
+        {
+          title: 'Better location tools',
+          body: 'Improved geo-targeting with draggable map markers, saved location settings, and better location accuracy.',
+        },
+      ],
+    },
+    {
+      date: 'July 17, 2026',
+      items: [
+        {
+          title: 'Better onboarding',
+          body: 'Added transactional emails for account creation and password resets.',
+        },
+        {
+          title: 'Improved messaging tools',
+          body: 'Added RCS previews, SMS improvements, location-based campaigns, and provider setup guidance.',
+        },
+        {
+          title: 'Better imports',
+          body: 'CSV imports now include clearer templates and guidance.',
+        },
+      ],
+    },
+    {
+      date: 'July 16, 2026',
+      items: [
+        {
+          title: 'More control over capture forms',
+          body: 'Added full styling customization for widgets - colors, appearance, size, and embed behavior.',
+        },
+        {
+          title: 'Audience targeting improvements',
+          body: 'Added multi-location targeting, saved segments, and subscriber counts by area.',
+        },
+        {
+          title: 'SMS and RCS foundations',
+          body: 'Built the infrastructure for richer messaging beyond email.',
+        },
+      ],
+    },
+    {
+      date: 'July 15, 2026',
+      items: [
+        {
+          title: 'Better campaign infrastructure',
+          body: 'Reworked campaign sending for reliability and scale, with improved queue handling, progress tracking, and better failure recovery.',
+        },
+        {
+          title: 'Own your archive',
+          body: 'Sent newsletters can now live as public pages, giving your content a longer life beyond the inbox.',
+        },
+        {
+          title: 'Stronger positioning',
+          body: 'Updated the product experience around audience ownership instead of just newsletters.',
+        },
+      ],
+    },
+    {
+      date: 'July 14, 2026',
+      items: [
+        {
+          title: 'Building the foundation',
+          body: 'Added reusable UI components, improved SEO, and strengthened campaign workflows.',
+          list: [
+            'Component library',
+            'Template saving',
+            'Provider testing',
+            'Structured metadata',
+            'Improved search',
+          ],
+        },
+      ],
+    },
+    {
+      date: 'July 13, 2026',
+      items: [
+        {
+          title: 'Email + SMS together',
+          body: 'Veloce now supports multi-channel communication.',
+          list: [
+            'Email campaigns',
+            'SMS campaigns',
+            'RCS previews',
+            'Location-based messaging',
+            'Campaign analytics',
+          ],
+        },
+      ],
+    },
+    {
+      date: 'July 12, 2026',
+      items: [
+        {
+          title: 'Better audience targeting',
+          body: 'Added geographic filters, a campaign calendar, subject line suggestions, and subscriber search. Also improved workspace security and launched Landing Page V3.',
+        },
+      ],
+    },
+  ]
