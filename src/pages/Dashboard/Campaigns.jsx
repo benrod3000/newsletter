@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback, lazy, Suspense } from 'react'
 import { useAuthStore } from '../../stores/authStore'
-import { campaignsAPI, listsAPI, templatesAPI, getAuthToken } from '../../lib/api'
+import { campaignsAPI, listsAPI, getAuthToken } from '../../lib/api'
 import SendFlow from '../../components/SendFlow'
 import { EmptyState, LoadingState } from '../../components/ux'
 import Btn from '../../components/ui/Button'
@@ -11,9 +11,8 @@ import { useToast } from '../../components/Toast'
 const EmailEditor = lazy(() => import('../../components/EmailEditor'))
 const GeoFilter = lazy(() => import('../../components/GeoFilter'))
 import ConfirmModal from '../../components/ConfirmModal'
-import PromptModal from '../../components/PromptModal'
 import { useCommandAction } from '../../components/useCommandAction'
-import { STATUS_STYLES, STATUS_LABELS, AUDIENCE_OPTIONS, STARTER_TEMPLATES, generateSubjects, getAudienceLabel } from './Campaigns/constants'
+import { STATUS_STYLES, STATUS_LABELS, AUDIENCE_OPTIONS, generateSubjects, getAudienceLabel } from './Campaigns/constants'
 
 export default function CampaignsPage() {
   const { workspaceId, email } = useAuthStore()
@@ -50,8 +49,6 @@ export default function CampaignsPage() {
   const [confirmAction, setConfirmAction] = useState(null) // { title, message, onConfirm, danger }
   const [sendFlowCampaign, setSendFlowCampaign] = useState(null)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
-  const [templatePromptOpen, setTemplatePromptOpen] = useState(false)
-  const [savedTemplates, setSavedTemplates] = useState([])
   const [inlineEditId, setInlineEditId] = useState(null)
   const [inlineEditVal, setInlineEditVal] = useState('')
   const { action, consume } = useCommandAction()
@@ -140,21 +137,6 @@ export default function CampaignsPage() {
     setEditAudience('confirmed')
     setGeoAudience(null)
     setShowAddForm(false)
-    try {
-      const { data } = await templatesAPI.list(workspaceId)
-      setSavedTemplates(data.templates || [])
-    } catch {
-      setSavedTemplates([])
-    }
-  }
-
-  // Seeds a blank draft from either a built-in starter ({ subject, html }) or
-  // a saved template ({ subject, editor_html, audience }) - same shape either
-  // way once picked apart here.
-  function applyTemplate(tpl) {
-    setEditContent(tpl.html ?? tpl.editor_html ?? '')
-    if (tpl.subject) setEditSubject(tpl.subject)
-    if (tpl.audience) setEditAudience(tpl.audience)
   }
 
   /**
@@ -252,23 +234,6 @@ export default function CampaignsPage() {
     discardAndClose()
   }
 
-  async function saveAsTemplate(name) {
-    setTemplatePromptOpen(false)
-    try {
-      await templatesAPI.create(workspaceId, {
-        name,
-        subject: editSubject,
-        editor_html: editContent,
-        audience: editAudience,
-        category: 'campaign',
-      })
-      toast.addToast(`Saved "${name}" as template`, 'success')
-    } catch (err) {
-      const apiErr = err?.response?.data?.error
-      toast.addToast(typeof apiErr === 'object' ? apiErr?.message : apiErr || 'Failed to save template', 'error')
-    }
-  }
-
   function discardAndClose() {
     setConfirmDiscard(false)
     setEditingId(null)
@@ -361,18 +326,6 @@ export default function CampaignsPage() {
         onCancel={() => setConfirmDiscard(false)}
       />
 
-      <PromptModal
-        open={templatePromptOpen}
-        title="Save as template"
-        message="Reuse this layout and settings for future campaigns."
-        label="Template name"
-        placeholder="e.g. Weekly digest"
-        initialValue={editCampaign?.title || editCampaign?.name || ''}
-        confirmLabel="Save template"
-        validate={(v) => (!v ? 'Enter a template name' : v.length > 100 ? 'Keep it under 100 characters' : '')}
-        onSubmit={saveAsTemplate}
-        onCancel={() => setTemplatePromptOpen(false)}
-      />
 
       <div className="flex items-center justify-between flex-wrap gap-4 border-b-3 border-brutal-fg pb-4">
         <div>
@@ -607,40 +560,6 @@ export default function CampaignsPage() {
               </div>
             </div>
 
-            {/* Starting points - only while the draft is still blank; picking one or
-                just typing (which fills editContent) makes this go away on its own. */}
-            {editingId === 'new' && !editContent && (savedTemplates.length > 0 || STARTER_TEMPLATES.length > 0) && (
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">
-                  Start from a template
-                </label>
-                <div className="flex flex-wrap gap-3">
-                  {STARTER_TEMPLATES.map((tpl) => (
-                    <button
-                      key={tpl.key}
-                      type="button"
-                      onClick={() => applyTemplate(tpl)}
-                      className="text-left px-4 py-3 border-3 border-brutal-fg bg-white max-w-[240px] hover:shadow-brutal hover:bg-brutal-yellow/10 transition"
-                    >
-                      <span className="block text-xs font-bold uppercase tracking-wider">{tpl.name}</span>
-                      <span className="block text-[10px] text-brutal-muted mt-1">{tpl.description}</span>
-                    </button>
-                  ))}
-                  {savedTemplates.map((tpl) => (
-                    <button
-                      key={tpl.id}
-                      type="button"
-                      onClick={() => applyTemplate(tpl)}
-                      className="text-left px-4 py-3 border-3 border-brutal-fg bg-white max-w-[240px] hover:shadow-brutal hover:bg-brutal-yellow/10 transition"
-                    >
-                      <span className="block text-xs font-bold uppercase tracking-wider">{tpl.name}</span>
-                      <span className="block text-[10px] text-brutal-muted mt-1">Your saved template{tpl.subject ? ` · ${tpl.subject}` : ''}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* TipTap Editor */}
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">Email Content</label>
@@ -664,13 +583,6 @@ export default function CampaignsPage() {
               <div className="flex gap-2">
                 {editingId !== 'new' && (
                   <>
-                    <button
-                      onClick={() => setTemplatePromptOpen(true)}
-                      disabled={autosaving}
-                      className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-[10px] uppercase tracking-wider hover:bg-brutal-surface transition disabled:opacity-50"
-                    >
-                      Save as Template
-                    </button>
                     {editCampaign?.status === 'sent' && (
                       <button
                         onClick={async () => {

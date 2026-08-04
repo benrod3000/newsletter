@@ -118,15 +118,6 @@ export const campaignsAPI = {
     api.get<ApiResponse>(`/api/clients/${workspaceId}/campaigns/${id}/audience-estimate`),
 }
 
-// ── Templates ──
-
-export const templatesAPI = {
-  list: (workspaceId: string) =>
-    api.get<ApiResponse>(`/api/clients/${workspaceId}/templates`),
-  create: (workspaceId: string, data: Record<string, unknown>) =>
-    api.post<ApiResponse>(`/api/clients/${workspaceId}/templates`, data),
-}
-
 // ── Lists / Segments ──
 
 export const listsAPI = {
