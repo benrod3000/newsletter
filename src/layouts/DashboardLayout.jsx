@@ -24,7 +24,7 @@ const navGroups = [
     label: 'People',
     items: [
       { path: '/dashboard/subscribers', label: 'Contacts', icon: Users },
-      { path: '/dashboard/lists', label: 'Segments', icon: PieChart },
+      { path: '/dashboard/lists', label: 'Lists', icon: PieChart },
     ],
   },
   {

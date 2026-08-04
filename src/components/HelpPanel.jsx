@@ -36,13 +36,14 @@ const PAGE_HELP = {
     nextPath: '/dashboard/settings',
   },
   '/dashboard/lists': {
-    title: 'Segments',
-    what: 'Group contacts into segments for targeted sends. Different broadcasts to different groups.',
+    title: 'Lists',
+    what: 'Groups you put contacts into. A contact stays in a list until you take them out, which makes lists the right tool for things that are not derivable from the data - beta testers, paying customers, people who asked for a specific thing.',
     actions: [
-      { label: 'Create a new segment', tip: 'Click + New Segment' },
-      { label: 'Add contacts to a segment', tip: 'Click a contact, use the detail panel' },
+      { label: 'Create a new list', tip: 'Click + New List' },
+      { label: 'Add contacts to a list', tip: 'Click a contact, use the detail panel' },
+      { label: 'Want a group that updates itself?', tip: 'Filter on Contacts and save it - saved filters re-run every time' },
     ],
-    next: 'Segments make your broadcasts more relevant. Try creating one for new contacts.',
+    next: 'Lists make your broadcasts more relevant. Try creating one for new contacts.',
   },
   '/dashboard/analytics': {
     title: 'Analytics',
