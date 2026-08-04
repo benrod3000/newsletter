@@ -378,7 +378,10 @@ export default function SubscribersPage() {
               <p className="text-[9px] font-bold uppercase tracking-wider">📄 template.csv</p>
               <button
                 onClick={() => {
-                  const csv = 'email,first_name,last_name,phone_number,country,region,city,timezone\njane@example.com,Jane,Doe,+15125550199,US,California,Los Angeles,America/Los_Angeles\njohn@example.com,John,Smith,+12125550199,US,New York,New York,America/New_York'
+                  // latitude/longitude are optional but are what make radius
+                  // search work for imported contacts - nothing looks them up
+                  // afterwards, so a row without them never appears on the map.
+                  const csv = 'email,first_name,last_name,phone_number,country,region,city,postal_code,timezone,latitude,longitude\njane@example.com,Jane,Doe,+15125550199,US,California,Los Angeles,90001,America/Los_Angeles,34.0522,-118.2437\njohn@example.com,John,Smith,+12125550199,US,New York,New York,10001,America/New_York,40.7128,-74.0060'
                   const blob = new Blob([csv], { type: 'text/csv' })
                   const url = URL.createObjectURL(blob)
                   const a = document.createElement('a')
@@ -431,7 +434,7 @@ export default function SubscribersPage() {
           </div>
 
           <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">
-            Paste CSV or drag a .csv file. Must include an <strong>email</strong> column. Optional: first_name, last_name, phone_number (10 digits), country, region, city, timezone
+            Paste CSV or drag a .csv file. Must include an <strong>email</strong> column. Optional: first_name, last_name, phone_number (10 digits), country, region, city, postal_code, timezone, and <strong>latitude / longitude</strong> - include those two if you want imported contacts to appear in radius searches
           </p>
           <div
             onDragOver={(e) => { e.preventDefault(); setDragActive(true) }}
