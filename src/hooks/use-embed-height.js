@@ -22,6 +22,27 @@ import { useEffect } from 'react'
  * the old snippet keep working: without a listener these messages are simply
  * ignored, and the iframe keeps its static height.
  */
+/**
+ * The rendered height of a document, as the host should size its iframe.
+ *
+ * Exported and pure so the rule can be tested. It has already been wrong once:
+ * the first version used `documentElement.scrollHeight`, which is floored at the
+ * viewport height - inside a frame, the frame itself. That could grow a frame
+ * but never shrink one, so a widget with 72px of content reported 502px and
+ * matched whatever the host had already reserved.
+ *
+ * `body`'s bounding rect measures what was actually laid out. Body margins fall
+ * outside that box, so they are added back rather than clipping the last few
+ * pixels off a form.
+ */
+export function measureEmbedHeight(doc, win) {
+  const body = doc?.body
+  if (!body) return 0
+  const style = win.getComputedStyle(body)
+  const margins = (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0)
+  return Math.ceil(body.getBoundingClientRect().height + margins)
+}
+
 export function useEmbedHeight(enabled = true) {
   useEffect(() => {
     if (!enabled) return
@@ -56,10 +77,7 @@ export function useEmbedHeight(enabled = true) {
       // getBoundingClientRect on <body> measures what was actually laid out.
       // Body margins sit outside that box, so they are added back rather than
       // clipping the last few pixels.
-      const body = document.body
-      const style = window.getComputedStyle(body)
-      const margins = parseFloat(style.marginTop || 0) + parseFloat(style.marginBottom || 0)
-      const height = Math.ceil(body.getBoundingClientRect().height + margins)
+      const height = measureEmbedHeight(document, window)
 
       if (!height || height === last) return
       last = height
