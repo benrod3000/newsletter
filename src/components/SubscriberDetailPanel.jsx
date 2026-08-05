@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import { getAuthToken } from '../lib/api'
+import { notesAPI, getAuthToken } from '../lib/api'
+import { useToast } from './Toast'
 
 export default function SubscriberDetailPanel({ subscriber, onClose, onRemove }) {
+  const toast = useToast()
   const panelRef = useRef(null)
   const restoreFocusTo = useRef(null)
   // Notes & tags state
@@ -25,9 +27,9 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove })
   useEffect(() => {
     if (!subscriber?.id || !workspaceId) return
     const token = getAuthToken()
-    fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/notes`, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(r => r.json()).then(d => { setNotes(d.notes || []); setTags(d.tags || []) }).catch(() => {})
+    notesAPI.get(workspaceId, subscriber.id)
+      .then(({ data }) => { setNotes(data?.notes || []); setTags(data?.tags || []) })
+      .catch(() => {})
     setTimelineLoading(true)
     fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/timeline`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -85,24 +87,30 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove })
 
   async function addNote() {
     if (!newNote.trim()) return
-    const token = getAuthToken()
-    const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/notes`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ note: newNote })
-    })
-    const data = await res.json()
-    if (data.note) { setNotes(prev => [data.note, ...prev]); setNewNote('') }
+    try {
+      const { data } = await notesAPI.addNote(workspaceId, subscriber.id, newNote)
+      const created = data?.note
+      if (created) { setNotes(prev => [created, ...prev]); setNewNote('') }
+    } catch {
+      // Previously this read the response as JSON and checked for `data.note`,
+      // so a 500 - which is what every attempt returned before the table
+      // existed - left the note in the box with no explanation.
+      toast.addToast('Could not save that note', 'error')
+    }
   }
 
   async function addTag() {
-    if (!newTag.trim()) return
-    const token = getAuthToken()
-    await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscribers/${subscriber.id}/notes`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ tag: newTag.trim().toLowerCase() })
-    })
-    setTags(prev => [...prev, newTag.trim().toLowerCase()])
-    setNewTag('')
+    const tag = newTag.trim().toLowerCase()
+    if (!tag) return
+    try {
+      await notesAPI.addTag(workspaceId, subscriber.id, tag)
+      // Updated only after the write succeeds. It used to be applied
+      // unconditionally, so a failed request still showed the tag until reload.
+      setTags(prev => (prev.includes(tag) ? prev : [...prev, tag]))
+      setNewTag('')
+    } catch {
+      toast.addToast('Could not add that tag', 'error')
+    }
   }
 
   async function saveName() {

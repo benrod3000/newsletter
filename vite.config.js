@@ -57,4 +57,19 @@ export default defineConfig({
   define: {
     'import.meta.env.VITE_SENTRY_RELEASE': JSON.stringify(release),
   },
+  /**
+   * The frontend had no test runner at all, so every change here was verified by
+   * `npm run build`, eslint, and looking at it in a browser. That catches syntax
+   * and type errors and nothing else - it cannot tell you that a send button
+   * unlocks when it should not, or that a colour validator accepts something it
+   * should reject.
+   *
+   * jsdom rather than node: most of what is worth testing here touches the DOM.
+   */
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test/setup.js'],
+    include: ['src/**/*.test.{js,jsx,ts,tsx}'],
+  },
 })

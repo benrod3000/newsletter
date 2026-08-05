@@ -129,6 +129,24 @@ export const listsAPI = {
     api.delete<ApiResponse>(`/api/clients/${workspaceId}/subscriber-lists/${id}`),
 }
 
+// ── Subscriber notes and tags ──
+
+/**
+ * One endpoint serves both: POST `{ note }` or POST `{ tag }`.
+ *
+ * `subscriber_notes` did not exist as a table until newsletter-core migration
+ * 059, so adding a note answered 500 and the list was always empty while the UI
+ * showed a working panel. Worth knowing when reading old bug reports about it.
+ */
+export const notesAPI = {
+  get: (workspaceId: string, subscriberId: string) =>
+    api.get<ApiResponse>(`/api/clients/${workspaceId}/subscribers/${subscriberId}/notes`),
+  addNote: (workspaceId: string, subscriberId: string, note: string) =>
+    api.post<ApiResponse>(`/api/clients/${workspaceId}/subscribers/${subscriberId}/notes`, { note }),
+  addTag: (workspaceId: string, subscriberId: string, tag: string) =>
+    api.post<ApiResponse>(`/api/clients/${workspaceId}/subscribers/${subscriberId}/notes`, { tag }),
+}
+
 // ── Saved filters ──
 
 /**
