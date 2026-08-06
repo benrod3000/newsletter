@@ -435,7 +435,7 @@ export default function WidgetsPage() {
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Form Size</label>
-              <div className="flex border-3 border-brutal-fg overflow-hidden">
+              <div className="flex border-3 border-brutal-fg overflow-x-auto">
                 {[
                   { value: 'slim', label: 'Slim', desc: 'One row: field and button side by side. Inline strip.' },
                   { value: 'small', label: 'Compact', desc: 'Email only, no headline. Fits tight spaces.' },
@@ -446,7 +446,7 @@ export default function WidgetsPage() {
                     key={opt.value}
                     type="button"
                     onClick={() => updateField('size', opt.value)}
-                    className={`flex-1 px-3 py-2.5 text-xs font-bold uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition leading-tight ${form.size === opt.value ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}
+                    className={`flex-1 min-w-[7rem] px-3 py-2.5 text-xs font-bold uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition leading-tight ${form.size === opt.value ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}
                   >
                     {opt.label}
                     <p className="text-[9px] font-bold normal-case mt-0.5 opacity-70">{opt.desc}</p>
