@@ -346,10 +346,10 @@ export default function SettingsPage() {
       </h2>
 
       {/* Tabs */}
-      <div className="flex border-3 border-brutal-fg overflow-hidden mb-8">
+      <div className="flex border-3 border-brutal-fg overflow-x-auto mb-8">
         {['branding', 'sms', 'automations', 'security', 'team'].map(function(tab) {
           return <button key={tab} onClick={function() { setActiveTab(tab) }}
-            className={'px-6 py-3 font-bold text-sm uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ' + (activeTab === tab ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg')}>
+            className={'shrink-0 px-4 sm:px-6 py-3 font-bold text-sm uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ' + (activeTab === tab ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg')}>
             {tab === 'branding' ? 'Branding' : tab === 'sms' ? 'SMS' : tab === 'automations' ? 'Automations' : tab === 'security' ? 'Security' : 'Team'}
           </button>
         })}

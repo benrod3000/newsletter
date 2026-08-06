@@ -741,12 +741,12 @@ export default function AnalyticsPage() {
           )}
         </h2>
         <div className="flex items-center gap-3">
-          <div className="flex border-3 border-brutal-fg overflow-hidden">
+          <div className="flex border-3 border-brutal-fg overflow-x-auto">
             {[7, 14, 30, 90].map((d) => (
               <button
                 key={d}
                 onClick={() => setDays(d)}
-                className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ${
+                className={`shrink-0 px-4 py-1.5 text-xs font-bold uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ${
                   days === d ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'
                 }`}
               >
