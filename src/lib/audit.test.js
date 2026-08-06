@@ -53,6 +53,35 @@ describe('describeAudit', () => {
     expect(line).toContain('editor')
   })
 
+  it('names the broadcast when one is created, which is what prompted this', () => {
+    // Creating a draft produced no entry at all until the create route was
+    // instrumented; scheduling was audited but creating was not.
+    const line = describeAudit({
+      action: 'campaign_created',
+      details: { campaign_id: 'x', title: 'Test', subject: 'Test' },
+    })
+    expect(line).toContain('Broadcast created')
+    expect(line).toContain('Test')
+  })
+
+  it('names the list, widget or filter that changed', () => {
+    expect(describeAudit({ action: 'list_created', details: { name: 'VIPs' } })).toContain('VIPs')
+    expect(describeAudit({ action: 'widget_deleted', details: { name: 'Signup' } })).toContain('Signup')
+  })
+
+  it('shows the public path when a broadcast is published', () => {
+    const line = describeAudit({ action: 'campaign_published', details: { slug: 'august-update' } })
+    expect(line).toContain('august-update')
+  })
+
+  it('flags destructive and outward-facing actions as sensitive', () => {
+    for (const a of ['campaign_deleted', 'campaign_published', 'list_deleted', 'widget_deleted']) {
+      expect(SENSITIVE_ACTIONS.has(a)).toBe(true)
+    }
+    // Creating things is recorded but not flagged.
+    expect(SENSITIVE_ACTIONS.has('campaign_created')).toBe(false)
+  })
+
   it('falls back to a readable label for an action it does not know', () => {
     // Actions are added backend-first, so the UI must not break on a new one.
     expect(describeAudit({ action: 'some_new_action' })).toBe('some new action')

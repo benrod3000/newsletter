@@ -31,6 +31,11 @@ export const SENSITIVE_ACTIONS = new Set([
   'login_failed',
   'password_changed',
   'totp_disabled',
+  // Anything that leaves the workspace or destroys content.
+  'campaign_deleted',
+  'campaign_published',
+  'list_deleted',
+  'widget_deleted',
 ])
 
 /** Plain-language label for an action, falling back to the raw identifier. */
@@ -54,6 +59,21 @@ const LABELS = {
   member_role_changed: 'Team member role changed',
   automation_changed: 'Automation changed',
   api_key_created: 'API key created',
+  campaign_created: 'Broadcast created',
+  campaign_deleted: 'Broadcast deleted',
+  campaign_published: 'Broadcast published to the web',
+  campaign_test_sent: 'Test email sent',
+  sms_sent: 'SMS sent',
+  subscriber_created: 'Contact added',
+  subscriber_tags_changed: 'Contact tags changed',
+  list_created: 'List created',
+  list_deleted: 'List deleted',
+  list_members_added: 'Contacts added to a list',
+  widget_created: 'Capture form created',
+  widget_updated: 'Capture form edited',
+  widget_deleted: 'Capture form deleted',
+  saved_filter_created: 'Saved filter created',
+  saved_filter_deleted: 'Saved filter deleted',
 }
 
 /**
@@ -82,7 +102,17 @@ export function describeAudit(log) {
     case 'member_invited':
       return d.invited_email ? `${label}: ${d.invited_email} as ${d.role || 'member'}` : label
     case 'campaign_scheduled':
-      return d.subject ? `${label}: "${d.subject}"` : label
+    case 'campaign_created':
+    case 'campaign_deleted':
+      return d.subject || d.title ? `${label}: "${d.subject || d.title}"` : label
+    case 'campaign_published':
+      return d.slug ? `${label} (/${d.slug})` : label
+    case 'list_created':
+    case 'list_deleted':
+    case 'widget_created':
+    case 'widget_updated':
+    case 'widget_deleted':
+      return d.name ? `${label}: ${d.name}` : label
     case 'settings_changed': {
       const fields = Array.isArray(d.fields) ? d.fields : []
       return fields.length ? `${label}: ${fields.join(', ')}` : label
