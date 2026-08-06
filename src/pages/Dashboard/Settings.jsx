@@ -88,7 +88,11 @@ export default function SettingsPage() {
   const [branding, setBranding] = useState({
     logo_url: '',
     brand_colors: { primary: '#f59e0b', secondary: '#18181b' },
-    custom_domain: '',
+    // custom_domain is deliberately absent. The input is gone, but the field is
+    // still returned by GET and PUT back on save, so seeding it to '' here would
+    // overwrite a stored value with an empty string the first time anyone
+    // pressed Save. Left undefined, the backend allowlist skips it entirely
+    // unless loadBranding has supplied the real value.
     sender_name: '',
     sender_email: '',
     email_provider: 'sendgrid',
@@ -415,24 +419,16 @@ export default function SettingsPage() {
               />
             </div>
 
-            {/* Custom Domain */}
-            <div className="mb-6">
-              <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
-                Custom Domain
-              </label>
-              <input
-                type="text"
-                value={branding.custom_domain || ''}
-                onChange={(e) =>
-                  setBranding({ ...branding, custom_domain: e.target.value })
-                }
-                placeholder="newsletter.yourdomain.com"
-                className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
-              />
-              <p className="text-xs font-bold text-brutal-muted mt-1.5 uppercase tracking-wider">
-                Configure DNS CNAME for white-label branding
-              </p>
-            </div>
+            {/*
+              The Custom Domain input was here. Removed because nothing read the
+              value: it did not affect sending, tracking links, or the public
+              archive, and the hint underneath told people to configure a DNS
+              CNAME that would have gone nowhere.
+
+              The column and the branding allowlist entry are deliberately kept,
+              so anything already saved survives if custom domains are built.
+              See newsletter-core migration 060.
+            */}
 
             {/* Email Provider */}
             <div className="mb-6 border-t border-brutal-fg pt-6">
