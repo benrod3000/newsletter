@@ -127,6 +127,16 @@ export const listsAPI = {
     api.post<ApiResponse>(`/api/clients/${workspaceId}/subscriber-lists`, data),
   remove: (workspaceId: string, id: string) =>
     api.delete<ApiResponse>(`/api/clients/${workspaceId}/subscriber-lists/${id}`),
+  update: (workspaceId: string, id: string, data: Record<string, unknown>) =>
+    api.patch<ApiResponse>(`/api/clients/${workspaceId}/subscriber-lists/${id}`, data),
+  /** Who is in the list, plus where each of them came from. */
+  members: (workspaceId: string, id: string, params?: Record<string, unknown>) =>
+    api.get<ApiResponse>(`/api/clients/${workspaceId}/subscriber-lists/${id}/members`, { params }),
+  /** Removes membership only. The subscriber stays in the workspace. */
+  removeMembers: (workspaceId: string, id: string, subscriberIds: string[]) =>
+    api.delete<ApiResponse>(`/api/clients/${workspaceId}/subscriber-lists/${id}/members`, {
+      data: { subscriber_ids: subscriberIds },
+    }),
 }
 
 // ── Subscriber notes and tags ──

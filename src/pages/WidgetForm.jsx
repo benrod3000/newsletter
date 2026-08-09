@@ -214,13 +214,17 @@ export default function WidgetFormPage() {
                     <p className="font-heading text-2xl uppercase tracking-wide text-brutal-fg">{downloadUrl}</p>
                   </div>
                 )}
-                {widgetType === 'lead_magnet' && downloadUrl && (
-                  <a href={downloadUrl}
-                    className="inline-block border-3 border-brutal-fg bg-brutal-green text-white font-bold px-6 py-2.5 text-xs uppercase tracking-wider hover:shadow-brutal transition"
-                    target="_blank" rel="noopener noreferrer">
-                    Download Now
-                  </a>
-                )}
+                {/*
+                  No "Download Now" button on lead magnets.
+
+                  The success message says the link is on its way by email, and
+                  then a button handed the file over immediately - which
+                  contradicts the message and defeats the point of collecting
+                  the address, since nobody needs to open the email.
+
+                  Coupons keep their block above: a coupon code is meant to be
+                  shown on screen, and there is nothing to withhold.
+                */}
                 <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">
                   {widgetType === 'feedback' ? 'Thanks for your feedback!' : "Didn't get it? Check your spam folder."}
                 </p>

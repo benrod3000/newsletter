@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { listsAPI } from '../../lib/api'
+import ListMembersPanel from '../../components/ListMembersPanel'
 import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
 import Btn from '../../components/ui/Button'
@@ -12,6 +13,7 @@ export default function ListsPage() {
   const toast = useToast()
   const [lists, setLists] = useState([])
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [openList, setOpenList] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -167,12 +169,24 @@ export default function ListsPage() {
               key={l.id}
               className="border-3 border-brutal-fg bg-white p-5 flex flex-col justify-between"
             >
-              <div>
-                <h4 className="font-heading text-lg uppercase tracking-wide">{l.name}</h4>
+              {/*
+                The whole card opens the list. Previously nothing here was
+                clickable except Delete, so a list was a name you could not open
+                and the only affordance on it was destructive.
+              */}
+              <button
+                type="button"
+                onClick={() => setOpenList(l)}
+                className="text-left group"
+              >
+                <h4 className="font-heading text-lg uppercase tracking-wide group-hover:text-brutal-green transition">{l.name}</h4>
                 {l.description && (
                   <p className="text-sm text-brutal-muted mt-1">{l.description}</p>
                 )}
-              </div>
+                <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mt-2 group-hover:text-brutal-fg transition">
+                  View contacts →
+                </span>
+              </button>
               <div className="flex items-center justify-between mt-5 pt-4 border-t border-brutal-fg">
                 <span className="text-xs font-bold text-brutal-muted uppercase tracking-wider">
                   {l.opt_in_type === 'double' ? 'Double opt-in' : 'Single opt-in'}
@@ -188,6 +202,18 @@ export default function ListsPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {openList && (
+        <ListMembersPanel
+          list={openList}
+          workspaceId={workspaceId}
+          onClose={() => setOpenList(null)}
+          onListUpdated={(updated) => {
+            setLists((prev) => prev.map((x) => (x.id === updated.id ? { ...x, ...updated } : x)))
+            setOpenList((prev) => (prev ? { ...prev, ...updated } : prev))
+          }}
+        />
       )}
 
       <ConfirmModal
