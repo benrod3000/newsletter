@@ -1,29 +1,24 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 
+/*
+ * Only pages that exist.
+ *
+ * This listed 18 entries and 13 of them had no content. App.jsx mapped each one
+ * to <DocsIntro /> or <Setup />, so clicking "Widgets" or "Automations" silently
+ * returned the documentation introduction - not a 404, which at least tells the
+ * truth, but a page that looked deliberate and answered nothing. Two of the
+ * sections were worse than empty: "Templates" advertised a feature that had been
+ * removed from the product, and the three API pages advertised an API that does
+ * not exist.
+ *
+ * Adding a link here without a route and a page is the same bug again. Write the
+ * page first.
+ */
 const SIDEBAR = [
   { heading: 'Getting Started', links: [
     { to: '/docs', label: 'Introduction', exact: true },
     { to: '/docs/quickstart', label: 'Quickstart' },
     { to: '/docs/setup', label: 'Setup Guide' },
-  ]},
-  { heading: 'Features', links: [
-    { to: '/docs/features/newsletters', label: 'Newsletters' },
-    { to: '/docs/features/subscribers', label: 'Audience' },
-    { to: '/docs/features/widgets', label: 'Widgets' },
-    { to: '/docs/features/automations', label: 'Automations' },
-    { to: '/docs/features/analytics', label: 'Analytics' },
-    { to: '/docs/features/sms', label: 'SMS / RCS' },
-    { to: '/docs/features/templates', label: 'Templates' },
-  ]},
-  { heading: 'Integrations', links: [
-    { to: '/docs/integrations/resend', label: 'Resend' },
-    { to: '/docs/integrations/sendgrid', label: 'SendGrid' },
-    { to: '/docs/integrations/ses', label: 'Amazon SES' },
-  ]},
-  { heading: 'API', links: [
-    { to: '/docs/api/overview', label: 'Overview' },
-    { to: '/docs/api/subscribers', label: 'Subscribers' },
-    { to: '/docs/api/campaigns', label: 'Campaigns' },
   ]},
   { heading: 'Account', links: [
     { to: '/docs/security', label: 'Security & Privacy' },
