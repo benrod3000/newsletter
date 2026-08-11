@@ -40,35 +40,35 @@ export default function TermsPage() {
           <h2 className="font-heading text-2xl uppercase mt-8">5. Acceptable Use</h2>
           <p>You may not use Veloce for spam, phishing, fraud, harassment, hate speech, unsolicited SMS, malware distribution, or any illegal activity. We reserve the right to suspend or terminate accounts that violate these terms.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">5. SMS/MMS/RCS & 10DLC Compliance</h2>
+          <h2 className="font-heading text-2xl uppercase mt-8">6. SMS/MMS/RCS & 10DLC Compliance</h2>
           <p>Veloce provides the platform for SMS and RCS campaigns. You are responsible for registering your brand and campaign with The Campaign Registry (TCR) through your Twilio account. You must comply with all CTIA messaging guidelines, 10DLC requirements, and carrier regulations. Veloce is not responsible for carrier filtering, message blocking, or delivery failures due to non-compliance.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">6. Data Processing</h2>
+          <h2 className="font-heading text-2xl uppercase mt-8">7. Data Processing</h2>
           <p>Veloce acts as a data processor for subscriber information you collect. You are the data controller. We process data only in accordance with your instructions as the controller. By using Veloce, you enter into this Data Processing Agreement. You are responsible for providing your own privacy notice to your subscribers.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">7. Intellectual Property</h2>
+          <h2 className="font-heading text-2xl uppercase mt-8">8. Intellectual Property</h2>
           <p>You retain all rights to your content (newsletters, subscriber data, branding). Veloce retains rights to the platform software, design, and trademarks. You may not copy, modify, or reverse-engineer the platform.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">8. DMCA Notice</h2>
-          <p>If you believe content on Veloce infringes your copyright, send a DMCA notice to: support@veloce.app. Include identification of the copyrighted work, the infringing material, your contact information, and a statement of good faith belief.</p>
+          <h2 className="font-heading text-2xl uppercase mt-8">9. DMCA Notice</h2>
+          <p>If you believe content on Veloce infringes your copyright, send a DMCA notice to: support@brod3000.com. Include identification of the copyrighted work, the infringing material, your contact information, and a statement of good faith belief.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">9. Limitation of Liability</h2>
+          <h2 className="font-heading text-2xl uppercase mt-8">10. Limitation of Liability</h2>
           <p>To the maximum extent permitted by California law, Veloce and its operators are not liable for any indirect, incidental, or consequential damages arising from your use of the platform, including but not limited to deliverability failures, data loss, or third-party service outages. Our total liability is limited to the amount you have paid us in the 12 months preceding the claim.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">10. Indemnification</h2>
+          <h2 className="font-heading text-2xl uppercase mt-8">11. Indemnification</h2>
           <p>You agree to indemnify and hold Veloce harmless from any claims, damages, or expenses arising from your use of the platform, your content, or your violation of these terms.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">11. Termination</h2>
+          <h2 className="font-heading text-2xl uppercase mt-8">12. Termination</h2>
           <p>You may delete your account at any time. We may terminate or suspend access for violations of these terms or extended inactivity. Upon termination, your data will be deleted within 30 days.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">12. Governing Law & Dispute Resolution</h2>
-          <p>These terms are governed by the laws of the State of California and the United States. Any disputes shall be resolved through binding arbitration in California before a single arbitrator. Each party bears its own costs. You may opt out of this arbitration clause within 30 days of accepting these terms by emailing support@veloce.app.</p>
+          <h2 className="font-heading text-2xl uppercase mt-8">13. Governing Law & Dispute Resolution</h2>
+          <p>These terms are governed by the laws of the State of California and the United States. Any disputes shall be resolved through binding arbitration in California before a single arbitrator. Each party bears its own costs. You may opt out of this arbitration clause within 30 days of accepting these terms by emailing support@brod3000.com.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">13. Changes to Terms</h2>
+          <h2 className="font-heading text-2xl uppercase mt-8">14. Changes to Terms</h2>
           <p>We may update these terms at any time. Material changes will be notified via email. Continued use after changes take effect constitutes acceptance.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">14. Contact</h2>
-          <p>For legal inquiries: support@veloce.app. Veloce is operated in California.</p>
+          <h2 className="font-heading text-2xl uppercase mt-8">15. Contact</h2>
+          <p>For legal inquiries: support@brod3000.com. Veloce is operated in California.</p>
         </div>
         <Btn variant="primary" size="lg" onClick={() => navigate('/')}>← Back to Home</Btn>
       </div>

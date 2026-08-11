@@ -5,7 +5,7 @@ export default function FAQ() {
   const faqs = [
     {
       q: 'How much does Veloce cost?',
-      a: 'Veloce is free to start. You only pay for your email provider (Resend, SendGrid, or AWS SES). Resend free tier includes 3,000 emails/month; SendGrid free tier includes 100 emails/day; SES costs about $1 per 10,000 emails.',
+      a: 'Veloce itself is free - there is no monthly fee and no per-contact charge. You pay only your email provider (Resend, SendGrid, or AWS SES). Resend free tier includes 3,000 emails/month; SendGrid free tier includes 100 emails/day; SES costs about $1 per 10,000 emails.',
     },
     {
       q: 'Do I need a credit card?',
@@ -33,7 +33,7 @@ export default function FAQ() {
     },
     {
       q: 'What happens to unsubscribes?',
-      a: 'When someone clicks unsubscribe, they are immediately removed from your audience. No data is retained. Bounces are handled automatically.',
+      a: 'They stop receiving mail immediately and are excluded from every future send. We keep a suppression record for the address rather than deleting it, so it stays suppressed even if the same address is imported again later. If someone wants their data erased rather than suppressed, use the delete option on their profile. Bounces are handled automatically.',
     },
     {
       q: 'Can I export my data?',
