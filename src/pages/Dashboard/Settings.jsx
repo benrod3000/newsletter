@@ -496,7 +496,7 @@ export default function SettingsPage() {
                 <ProviderKeyField
                   label="SendGrid API Key"
                   placeholder="SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  hint="Create a SendGrid account at sendgrid.com, generate an API key with Full Access, and paste it here. Free tier: 100 emails/day."
+                  hint="Create a SendGrid account at sendgrid.com, then generate a Restricted Access key with only the Mail Send permission enabled. Free tier: 100 emails/day."
                   value={branding.sendgrid_api_key}
                   saved={branding.has_sendgrid_api_key}
                   onChange={(v) => setBranding({ ...branding, sendgrid_api_key: v })}
@@ -509,7 +509,7 @@ export default function SettingsPage() {
                   <ol className="text-sm text-brutal-fg/80 space-y-1 list-decimal list-inside">
                     <li>Create an account at <a href="https://resend.com" target="_blank" rel="noopener" className="underline font-bold">resend.com</a> (free tier: 3,000 emails/month)</li>
                     <li>Add and verify your domain in the Resend dashboard</li>
-                    <li>Create an API key from the Resend dashboard (starts with <strong>re_</strong>)</li>
+                    <li>Create an API key with <strong>Sending access</strong> only (starts with <strong>re_</strong>)</li>
                     <li>Paste the API key below and click <strong>Save Branding</strong></li>
                   </ol>
                 </div>
@@ -521,7 +521,7 @@ export default function SettingsPage() {
                   <ol className="text-sm text-brutal-fg/80 space-y-1 list-decimal list-inside">
                     <li>Sign up at <a href="https://sendgrid.com" target="_blank" rel="noopener" className="underline font-bold">sendgrid.com</a> (free tier: 100 emails/day)</li>
                     <li>Go to Settings → API Keys → Create API Key</li>
-                    <li>Choose <strong>Full Access</strong> and copy the key (starts with <strong>SG.</strong>)</li>
+                    <li>Choose <strong>Restricted Access</strong>, enable only <strong>Mail Send</strong>, and copy the key (starts with <strong>SG.</strong>)</li>
                     <li>Verify a sender email in SendGrid → Settings → Sender Authentication</li>
                     <li>Paste the API key above and click <strong>Save Branding</strong></li>
                   </ol>
@@ -538,7 +538,7 @@ export default function SettingsPage() {
                     <ol className="text-sm text-brutal-fg/80 space-y-1 list-decimal list-inside">
                       <li>Create an AWS account at <a href="https://aws.amazon.com" target="_blank" rel="noopener" className="underline font-bold">aws.amazon.com</a></li>
                       <li>Go to IAM → Users → Create a new user with <strong>Programmatic access</strong></li>
-                      <li>Attach the policy <strong>AmazonSESFullAccess</strong></li>
+                      <li>Attach an inline policy allowing only <strong>ses:SendEmail</strong> and <strong>ses:SendRawEmail</strong>, not <strong>AmazonSESFullAccess</strong></li>
                       <li>Copy the <strong>Access Key ID</strong> and <strong>Secret Access Key</strong></li>
                       <li>Go to SES → Verified Identities → verify your sending email</li>
                       <li>Paste the keys below and save</li>
