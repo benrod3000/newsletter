@@ -58,6 +58,20 @@ export default defineConfig({
     'import.meta.env.VITE_SENTRY_RELEASE': JSON.stringify(release),
   },
   /**
+   * esbuild's own default for JSX is the classic transform, which emits
+   * `React.createElement` and therefore needs React in scope. Nothing in this
+   * codebase imports React that way, so any file esbuild transforms directly
+   * fails with "React is not defined".
+   *
+   * That never surfaced in the build, where @vitejs/plugin-react handles JSX
+   * first, but it did under vitest - the first test to actually render a
+   * component could not mount it. Harmless for the build (the plugin has already
+   * rewritten the JSX by the time esbuild runs) and required for component tests.
+   */
+  esbuild: {
+    jsx: 'automatic',
+  },
+  /**
    * The frontend had no test runner at all, so every change here was verified by
    * `npm run build`, eslint, and looking at it in a browser. That catches syntax
    * and type errors and nothing else - it cannot tell you that a send button
