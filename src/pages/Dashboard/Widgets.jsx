@@ -50,7 +50,19 @@ const DEFAULT_FORM = {
   fields: { email: { required: true } },
   styles: { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#0a0a0a' },
   collect_location: true,
-  feedback_message: '',
+  /*
+   * `feedback_message` was here and has been removed.
+   *
+   * There is no such column on `widgets` and no backend reference to it, so the
+   * whole-form PUT sent it and the route's allowlist dropped it. It also had no
+   * input: it existed only in this initial state and in the edit loader, so
+   * nothing ever set it to anything and nothing ever displayed it.
+   *
+   * Not replaced with a column, because a field with no UI and no reader is not a
+   * feature that was broken - it is one that was never built. A Feedback widget
+   * already has `description` and `placeholder`, both of which are rendered to the
+   * visitor, if a prompt above the message box is wanted.
+   */
 }
 
 const WIDGET_TYPES = [
@@ -139,7 +151,6 @@ export default function WidgetsPage() {
       fields: w.fields || { email: { required: true } },
       styles: w.styles || { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#0a0a0a' },
       collect_location: w.collect_location !== false,
-      feedback_message: w.feedback_message || '',
     })
     setEditingId(w.id)
     setErrors({})
