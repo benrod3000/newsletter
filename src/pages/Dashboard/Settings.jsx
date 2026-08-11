@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { brandingAPI, automationsAPI, usersAPI, getAuthToken } from '../../lib/api'
 import { useToast } from '../../components/Toast'
@@ -6,6 +6,7 @@ import { Eye, EyeOff, ShieldCheck, Copy, Check } from 'lucide-react'
 import Btn from '../../components/ui/Button'
 import LoadingState from '../../components/ux/LoadingState'
 import { describeAudit, SENSITIVE_ACTIONS } from '../../lib/audit'
+import { toQrDataUrl } from '../../lib/qr'
 
 /**
  * An API key input that knows the difference between "not set" and "set, but the
@@ -131,6 +132,9 @@ export default function SettingsPage() {
   // 2FA
   const [totpSecret, setTotpSecret] = useState('')
   const [totpQrUri, setTotpQrUri] = useState('')
+  // Encoded here rather than fetched from an image service, so the TOTP secret
+  // inside this URI never leaves the browser.
+  const totpQrDataUrl = useMemo(() => toQrDataUrl(totpQrUri), [totpQrUri])
   const [totpSettingUp, setTotpSettingUp] = useState(false)
   const [totpEnabled, setTotpEnabled] = useState(false)
   const [totpCode, setTotpCode] = useState('')
@@ -1097,10 +1101,20 @@ export default function SettingsPage() {
             <p className="text-xs text-brutal-fg/70 leading-relaxed mb-4">
               Scan this QR code with your authenticator app (Google Authenticator, 1Password, Authy, etc.):
             </p>
+            {/*
+              Generated in this browser. This was an <img> pointing at
+              api.qrserver.com with the otpauth URI in the query string - which
+              means the shared TOTP secret was sent to a third party and written to
+              their logs every time anyone enabled 2FA. Whoever holds that secret
+              can produce the user's codes forever.
+            */}
             <div className="border-3 border-brutal-fg bg-white p-4 inline-block mb-4">
               <div className="w-48 h-48 bg-brutal-surface flex items-center justify-center">
-                <img src={'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(totpQrUri)}
-                  alt="QR code for authenticator app" className="w-48 h-48" />
+                {totpQrDataUrl
+                  ? <img src={totpQrDataUrl} alt="QR code for authenticator app" className="w-48 h-48" />
+                  : <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider text-center px-3">
+                      Could not draw the QR code. Use the manual entry key below.
+                    </p>}
               </div>
             </div>
             <p className="text-[10px] text-brutal-muted font-bold mb-4">
