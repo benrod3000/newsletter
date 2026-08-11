@@ -7,9 +7,8 @@ import { useRetryCountdown } from '../hooks/use-retry-countdown'
 import Input from '../components/ui/Input'
 import Btn from '../components/ui/Button'
 import Turnstile from '../components/Turnstile'
+import { MIN_PASSWORD_LENGTH, passwordProblem, passwordStrength } from '../lib/password-rules'
 
-/** Matches the server's own rule in /api/auth/signup. */
-const MIN_PASSWORD_LENGTH = 6
 
 export default function SignupPage() {
   useEffect(() => { document.title = 'Create Account | Veloce' }, [])
@@ -33,7 +32,8 @@ export default function SignupPage() {
 
     const fe = {}
     if (!email.includes('@')) fe.email = 'Enter a valid email'
-    if (password.length < MIN_PASSWORD_LENGTH) fe.password = `At least ${MIN_PASSWORD_LENGTH} characters`
+    const passwordError = passwordProblem(password)
+    if (passwordError) fe.password = passwordError
     if (Object.keys(fe).length) { setFieldErrors(fe); return }
 
     setLoading(true)
@@ -67,6 +67,7 @@ export default function SignupPage() {
   }
 
   const passwordLongEnough = password.length >= MIN_PASSWORD_LENGTH
+  const strength = passwordStrength(password)
   const rateLimited = retryIn > 0
 
   return (
@@ -137,9 +138,9 @@ export default function SignupPage() {
               error={fieldErrors.password}
               helperText={
                 password.length === 0
-                  ? `At least ${MIN_PASSWORD_LENGTH} characters`
+                  ? `At least ${MIN_PASSWORD_LENGTH} characters. A short phrase works well.`
                   : passwordLongEnough
-                    ? '✓ Long enough'
+                    ? `Strength: ${strength}`
                     : `${MIN_PASSWORD_LENGTH - password.length} more character${MIN_PASSWORD_LENGTH - password.length === 1 ? '' : 's'}`
               }
             />
