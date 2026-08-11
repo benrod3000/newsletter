@@ -1,3 +1,19 @@
 User-agent: *
 Allow: /
+
+# Not content. These have nothing to rank for, they compete with the homepage for
+# the brand query, and an indexed signup form is a ready-made target for
+# credential-phishing lookalikes. They were also listed in sitemap.xml, which
+# actively asked for them to be crawled; they have been removed from there too.
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /oauth/callback
+
+# Per-workspace and per-subscriber pages: unique URLs with no search value, and
+# the unsubscribe path should never be fetched by a crawler.
+Disallow: /unsubscribe
+Disallow: /dashboard
+
 Sitemap: https://newsletter.brod3000.com/sitemap.xml

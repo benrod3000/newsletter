@@ -4,6 +4,7 @@ import { useToast } from './Toast'
 import { LoadingState } from './ux'
 import Btn from './ui/Button'
 import { X, Users, Check, Clock, Ban } from 'lucide-react'
+import { describeSource } from './list-member-source'
 
 /**
  * Who is in a list, and where each of them came from.
@@ -13,19 +14,6 @@ import { X, Users, Check, Clock, Ban } from 'lucide-react'
  * was to filter Contacts and infer, and the only way to fix a typo in its name
  * was to delete it - which takes the membership with it.
  */
-
-/**
- * Turn `consent_source` into something readable.
- *
- * Capture forms record `widget:<slug>`, so the raw value already says where
- * someone came from - it just says it in a shape meant for code.
- */
-export function describeSource(source) {
-  if (!source) return 'Imported or added manually'
-  if (source.startsWith('widget:')) return `Capture form: ${source.slice(7)}`
-  if (source === 'signup') return 'Signed up directly'
-  return source
-}
 
 function StatusBadge({ member }) {
   const [Icon, label, cls] = member.suppressed

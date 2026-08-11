@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { describeSource } from './ListMembersPanel'
+import { describeSource } from './list-member-source'
 
 /**
  * "Where they came from" for a list member.
