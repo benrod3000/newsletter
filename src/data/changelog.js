@@ -24,6 +24,50 @@
  */
 export const CHANGELOG = [
     {
+      date: 'August 10, 2026',
+      items: [
+        {
+          title: 'Capture forms now send the download they promise',
+          body: 'A lead magnet form told people to check their inbox for their download link, and no email was ever sent. The link is now emailed as soon as the form is submitted, and it also appears on screen straight away so it arrives whether or not the email does.',
+          list: [
+            'If the email cannot be sent, the form says so instead of claiming it is on its way',
+            'Opening the link is recorded, so you can see who claimed a download',
+          ],
+        },
+        {
+          title: 'Confirmation emails were never being sent',
+          body: 'Signups through a capture form or an embedded form should receive a confirmation email. None of them ever did, because the sending was wired to a provider that had never been configured. It now uses the same provider setup as everything else.',
+        },
+        {
+          title: 'Unsubscribes are remembered',
+          body: 'Unsubscribing deleted the contact outright. That meant re-importing a list could quietly put someone back on it and start emailing them again. An unsubscribe is now kept as a permanent record: the contact stops receiving everything immediately, and stays that way even if the same address is imported later.',
+          list: [
+            'Their history is no longer erased, so past broadcast results stay accurate',
+            'Use the delete option on a contact if you need their data removed entirely',
+          ],
+        },
+        {
+          title: 'Signing up could get stuck',
+          body: 'The security check on the signup and sign-in forms could hang without ever finishing, leaving Create Account greyed out with no way forward. It now gives up after a short wait and lets you continue.',
+        },
+        {
+          title: 'Passwords need at least 12 characters',
+          body: 'The minimum was six. New passwords need twelve, and a passphrase is a good way to get there. Existing passwords keep working, and signing in is unaffected.',
+        },
+        {
+          title: 'Smaller corrections',
+          body: 'A pass over the marketing site and documentation for things that were inaccurate rather than merely rough.',
+          list: [
+            'Setup instructions asked for full-access provider keys; they now ask for send-only permissions, which is all Veloce uses',
+            'Documentation links for features that had no page were removed rather than quietly showing the introduction',
+            'The homepage "get notified" form was posting to a workspace that does not exist, so it never captured anyone',
+            'Removed audience and campaign figures that were not real',
+            'Pages now open at the top when you navigate to them',
+          ],
+        },
+      ],
+    },
+    {
       date: 'August 4, 2026',
       items: [
         {

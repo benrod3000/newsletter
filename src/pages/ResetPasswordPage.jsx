@@ -4,6 +4,7 @@ import axios from 'axios'
 import Btn from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Turnstile from '../components/Turnstile'
+import { MIN_PASSWORD_LENGTH, passwordProblem } from '../lib/password-rules'
 import { requiresNewSecurityCheck } from '../lib/authErrors'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
@@ -25,7 +26,8 @@ export default function ResetPasswordPage() {
     setError('')
     // A failed widget must not lock the user out; the server still verifies.
     if (!turnstileToken && !turnstileError) { setError('Please complete the security check.'); return }
-    if (password.length < 6) { setError('Password must be at least 6 characters.'); return }
+    const passwordError = passwordProblem(password)
+    if (passwordError) { setError(passwordError); return }
     setLoading(true)
     try {
       await axios.post(`${API_URL}/api/auth/reset-password`, { token, password, turnstile_token: turnstileToken })
@@ -75,9 +77,9 @@ export default function ResetPasswordPage() {
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="6+ characters"
+              placeholder={`${MIN_PASSWORD_LENGTH}+ characters`}
               required
-              minLength={6}
+              minLength={MIN_PASSWORD_LENGTH}
               autoFocus
             />
             {!done && <div className="flex justify-center">

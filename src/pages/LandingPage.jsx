@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useReveal, useScrollReveal, useTerminalReveal } from '../hooks/use-gsap.jsx'
 import gsap from 'gsap'
@@ -9,10 +9,23 @@ import Input from '../components/ui/Input'
 import Card from '../components/ui/Card'
 import { Annotation, Section, CountUp } from '../components/ux'
 import {
-  NAV_ITEMS, STATS, TRUST_METRICS, TESTIMONIALS, PILLARS, FOOTER_LINKS,
+  NAV_ITEMS, PILLARS, FOOTER_LINKS,
 } from './LandingPage/data'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
+
+/**
+ * Which workspace the "Get notified" form on this page subscribes people to.
+ *
+ * This must match a real `clients.slug`. It was `'demo'`, and no workspace has
+ * ever had that slug - `/api/subscribe` requires an explicit, resolvable slug and
+ * has no default - so every submission came back `400 Invalid or missing
+ * workspace identifier`. The form then reported success anyway (see
+ * handleNotifySubmit below), so it looked like it worked and captured nobody, for
+ * as long as it has existed.
+ */
+const SIGNUP_WORKSPACE_SLUG =
+  import.meta.env.VITE_SIGNUP_WORKSPACE_SLUG || 'benrod1-e9487515'
 
 gsap.registerPlugin(ScrollTrigger)
 import {
@@ -31,44 +44,55 @@ export default function LandingPage() {
   useEffect(() => { document.title = 'Veloce · Own your audience. Reach them anywhere.' }, [])
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [liveStats, setLiveStats] = useState(null)
-  const [ticker, setTicker] = useState(0)
   const heroRef = useRef(null)
-  const statRef = useRef(null)
-  const dashboardRef = useRef(null)
-  const tickerRef = useRef(null)
+  // null while untouched, then 'sending' | 'sent' | 'saved-no-email' | a message.
+  const [notifyStatus, setNotifyStatus] = useState(null)
 
-  // Fetch live stats from public endpoint
-  const fetchStats = useCallback(async () => {
+  /**
+   * Subscribe from the "Get notified" form.
+   *
+   * The previous version set the button to "Sent!" on the line after `fetch`
+   * resolved. `fetch` only rejects on a network failure - it resolves for 400,
+   * 429 and 500 alike - so every rejected submission was reported as a success,
+   * including the 400 that every submission actually received. Status is checked
+   * explicitly here, and `/api/subscribe` also answers `202` with
+   * `emailSent: false` when the address was saved but the confirmation email
+   * could not go out, which is a third outcome the visitor deserves to know
+   * about rather than a second kind of success.
+   */
+  async function handleNotifySubmit(e) {
+    e.preventDefault()
+    const input = e.target.email
+    const email = input.value.trim()
+    if (!email) return
+
+    setNotifyStatus('sending')
     try {
-      const res = await fetch(`${API_URL}/api/public/stats`)
-      const data = await res.json()
-      setLiveStats(data)
-      setTicker(prev => prev + 1)
-      // GSAP pulse on the ticker
-      if (tickerRef.current) {
-        gsap.fromTo(tickerRef.current, { scale: 1 }, { scale: [1, 1.04, 1], duration: 0.3, ease: 'power2.inOut' })
+      const res = await fetch(`${API_URL}/api/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          client_slug: SIGNUP_WORKSPACE_SLUG,
+          landing_path: window.location.pathname,
+        }),
+      })
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        setNotifyStatus(data?.error || 'That did not go through. Please try again.')
+        return
       }
-    } catch {} // silently fall back to static STATS
-  }, [])
 
-  useEffect(() => {
-    fetchStats()
-    const interval = setInterval(fetchStats, 30000)
-    return () => clearInterval(interval)
-  }, [fetchStats])
-
-  const statsToShow = liveStats
-    ? [
-        { value: liveStats.total_subscribers, label: 'Subscribers', desc: 'Across email, SMS, and RCS channels.' },
-        { value: liveStats.total_campaigns, label: 'Campaigns Sent', desc: `With ${liveStats.avg_open_rate}% average open rate.` },
-        { value: `${liveStats.avg_open_rate}%`, label: 'Avg Open Rate', desc: 'Real people. Real engagement.' },
-        { value: liveStats.automations_live, label: 'Automations Live', desc: 'Welcome drips, smart tags, auto-clean, and more.' },
-      ]
-    : STATS
+      input.value = ''
+      setNotifyStatus(data?.emailSent === false ? 'saved-no-email' : 'sent')
+    } catch {
+      setNotifyStatus('Could not reach the server. Please try again.')
+    }
+  }
+  const dashboardRef = useRef(null)
 
   useReveal(heroRef, { stagger: 0.1, y: 20 })
-  useReveal(statRef, { stagger: 0.06, y: 16, delay: 0.3 })
   useScrollReveal('.pillar-card', { stagger: 0.08, y: 30, start: 'top 90%' })
   useTerminalReveal('.annotation', { stagger: 0.08 })
 
@@ -123,8 +147,16 @@ export default function LandingPage() {
         )}
       </nav>
 
+      {/*
+        Everything between the nav and the footer is the page's main content, and
+        it now says so. There was no <main> at all: the skip link pointed at the
+        hero <Section>, which moves focus but gives assistive tech no landmark to
+        jump to, so "skip to content" and the main landmark disagreed about where
+        the content began.
+      */}
+      <main id="main-content" tabIndex={-1} className="focus:outline-none">
       {/* ═══ HERO ═══ */}
-      <Section className="bg-dots-light pt-28 sm:pt-36 focus:outline-none" id="main-content" tabIndex={-1}>
+      <Section className="bg-dots-light pt-28 sm:pt-36">
         <div ref={heroRef} className="max-w-5xl mx-auto space-y-10 sm:space-y-12">
           <Badge variant="yellow">Newsletter platform · Email · SMS · RCS</Badge>
 
@@ -139,7 +171,7 @@ export default function LandingPage() {
             The newsletter platform where you own the list and bring your own sending - Resend, SES, or SendGrid. One audience, reachable by email, SMS, or RCS.
           </p>
 
-          <Annotation>audience ownership · bring your own Resend / SES / SendGrid · free to start</Annotation>
+          <Annotation>audience ownership · bring your own Resend / SES / SendGrid · no monthly fees</Annotation>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
             <span className="flex items-center gap-1 text-[10px] font-bold text-brutal-green uppercase tracking-wider"><CheckCircle size={12} aria-hidden="true" /> No per-contact fees</span>
@@ -155,7 +187,7 @@ export default function LandingPage() {
               See Live Demo
             </Btn>
           </div>
-          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · No time limit · Bring your own Resend, SES, or SendGrid</p>
+          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · No monthly fees · You pay your Resend, SES, or SendGrid bill directly</p>
         </div>
       </Section>
 
@@ -202,36 +234,15 @@ export default function LandingPage() {
         </div>
       </Section>
 
-      {/* ═══ PROBLEM ═══ */}
-      <Section className="bg-brutal-surface/20">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <Badge variant="red">The Problem</Badge>
-          <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none">
-            Most platforms rent you your audience.{' '}
-            <span className="text-brutal-green">Veloce gives you the keys.</span>
-          </h2>
-          <p className="text-base text-brutal-fg/70 max-w-2xl mx-auto leading-relaxed">
-            You don't own your followers. Algorithms decide who sees your posts. 
-            Email tools charge per contact, lock you in, and trap your data behind paywalls.
-          </p>
-          <div className="grid sm:grid-cols-3 gap-4 text-left max-w-3xl mx-auto">
-            {[
-              { icon: Globe, title: 'Algorithm Dependent', desc: 'Social platforms decide who sees your content. You don\'t.' },
-              { icon: FileText, title: 'Charged Per Contact', desc: 'Pay for subscribers you can\'t even reach. Most platforms do this.' },
-              { icon: Clock, title: 'Locked In', desc: 'Your list. Your templates. Your data. Trapped behind their paywall.' },
-            ].map((p) => (
-              <div key={p.title} className="border-3 border-brutal-fg bg-white p-5 hover:shadow-brutal transition">
-                <p.icon size={20} className="text-brutal-green mb-2" />
-                <h3 className="font-heading text-lg uppercase tracking-wide">{p.title}</h3>
-                <p className="text-xs text-brutal-muted mt-1 leading-relaxed">{p.desc}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-base font-medium text-brutal-fg/80 max-w-xl mx-auto">
-            Veloce changes that. Own your audience. Reach them on email, SMS, or RCS. Your data. Your rules.
-          </p>
-        </div>
-      </Section>
+      {/*
+        A "The Problem" section stood here and was removed on 2026-08-10 as
+        duplication, not as a disagreement with what it said.
+
+        It argued the ownership thesis - algorithm dependent, charged per contact,
+        locked in - in three cards, directly after the section above had just made
+        the same argument with the platforms-to-channels diagram. The page said it
+        twice in a row, and the second time was the weaker of the two.
+      */}
 
       {/* ═══ DASHBOARD PREVIEW ═══ */}
       <div ref={dashboardRef} className="-mt-10 sm:-mt-16 mb-20 sm:mb-28 relative z-10 max-w-6xl mx-auto px-4 sm:px-8">
@@ -312,58 +323,12 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* ═══ AUTOMATION FLOW ═══ */}
-      <Section className="bg-brutal-surface/20">
-        <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
-          <Badge variant="green">Automations</Badge>
-          <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none">
-            Relationships that{' '}
-            <span className="text-brutal-green">run on their own.</span>
-          </h2>
-          <p className="text-sm text-brutal-fg/70 max-w-lg mx-auto leading-relaxed">
-            Set it once. Automations run daily. Build relationships while you sleep.
-          </p>
-          {/* Flow diagram */}
-          <div className="border-3 border-brutal-fg bg-white p-4 sm:p-6 max-w-2xl mx-auto">
-            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center">
-              <div className="border-2 border-brutal-green bg-brutal-green/10 px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-center min-w-[120px]">
-                <UserCheck size={14} className="mx-auto mb-1" />
-                Subscriber Joins
-              </div>
-              <span className="text-brutal-muted hidden sm:inline">→</span>
-              <span className="text-brutal-muted text-[10px] sm:hidden">↓</span>
-              <div className="border-2 border-brutal-green bg-brutal-green/10 px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-center min-w-[120px]">
-                <Mail size={14} className="mx-auto mb-1" />
-                Welcome Email
-              </div>
-              <span className="text-brutal-muted hidden sm:inline">→</span>
-              <span className="text-brutal-muted text-[10px] sm:hidden">↓</span>
-              <div className="border-2 border-brutal-yellow px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-center min-w-[120px]">
-                <Clock size={14} className="mx-auto mb-1" />
-                Wait 2 Days
-              </div>
-            </div>
-            {/* Branch */}
-            <div className="border-t-2 border-brutal-fg/20 mt-4 pt-4">
-              <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-muted mb-3">Clicked A Link?</p>
-              <div className="flex flex-col sm:flex-row items-center gap-3 justify-center">
-                <div className="border-2 border-brutal-green bg-brutal-green/10 px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-center min-w-[120px]">
-                  <CheckCircle size={14} className="mx-auto mb-1" />
-                  Tag as Engaged
-                </div>
-                <span className="text-brutal-muted text-[10px]">or</span>
-                <div className="border-2 border-brutal-yellow px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-center min-w-[120px]">
-                  <Mail size={14} className="mx-auto mb-1" />
-                  Send Reminder
-                </div>
-              </div>
-            </div>
-          </div>
-          <Btn variant="primary" size="lg" icon={<ArrowRight size={14} />} onClick={() => navigate('/demo')}>
-            See Automations in Action
-          </Btn>
-        </div>
-      </Section>
+      {/*
+        The standalone automations section was removed on 2026-08-10. Automations
+        are pillar 04 below, which makes the same points with its own visual and a
+        CTA, so this was the third place on one page describing welcome drips and
+        auto-tagging.
+      */}
 
       {/* ═══ SMS / RCS PHONE MOCKUP ═══ */}
       <Section>
@@ -415,7 +380,13 @@ export default function LandingPage() {
       {/* ═══ PROBLEM STATEMENT ═══ */}
       <Section className="bg-brutal-surface/40 -mt-12">
         <div className="max-w-4xl mx-auto text-center space-y-8 sm:space-y-10">
-          <Badge variant="green">The Problem</Badge>
+          {/*
+            Was also badged "The Problem", which is why the page appeared to have
+            two of them. This one is about reaching the wrong people, which the
+            ownership argument above does not cover, so it stays - under a label
+            that says which problem it is.
+          */}
+          <Badge variant="green">Wasted Reach</Badge>
           <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
             Sending emails{' '}
             <span className="text-brutal-green">to the wrong people?</span>
@@ -508,63 +479,22 @@ export default function LandingPage() {
           </div>
         </div>
       </Section>
-      {/* ═══ STATS STRIP ═══ */}
-      <Section>
-        <div ref={statRef} className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5 max-w-5xl mx-auto">
-          {statsToShow.map((s) => (
-            <Card key={s.label} hover padding="p-5 sm:p-6" className="text-center">
-              <p className="text-stat text-brutal-green leading-none"><CountUp value={s.value} /></p>
-              <p className="text-xs font-bold uppercase tracking-wider mt-2">{s.label}</p>
-              <p className="text-[10px] text-brutal-muted mt-1 leading-relaxed">{s.desc}</p>
-            </Card>
-          ))}
-        </div>
-        <div ref={tickerRef} className="text-center mt-4">
-          <span className="inline-flex items-center gap-1.5 text-[9px] font-bold text-brutal-muted uppercase tracking-wider">
-            <span className="inline-block w-1.5 h-1.5 bg-brutal-green rounded-full animate-pulse" />
-            Live · Updated just now
-          </span>
-        </div>
-      </Section>
+      {/*
+        The stats strip and the "Growing Audiences" social-proof section stood
+        here and were removed on 2026-08-10.
 
-      {/* ═══ SOCIAL PROOF ═══ */}
-      <Section className="border-t-3 border-brutal-fg">
-        <div className="max-w-5xl mx-auto text-center space-y-8 sm:space-y-10">
-          <Badge variant="green">Growing Audiences</Badge>
+        Between them they asserted 12,453 subscribers, 847 campaigns sent, a 47%
+        open rate, 2,847 emails sent today, 147 businesses, a "Live · Updated
+        just now" pulse, a row of industries implying a customer base, and three
+        testimonials attributed to named people at named businesses. Production
+        had never sent a campaign and had no engagement events, so the live
+        endpoint these fell back from could not have produced honest numbers
+        either - it would have rendered a 0% open rate under the caption "Real
+        people. Real engagement."
 
-          {/* Trust metrics // big numbers */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {TRUST_METRICS.map((m) => (
-              <Card key={m.label} hover padding="p-5">
-                <p className="text-stat text-brutal-green leading-none">{m.value}</p>
-                <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted mt-1">{m.label}</p>
-              </Card>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-x-10 gap-y-3 text-sm font-bold uppercase tracking-wider text-brutal-fg/40">
-            {['Coffee Shops', 'Bands', 'Festivals', 'Nonprofits', 'Creators', 'Restaurants'].map((t) => (
-              <span key={t} className="hover:text-brutal-fg transition-colors">{t}</span>
-            ))}
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-5 text-left">
-            {TESTIMONIALS.map((t) => (
-              <Card key={t.author} padding="p-5 sm:p-6" className="relative">
-                <span className="text-4xl font-heading text-brutal-green/20 absolute top-2 right-4 leading-none">"</span>
-                <p className="text-xs sm:text-sm leading-relaxed font-medium">"{t.quote}"</p>
-                <div className="mt-4 border-t-2 border-brutal-fg/10 pt-3 flex items-center gap-3">
-                  <div className="w-8 h-8 border-2 border-brutal-fg bg-brutal-yellow flex items-center justify-center font-bold text-xs">{t.author.charAt(0)}</div>
-                  <div>
-                    <p className="text-xs font-bold">{t.author}</p>
-                    <p className="text-[9px] text-brutal-muted uppercase tracking-wider">{t.role}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </Section>
+        The demo below is the honest form of the same claim. See the note in
+        ./LandingPage/data.js before adding anything back here.
+      */}
 
       {/* ═══ PILLAR SECTIONS ═══ */}
       <div id="features" className="space-y-0">
@@ -594,37 +524,65 @@ export default function LandingPage() {
                 {/* Visual side */}
                 <div className="flex-1 w-full max-w-sm pillar-card">
                   {pillar.id === 'grow' && (
-                    <form onSubmit={async (e) => {
-                      e.preventDefault()
-                      const email = e.target.email.value.trim()
-                      if (!email) return
-                      try {
-                        await fetch('https://newsletter-core.vercel.app/api/subscribe', {
-                          method: 'POST', headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ email, client_slug: 'demo' })
-                        })
-                        e.target.email.value = ''
-                        const btn = e.target.querySelector('button')
-                        btn.textContent = '✓ Sent!'
-                        setTimeout(() => { btn.textContent = 'Subscribe →' }, 3000)
-                      } catch {}
-                    }} className="border-3 border-brutal-fg bg-white shadow-brutal">
+                    <form onSubmit={handleNotifySubmit} className="border-3 border-brutal-fg bg-white shadow-brutal">
                       <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-4 py-3 flex items-center gap-2">
                         <Mail size={16} />
                         <p className="font-heading text-lg sm:text-xl uppercase">Get notified</p>
                       </div>
                       <div className="p-4 space-y-3">
-                        <div className="relative">
-                          <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brutal-muted" />
-                          <input type="text" defaultValue="Austin, TX" className="w-full pl-8 pr-3 py-2 border-3 border-brutal-fg bg-white text-xs focus:outline-none" readOnly />
+                        {/*
+                          Illustrative, not an input. It was a readOnly text box
+                          pre-filled with "Austin, TX", which looked like a field
+                          someone had already filled in on the visitor's behalf and
+                          was focusable with nothing to type. It is a picture of what
+                          the widget captures, so it is presented as one and hidden
+                          from assistive tech.
+                        */}
+                        <div
+                          aria-hidden="true"
+                          className="flex items-center gap-2 px-3 py-2 border-3 border-dashed border-brutal-fg/30 bg-brutal-bg text-xs text-brutal-muted"
+                        >
+                          <MapPin size={14} />
+                          <span>Austin, TX</span>
                         </div>
-                        <Input name="email" type="email" required placeholder="you@example.com" />
-                        <Btn variant="primary" fullWidth size="md" type="submit" icon={<ArrowRight size={14} />}>
-                          Subscribe
+                        <Input
+                          label="Email"
+                          name="email"
+                          type="email"
+                          required
+                          autoComplete="email"
+                          placeholder="you@example.com"
+                        />
+                        <Btn
+                          variant="primary"
+                          fullWidth
+                          size="md"
+                          type="submit"
+                          disabled={notifyStatus === 'sending'}
+                          icon={<ArrowRight size={14} />}
+                        >
+                          {notifyStatus === 'sending' ? 'Subscribing…' : 'Subscribe'}
                         </Btn>
                         <p className="text-[9px] font-bold text-brutal-muted uppercase text-center flex items-center justify-center gap-1">
                           <MapPin size={10} /> Location captured automatically
                         </p>
+                        {notifyStatus && notifyStatus !== 'sending' && (
+                          <p
+                            role="status"
+                            aria-live="polite"
+                            className={`text-[10px] font-bold uppercase tracking-wider text-center ${
+                              notifyStatus === 'sent' || notifyStatus === 'saved-no-email'
+                                ? 'text-brutal-green'
+                                : 'text-brutal-red'
+                            }`}
+                          >
+                            {notifyStatus === 'sent'
+                              ? 'Check your inbox to confirm.'
+                              : notifyStatus === 'saved-no-email'
+                                ? "You're on the list. The confirmation email could not be sent right now."
+                                : notifyStatus}
+                          </p>
+                        )}
                       </div>
                     </form>
                   )}
@@ -664,7 +622,15 @@ export default function LandingPage() {
                     </div>
                   )}
 
-                  {pillar.id === 'send' && (
+                  {/*
+                    Was `pillar.id === 'send'`. No pillar has that id - they are
+                    target, grow, reach and automate - so this editor mockup never
+                    rendered once, and the Reach pillar showed an empty column
+                    where its visual should be. A rename in data.js left this
+                    consumer behind, which nothing catches: a JSX branch that never
+                    matches is not an error.
+                  */}
+                  {pillar.id === 'reach' && (
                     <div className="border-3 border-brutal-fg bg-white shadow-brutal">
                       <div className="border-b-3 border-brutal-fg bg-brutal-bg px-3 py-2 flex flex-wrap gap-1 items-center">
                         {['B', 'I', 'H1', 'H2', '• List', '🔗'].map((b) => (
@@ -727,7 +693,7 @@ export default function LandingPage() {
             Ready to <span className="text-brutal-yellow">own your audience</span>?
           </h2>
           <p className="text-sm sm:text-base opacity-60 max-w-lg mx-auto leading-relaxed">
-            No monthly fees. No per-contact charges. No algorithms deciding who sees your content. Just your audience, your data, your rules.
+            No monthly fees and no per-contact charges. You pay your email provider directly for what you send, and nothing to us. No algorithms deciding who sees your content.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => navigate('/signup')}>
@@ -737,7 +703,7 @@ export default function LandingPage() {
               Explore Live Demo
             </Btn>
           </div>
-          <Annotation className="justify-center !text-brutal-bg/50">no credit card · no time limit · BYO Resend, SES, or SendGrid</Annotation>
+          <Annotation className="justify-center !text-brutal-bg/50">no credit card · no monthly fees · BYO Resend, SES, or SendGrid</Annotation>
         </div>
       </Section>
 
@@ -771,6 +737,7 @@ export default function LandingPage() {
           <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">More integrations shipping every month · Custom API for anything else</p>
         </div>
       </Section>
+      </main>
 
       {/* ═══ FOOTER ═══ */}
       <footer className="border-t-3 border-brutal-fg bg-brutal-surface-dark/30">

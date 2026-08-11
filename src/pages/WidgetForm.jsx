@@ -36,6 +36,7 @@ export default function WidgetFormPage() {
   // also why the previous version rendered nothing here: it read download_url
   // off the config, where it is never present.
   const [downloadUrl, setDownloadUrl] = useState(null)
+  const [emailSent, setEmailSent] = useState(false)
   const [error, setError] = useState('')
   const [notFound, setNotFound] = useState(false)
 
@@ -121,6 +122,10 @@ export default function WidgetFormPage() {
       }
       const { data } = await axios.post(`${API_URL}/api/public/forms/${id}/submit`, payload)
       setDownloadUrl(data?.download_url || null)
+      // Whether the delivery email actually went out. Used to decide what the
+      // success screen may claim - it used to say "check your inbox"
+      // unconditionally, including when nothing had been sent.
+      setEmailSent(data?.email_sent === true)
       setSubmitted(true)
     } catch (err) {
       const apiErr = err?.response?.data?.error
@@ -205,8 +210,17 @@ export default function WidgetFormPage() {
             {submitted ? (
               <div className="space-y-3" role="status" aria-live="polite">
                 <div className="h-1 w-12" style={{ backgroundColor: widgetType === 'coupon' ? '#f5e642' : '#2b7657' }} />
+                {/*
+                  The operator's own copy usually promises an inbox ("Check your
+                  inbox! The download link is on its way."). Showing it when the
+                  send failed would repeat the exact lie this screen had before,
+                  in the operator's voice, so it is replaced rather than
+                  supplemented in that case.
+                */}
                 <p className="text-sm font-bold uppercase tracking-wider" style={{ color: widgetType === 'coupon' ? '#b8860b' : '#2b7657' }}>
-                  {widget.success_message}
+                  {widgetType === 'lead_magnet' && !emailSent && downloadUrl
+                    ? "You're in. Your download is ready below."
+                    : widget.success_message}
                 </p>
                 {widgetType === 'coupon' && downloadUrl && (
                   <div className="border-3 border-brutal-fg bg-brutal-yellow p-4 text-center">
@@ -215,18 +229,37 @@ export default function WidgetFormPage() {
                   </div>
                 )}
                 {/*
-                  No "Download Now" button on lead magnets.
+                  Lead magnets show the link here as well as emailing it.
 
-                  The success message says the link is on its way by email, and
-                  then a button handed the file over immediately - which
-                  contradicts the message and defeats the point of collecting
-                  the address, since nobody needs to open the email.
+                  A previous version removed this button, reasoning that handing
+                  the file over immediately contradicted a success message
+                  promising it by email. The reasoning had the dependency
+                  backwards: no email was ever sent, so removing the button left
+                  the visitor with nothing at all, and the address is captured
+                  before this screen renders - so withholding the file protects
+                  nothing that has not already happened.
 
-                  Coupons keep their block above: a coupon code is meant to be
-                  shown on screen, and there is nothing to withhold.
+                  Both now: the promise is kept immediately, and it survives the
+                  email failing.
                 */}
+                {widgetType === 'lead_magnet' && downloadUrl && (
+                  <a
+                    href={downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block border-3 border-brutal-fg bg-brutal-yellow px-4 py-3 text-center font-heading text-lg uppercase tracking-wide text-brutal-fg hover:shadow-brutal hover:-translate-y-0.5 transition"
+                  >
+                    Open your download
+                  </a>
+                )}
                 <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">
-                  {widgetType === 'feedback' ? 'Thanks for your feedback!' : "Didn't get it? Check your spam folder."}
+                  {widgetType === 'feedback'
+                    ? 'Thanks for your feedback!'
+                    : emailSent
+                      ? "We emailed you a copy too. Didn't get it? Check your spam folder."
+                      : widgetType === 'lead_magnet' && downloadUrl
+                        ? 'Use the link above to open it now.'
+                        : "Didn't get it? Check your spam folder."}
                 </p>
               </div>
             ) : (

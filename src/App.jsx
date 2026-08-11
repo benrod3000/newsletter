@@ -9,6 +9,7 @@ import CommandPalette from './components/CommandPalette'
 import KeyboardShortcuts from './components/KeyboardShortcuts'
 import HelpPanel from './components/HelpPanel'
 import ErrorBoundary from './components/ErrorBoundary'
+import ScrollToTop from './components/ScrollToTop'
 import { CommandActionProvider } from './components/CommandActionContext'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Analytics } from '@vercel/analytics/react'
@@ -143,6 +144,7 @@ function App() {
       <SpeedInsights />
       <Analytics />
       <BrowserRouter>
+        <ScrollToTop />
         <CommandActionProvider>
         <ErrorBoundary>
         <CommandPalette />
@@ -251,19 +253,17 @@ function App() {
             <Route path="security" element={<Security />} />
             <Route path="faq" element={<FAQ />} />
             <Route path="changelog" element={<Changelog />} />
-            <Route path="features/newsletters" element={<DocsIntro />} />
-            <Route path="features/subscribers" element={<DocsIntro />} />
-            <Route path="features/widgets" element={<DocsIntro />} />
-            <Route path="features/automations" element={<DocsIntro />} />
-            <Route path="features/analytics" element={<DocsIntro />} />
-            <Route path="features/sms" element={<DocsIntro />} />
-            <Route path="features/templates" element={<DocsIntro />} />
-            <Route path="integrations/resend" element={<Setup />} />
-            <Route path="integrations/sendgrid" element={<Setup />} />
-            <Route path="integrations/ses" element={<Setup />} />
-            <Route path="api/overview" element={<DocsIntro />} />
-            <Route path="api/subscribers" element={<DocsIntro />} />
-            <Route path="api/campaigns" element={<DocsIntro />} />
+            {/*
+              Thirteen placeholder routes stood here, each rendering <DocsIntro />
+              or <Setup /> for a page that was never written - all seven
+              features/*, all three api/*, and the three integrations/*. They made
+              the sidebar look complete while answering nothing, and two of them
+              advertised things that do not exist at all: a Templates feature that
+              was removed, and an API that was never built.
+
+              Removed along with their sidebar entries, so these now fall through
+              to the 404 below. A wrong answer is worse than an honest miss.
+            */}
           </Route>
 
           {/* 404 catch-all // must be last */}

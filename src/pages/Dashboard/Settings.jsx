@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { brandingAPI, automationsAPI, usersAPI, getAuthToken } from '../../lib/api'
 import { useToast } from '../../components/Toast'
@@ -6,6 +6,7 @@ import { Eye, EyeOff, ShieldCheck, Copy, Check } from 'lucide-react'
 import Btn from '../../components/ui/Button'
 import LoadingState from '../../components/ux/LoadingState'
 import { describeAudit, SENSITIVE_ACTIONS } from '../../lib/audit'
+import { toQrDataUrl } from '../../lib/qr'
 
 /**
  * An API key input that knows the difference between "not set" and "set, but the
@@ -131,6 +132,9 @@ export default function SettingsPage() {
   // 2FA
   const [totpSecret, setTotpSecret] = useState('')
   const [totpQrUri, setTotpQrUri] = useState('')
+  // Encoded here rather than fetched from an image service, so the TOTP secret
+  // inside this URI never leaves the browser.
+  const totpQrDataUrl = useMemo(() => toQrDataUrl(totpQrUri), [totpQrUri])
   const [totpSettingUp, setTotpSettingUp] = useState(false)
   const [totpEnabled, setTotpEnabled] = useState(false)
   const [totpCode, setTotpCode] = useState('')
@@ -496,7 +500,7 @@ export default function SettingsPage() {
                 <ProviderKeyField
                   label="SendGrid API Key"
                   placeholder="SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  hint="Create a SendGrid account at sendgrid.com, generate an API key with Full Access, and paste it here. Free tier: 100 emails/day."
+                  hint="Create a SendGrid account at sendgrid.com, then generate a Restricted Access key with only the Mail Send permission enabled. Free tier: 100 emails/day."
                   value={branding.sendgrid_api_key}
                   saved={branding.has_sendgrid_api_key}
                   onChange={(v) => setBranding({ ...branding, sendgrid_api_key: v })}
@@ -509,7 +513,7 @@ export default function SettingsPage() {
                   <ol className="text-sm text-brutal-fg/80 space-y-1 list-decimal list-inside">
                     <li>Create an account at <a href="https://resend.com" target="_blank" rel="noopener" className="underline font-bold">resend.com</a> (free tier: 3,000 emails/month)</li>
                     <li>Add and verify your domain in the Resend dashboard</li>
-                    <li>Create an API key from the Resend dashboard (starts with <strong>re_</strong>)</li>
+                    <li>Create an API key with <strong>Sending access</strong> only (starts with <strong>re_</strong>)</li>
                     <li>Paste the API key below and click <strong>Save Branding</strong></li>
                   </ol>
                 </div>
@@ -521,7 +525,7 @@ export default function SettingsPage() {
                   <ol className="text-sm text-brutal-fg/80 space-y-1 list-decimal list-inside">
                     <li>Sign up at <a href="https://sendgrid.com" target="_blank" rel="noopener" className="underline font-bold">sendgrid.com</a> (free tier: 100 emails/day)</li>
                     <li>Go to Settings → API Keys → Create API Key</li>
-                    <li>Choose <strong>Full Access</strong> and copy the key (starts with <strong>SG.</strong>)</li>
+                    <li>Choose <strong>Restricted Access</strong>, enable only <strong>Mail Send</strong>, and copy the key (starts with <strong>SG.</strong>)</li>
                     <li>Verify a sender email in SendGrid → Settings → Sender Authentication</li>
                     <li>Paste the API key above and click <strong>Save Branding</strong></li>
                   </ol>
@@ -538,7 +542,7 @@ export default function SettingsPage() {
                     <ol className="text-sm text-brutal-fg/80 space-y-1 list-decimal list-inside">
                       <li>Create an AWS account at <a href="https://aws.amazon.com" target="_blank" rel="noopener" className="underline font-bold">aws.amazon.com</a></li>
                       <li>Go to IAM → Users → Create a new user with <strong>Programmatic access</strong></li>
-                      <li>Attach the policy <strong>AmazonSESFullAccess</strong></li>
+                      <li>Attach an inline policy allowing only <strong>ses:SendEmail</strong> and <strong>ses:SendRawEmail</strong>, not <strong>AmazonSESFullAccess</strong></li>
                       <li>Copy the <strong>Access Key ID</strong> and <strong>Secret Access Key</strong></li>
                       <li>Go to SES → Verified Identities → verify your sending email</li>
                       <li>Paste the keys below and save</li>
@@ -1097,10 +1101,20 @@ export default function SettingsPage() {
             <p className="text-xs text-brutal-fg/70 leading-relaxed mb-4">
               Scan this QR code with your authenticator app (Google Authenticator, 1Password, Authy, etc.):
             </p>
+            {/*
+              Generated in this browser. This was an <img> pointing at
+              api.qrserver.com with the otpauth URI in the query string - which
+              means the shared TOTP secret was sent to a third party and written to
+              their logs every time anyone enabled 2FA. Whoever holds that secret
+              can produce the user's codes forever.
+            */}
             <div className="border-3 border-brutal-fg bg-white p-4 inline-block mb-4">
               <div className="w-48 h-48 bg-brutal-surface flex items-center justify-center">
-                <img src={'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(totpQrUri)}
-                  alt="QR code for authenticator app" className="w-48 h-48" />
+                {totpQrDataUrl
+                  ? <img src={totpQrDataUrl} alt="QR code for authenticator app" className="w-48 h-48" />
+                  : <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider text-center px-3">
+                      Could not draw the QR code. Use the manual entry key below.
+                    </p>}
               </div>
             </div>
             <p className="text-[10px] text-brutal-muted font-bold mb-4">

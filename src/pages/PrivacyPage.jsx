@@ -45,10 +45,11 @@ export default function PrivacyPage() {
             <li><strong>Right to Limit Use:</strong> We do not use sensitive personal information for purposes beyond those authorized.</li>
             <li><strong>Right to Non-Discrimination:</strong> We will not discriminate against you for exercising any of these rights.</li>
           </ul>
-          <p>To exercise your California privacy rights, contact us at support@veloce.app. We will verify your identity before processing your request. You may also designate an authorized agent to make a request on your behalf.</p>
+          <p>To exercise your California privacy rights, contact us at support@brod3000.com. We will verify your identity before processing your request. You may also designate an authorized agent to make a request on your behalf.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">5. Data Retention</h2>
-          <p>We retain subscriber data until the subscriber unsubscribes or the workspace operator deletes it. Account data is retained until the account is deleted. Deleted data is permanently removed within 30 days.</p>
+          <p>We retain subscriber data until the workspace operator deletes it. When a subscriber unsubscribes, they are excluded from all further sending immediately, and we keep a suppression record of the address so that the opt-out continues to be honoured even if the address is imported again. Retaining that record is what allows us to guarantee the address is not mailed again; it is not used for any other purpose.</p>
+          <p>Account data is retained until the account is deleted. On deletion, subscriber records and their associated activity are permanently removed within 30 days. A subscriber who wants erasure rather than suppression can request it, and the workspace operator can delete their record directly.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">6. Data Sharing</h2>
           <p>We share data only with:</p>
@@ -69,13 +70,13 @@ export default function PrivacyPage() {
           <p>We implement reasonable security measures including encryption in transit (TLS 1.3), encryption at rest, PBKDF2 password hashing, JWT authentication, and rate limiting. No method of transmission over the internet is 100% secure.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">10. Your Choices</h2>
-          <p>Subscribers can unsubscribe at any time using the link in every email. Workspace operators can export or delete subscriber data from the dashboard. You may request full account deletion by emailing support@veloce.app.</p>
+          <p>Subscribers can unsubscribe at any time using the link in every email. Workspace operators can export or delete subscriber data from the dashboard. You may request full account deletion by emailing support@brod3000.com.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">11. Changes to This Policy</h2>
           <p>We will notify workspace operators of material changes via email. Subscribers will be notified via the newsletter operator. Continued use after changes constitutes acceptance.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">12. Contact</h2>
-          <p>Privacy inquiries: support@veloce.app<br />Veloce is operated in California, USA.<br />Response time: within 45 days as required by California law.</p>
+          <p>Privacy inquiries: support@brod3000.com<br />Veloce is operated in California, USA.<br />Response time: within 45 days as required by California law.</p>
         </div>
         <Btn variant="primary" size="lg" onClick={() => navigate('/')}>← Back to Home</Btn>
       </div>

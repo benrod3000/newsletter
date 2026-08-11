@@ -19,8 +19,23 @@ const mockCampaigns = [
   { id: '1', name: 'Welcome Sequence', subject: 'Get started with exclusive content', sent: 5432, opened: 2168, clicked: 365, status: 'sent' },
   { id: '2', name: 'Weekly Tech Roundup', subject: "This week's best stories", sent: 4800, opened: 1584, clicked: 240, status: 'sent' },
   { id: '3', name: 'Product Launch', subject: 'Introducing our newest feature', sent: 8100, opened: 3402, clicked: 612, status: 'sent' },
-  { id: '4', name: 'Flash Sale Alert', subject: '48-hour limited-time offer', sent: 6200, opened: 2232, clicked: 435, status: 'draft' },
+  // A draft has not been sent, so it has no sends, opens or clicks. This row read
+  // "draft" alongside 6,200 sent and 2,232 opened, which is the one thing in a
+  // demo a reader can catch as impossible - and it undermines every other number
+  // on the page.
+  { id: '4', name: 'Flash Sale Alert', subject: '48-hour limited-time offer', sent: 0, opened: 0, clicked: 0, status: 'draft' },
 ]
+
+/**
+ * Percentage of sends, or a dash when nothing was sent.
+ *
+ * A draft divides 0 by 0, and `NaN%` on screen is worse than the impossible
+ * "draft, 6,200 sent" this replaced.
+ */
+function rate(part, total) {
+  if (!total) return '-'
+  return `${((part / total) * 100).toFixed(1)}%`
+}
 
 const mockSubscribers = [
   { email: 'sarah.chen@example.com', location: 'San Francisco, US', joined: 'Mar 15, 2026', opens: 42, clicks: 8 },
@@ -165,7 +180,7 @@ export default function DemoPage() {
                           <p className="text-[10px] text-brutal-muted uppercase">{c.subject}</p>
                         </div>
                         <div className="flex items-center gap-4 text-right">
-                          <div><p className="text-xs font-bold text-brutal-green">{((c.opened / c.sent) * 100).toFixed(1)}%</p><p className="text-[9px] text-brutal-muted uppercase">Open</p></div>
+                          <div><p className="text-xs font-bold text-brutal-green">{rate(c.opened, c.sent)}</p><p className="text-[9px] text-brutal-muted uppercase">Open</p></div>
                           <div><p className="text-xs font-bold">{c.sent.toLocaleString()}</p><p className="text-[9px] text-brutal-muted uppercase">Sent</p></div>
                         </div>
                       </div>
@@ -189,8 +204,8 @@ export default function DemoPage() {
                       <h3 className="font-heading text-lg uppercase tracking-wide">{c.name}</h3>
                       <p className="text-xs text-brutal-muted mt-1">{c.subject}</p>
                       <div className="flex gap-3 mt-3 pt-3 border-t-2 border-brutal-fg/10">
-                        <span className="text-[10px] font-bold text-brutal-green">{((c.opened / c.sent) * 100).toFixed(1)}% opens</span>
-                        <span className="text-[10px] font-bold text-brutal-muted">{((c.clicked / c.sent) * 100).toFixed(1)}% clicks</span>
+                        <span className="text-[10px] font-bold text-brutal-green">{rate(c.opened, c.sent)} opens</span>
+                        <span className="text-[10px] font-bold text-brutal-muted">{rate(c.clicked, c.sent)} clicks</span>
                       </div>
                     </div>
                   ))}
@@ -356,7 +371,7 @@ export default function DemoPage() {
           Ready to build your own?
         </h2>
         <p className="text-sm text-brutal-muted max-w-md mx-auto">
-          Everything above works on a real workspace. Free to start, no credit card required.
+          Everything above works on a real workspace. No monthly fees, no credit card required.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center pt-1">
           <Link to="/signup" className="px-5 py-2.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">

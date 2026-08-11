@@ -93,7 +93,15 @@ export default function LoginPage() {
 
     const fe = {}
     if (!email.includes('@')) fe.email = 'Enter a valid email'
-    if (password.length < 6) fe.password = 'At least 6 characters'
+    // Presence only, deliberately no length rule.
+    //
+    // This checked `length < 6`, mirroring the old signup minimum. Sign-in must
+    // not enforce the *current* policy: accounts created under an earlier rule
+    // have shorter passwords, and validating length here would refuse to even
+    // attempt a login that would have succeeded - locking out exactly the users
+    // who predate the change. Whether a password is right is the server's
+    // question; whether one was typed is this form's.
+    if (!password) fe.password = 'Enter your password'
     if (Object.keys(fe).length) { setFieldErrors(fe); return }
 
     // Only block when the widget is working but unfinished. If it failed to

@@ -5,37 +5,26 @@ export const NAV_ITEMS = [
   { label: 'Demo', href: '/demo' },
 ]
 
-export const STATS = [
-  { value: '12,453', label: 'Subscribers', desc: 'Across email, SMS, and RCS channels.' },
-  { value: '847', label: 'Campaigns Sent', desc: 'With 47% average open rate.' },
-  { value: '47%', label: 'Avg Open Rate', desc: 'Real people. Real engagement.' },
-  { value: '6', label: 'Automations Live', desc: 'Welcome drips, smart tags, auto-clean, and more.' },
-]
-
-export const TRUST_METRICS = [
-  { value: '12,453', label: 'Subscribers Managed' },
-  { value: '2,847', label: 'Emails Sent Today' },
-  { value: '47%', label: 'Avg Open Rate' },
-  { value: '147', label: 'Businesses' },
-]
-
-export const TESTIMONIALS = [
-  {
-    quote: 'We went from exporting CSVs every week to sending geo-targeted campaigns in one click. Veloce saved us hours of manual work every month.',
-    author: 'Ben Rodriguez',
-    role: 'Event Organizer, Austin Music Fest',
-  },
-  {
-    quote: 'I was spending $80/month on platforms I barely used. Now I pay a fraction of that through Veloce. Same reach, 95% less cost. And I actually own my list.',
-    author: 'Maria Santos',
-    role: 'Owner, Corner Coffee Roasters',
-  },
-  {
-    quote: 'Radius targeting alone was worth switching. We used to mail the entire city. Now we only reach people within 5 miles of our shop.',
-    author: 'Derek Park',
-    role: 'Manager, East Side Bicycle Co.',
-  },
-]
+/*
+ * Removed 2026-08-10: STATS, TRUST_METRICS and TESTIMONIALS.
+ *
+ * They were presented as real and none of them was. The metrics claimed 12,453
+ * subscribers, 847 campaigns sent, a 47% average open rate captioned "Real
+ * people. Real engagement.", 2,847 emails sent today and 147 businesses. At the
+ * time of removal production held zero sent campaigns, zero engagement events of
+ * any kind, and three workspaces - so there was no open rate to average.
+ *
+ * The three testimonials were attributed to named people at named businesses who
+ * had not said these things. Inventing endorsements is not a placeholder problem
+ * that better copy fixes later; the FTC treats fabricated testimonials as
+ * deceptive regardless of intent, and one of the three used the founder's own
+ * name, which is how they were spotted.
+ *
+ * Nothing replaced them. The interactive demo is the honest version of the same
+ * argument: it shows the product working rather than asserting that others like
+ * it. Do not reintroduce a metrics band until the numbers can be read from the
+ * database and are worth showing.
+ */
 
 export const PILLARS = [
   {
@@ -94,6 +83,6 @@ export const FOOTER_LINKS = [
   { heading: 'Company', links: [
     { label: 'Privacy', href: '/privacy' },
     { label: 'Terms', href: '/terms' },
-    { label: 'Support', href: 'mailto:support@veloce.app' },
+    { label: 'Support', href: 'mailto:support@brod3000.com' },
   ]},
 ]
