@@ -229,20 +229,20 @@ export default function WidgetFormPage() {
                   </div>
                 )}
                 {/*
-                  Lead magnets show the link here as well as emailing it.
+                  A lead magnet is withheld on purpose when the email went out.
+                  Requiring the visitor to open their inbox is the point of the
+                  exchange: it confirms the address is real and gives them a reason
+                  to open the first email you ever send them. Handing the file over
+                  here would make the address optional in practice.
 
-                  A previous version removed this button, reasoning that handing
-                  the file over immediately contradicted a success message
-                  promising it by email. The reasoning had the dependency
-                  backwards: no email was ever sent, so removing the button left
-                  the visitor with nothing at all, and the address is captured
-                  before this screen renders - so withholding the file protects
-                  nothing that has not already happened.
-
-                  Both now: the promise is kept immediately, and it survives the
-                  email failing.
+                  The link appears only when the send failed. That is the case an
+                  earlier version of this screen got wrong in the other direction -
+                  it removed the button while no email was being sent at all, so
+                  visitors were told to check an inbox that would never receive
+                  anything. Withholding is right; withholding with no fallback is
+                  how someone ends up with nothing.
                 */}
-                {widgetType === 'lead_magnet' && downloadUrl && (
+                {widgetType === 'lead_magnet' && !emailSent && downloadUrl && (
                   <a
                     href={downloadUrl}
                     target="_blank"
@@ -256,9 +256,9 @@ export default function WidgetFormPage() {
                   {widgetType === 'feedback'
                     ? 'Thanks for your feedback!'
                     : emailSent
-                      ? "We emailed you a copy too. Didn't get it? Check your spam folder."
+                      ? "Didn't get it? Check your spam folder."
                       : widgetType === 'lead_magnet' && downloadUrl
-                        ? 'Use the link above to open it now.'
+                        ? 'We could not send the email, so use the link above.'
                         : "Didn't get it? Check your spam folder."}
                 </p>
               </div>

@@ -50,6 +50,9 @@ const DEFAULT_FORM = {
   fields: { email: { required: true } },
   styles: { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#0a0a0a' },
   collect_location: true,
+  // Blank means "use the built-in wording" - see the note by the inputs.
+  email_subject: '',
+  email_body: '',
   /*
    * `feedback_message` was here and has been removed.
    *
@@ -151,6 +154,8 @@ export default function WidgetsPage() {
       fields: w.fields || { email: { required: true } },
       styles: w.styles || { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#0a0a0a' },
       collect_location: w.collect_location !== false,
+      email_subject: w.email_subject || '',
+      email_body: w.email_body || '',
     })
     setEditingId(w.id)
     setErrors({})
@@ -381,10 +386,55 @@ export default function WidgetsPage() {
                   placeholder="https://example.com/my-guide.pdf"
                 />
                   {errors.download_url && <p className="text-xs font-bold text-brutal-red mt-1">{errors.download_url}</p>}
-                  <p className="text-[10px] font-bold text-brutal-muted uppercase mt-1">Visitors get a download link after signing up</p>
+                  <p className="text-[10px] font-bold text-brutal-muted uppercase mt-1">Emailed to visitors after they sign up</p>
                 </div>
               )}
             </div>
+
+            {/*
+              The delivery email. Its wording used to be hardcoded, so every widget
+              in every workspace sent the same message - the one thing a capture
+              form actually says to a subscriber was the one thing its owner could
+              not edit. Blank means "use the built-in wording", so an existing
+              widget is unaffected and a new one does not have today's copy frozen
+              into it.
+            */}
+            {form.type === 'lead_magnet' && (
+              <div className="border-3 border-brutal-fg bg-brutal-bg p-4 space-y-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider">The email we send</p>
+                  <p className="text-[10px] font-bold text-brutal-muted uppercase mt-1">
+                    Leave blank to use the default wording
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                    Subject
+                  </label>
+                  <input
+                    value={form.email_subject}
+                    onChange={e => updateField('email_subject', e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                    placeholder="Here's your download"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                    Message
+                  </label>
+                  <textarea
+                    value={form.email_body}
+                    onChange={e => updateField('email_body', e.target.value)}
+                    rows={5}
+                    className="w-full px-4 py-2.5 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                    placeholder={"Thanks for asking! Here is the file I promised.\n\n{{download_link}}"}
+                  />
+                  <p className="text-[10px] font-bold text-brutal-muted uppercase mt-1">
+                    Put <code className="bg-brutal-surface px-1 normal-case">{'{{download_link}}'}</code> where the download button should go. Leave it out and the button is added at the end.
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">Widget Type</label>
