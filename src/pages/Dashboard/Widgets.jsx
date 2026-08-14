@@ -52,6 +52,7 @@ const DEFAULT_FORM = {
   collect_location: true,
   // Blank means "use the built-in wording" - see the note by the inputs.
   email_subject: '',
+  email_heading: '',
   email_body: '',
   /*
    * `feedback_message` was here and has been removed.
@@ -155,6 +156,7 @@ export default function WidgetsPage() {
       styles: w.styles || { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#0a0a0a' },
       collect_location: w.collect_location !== false,
       email_subject: w.email_subject || '',
+      email_heading: w.email_heading || '',
       email_body: w.email_body || '',
     })
     setEditingId(w.id)
@@ -417,6 +419,20 @@ export default function WidgetsPage() {
                     className="w-full px-4 py-2.5 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
                     placeholder="Here's your download"
                   />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                    Headline
+                  </label>
+                  <input
+                    value={form.email_heading}
+                    onChange={e => updateField('email_heading', e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
+                    placeholder="Thanks for your interest."
+                  />
+                  <p className="text-[10px] font-bold text-brutal-muted uppercase mt-1">
+                    The large type at the top of the email
+                  </p>
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
