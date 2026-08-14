@@ -50,6 +50,9 @@ const DEFAULT_FORM = {
   fields: { email: { required: true } },
   styles: { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#0a0a0a' },
   collect_location: true,
+  // Off by default: delivering a file someone asked for and signing them up for
+  // future mail are different things, and the second is not implied by the first.
+  subscribe_to_list: false,
   // Blank means "use the built-in wording" - see the note by the inputs.
   email_subject: '',
   email_heading: '',
@@ -155,6 +158,7 @@ export default function WidgetsPage() {
       fields: w.fields || { email: { required: true } },
       styles: w.styles || { primary_color: '#f5e642', bg_color: '#f5f5f0', text_color: '#0a0a0a', border_color: '#0a0a0a', button_text_color: '#0a0a0a' },
       collect_location: w.collect_location !== false,
+      subscribe_to_list: w.subscribe_to_list === true,
       email_subject: w.email_subject || '',
       email_heading: w.email_heading || '',
       email_body: w.email_body || '',
@@ -392,6 +396,24 @@ export default function WidgetsPage() {
                 </div>
               )}
             </div>
+
+            <label className="flex items-start gap-3 border-3 border-brutal-fg bg-white p-4 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.subscribe_to_list}
+                onChange={e => updateField('subscribe_to_list', e.target.checked)}
+                className="mt-0.5 w-4 h-4 accent-brutal-green"
+              />
+              <span>
+                <span className="block text-xs font-bold uppercase tracking-wider">
+                  Also add them to the list
+                </span>
+                <span className="block text-[10px] font-bold text-brutal-muted uppercase mt-1 leading-relaxed">
+                  Off means this form delivers the file and nothing else. Turn it on only if
+                  the form tells people they are subscribing.
+                </span>
+              </span>
+            </label>
 
             {/*
               The delivery email. Its wording used to be hardcoded, so every widget
