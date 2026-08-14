@@ -263,10 +263,14 @@ export default function WidgetsPage() {
     // e.source === frame.contentWindow is the check that matters: it accepts
     // messages only from this iframe, so another frame on the host page cannot
     // resize it. The message carries a single integer and no user data.
+    // No border on the iframe. The widget draws its own inside the frame, so a
+    // border here produced two concentric ones on a real embed - and it could not
+    // follow the widget's own border colour, since it is written into the host
+    // page once and never updated when the widget is restyled.
     const code = [
       `<iframe id="veloce-${widgetId}" src="${EMBED_BASE}/${widgetId}"`,
       `  width="100%" height="${h}" frameborder="0" allow="geolocation"`,
-      `  style="border:3px solid #0a0a0a; display:block"></iframe>`,
+      `  style="border:0; width:100%; max-width:100%; display:block"></iframe>`,
       `<script>`,
       `  (function () {`,
       `    var frame = document.getElementById("veloce-${widgetId}");`,

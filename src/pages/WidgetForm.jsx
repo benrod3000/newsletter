@@ -304,12 +304,27 @@ export default function WidgetFormPage() {
                       />
                     </div>
                   )}
-                  <div>
+                  {/*
+                    `min-w-0` and `size={1}` are what let this shrink.
+
+                    In the slim layout this sits in a flex row next to a `shrink-0`
+                    button. A flex item defaults to `min-width:auto`, which refuses
+                    to go below its content's intrinsic width, and an <input>'s
+                    intrinsic width comes from its `size` attribute - 20 characters
+                    by default. So the row could not fit its container and the field
+                    was clipped mid-placeholder ("you@examp") on a real embed.
+
+                    Both are needed: `min-w-0` frees the flex item, `size={1}` drops
+                    the intrinsic floor the attribute imposes. `w-full` then fills
+                    whatever space is actually left.
+                  */}
+                  <div className={isSlim ? 'flex-1 min-w-0' : ''}>
                     <label htmlFor="wf-email" className="sr-only">Email address</label>
                     <input
                       id="wf-email"
                       type="email"
                       name="email"
+                      size={1}
                       autoComplete="email"
                       value={email}
                       onChange={e => { setEmail(e.target.value); setError(''); maybeRequestGeolocation(e.target.value) }}

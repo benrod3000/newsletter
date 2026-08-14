@@ -42,6 +42,7 @@ export default function SubscribersPage() {
   // CSV import
   const [showImport, setShowImport] = useState(false)
   const [importCsvText, setImportCsvText] = useState('')
+  const [importConsent, setImportConsent] = useState(false)
   const [importConfirmed, setImportConfirmed] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState(null)
@@ -329,7 +330,7 @@ export default function SubscribersPage() {
 
     try {
       for (let i = 0; i < chunks.length; i++) {
-        const { data } = await subscribersAPI.importCsv(workspaceId, chunks[i], importConfirmed)
+        const { data } = await subscribersAPI.importCsv(workspaceId, chunks[i], importConfirmed, importConsent)
         totals.processed += data?.processed || 0
         totals.duplicates += data?.duplicates || 0
         totals.skipped += data?.skipped || 0
@@ -495,6 +496,28 @@ export default function SubscribersPage() {
             />
             <label htmlFor="import-confirmed" className="text-xs font-bold text-brutal-fg/60 uppercase tracking-wider">
               Mark as confirmed (skip verification emails)
+            </label>
+          </div>
+          {/*
+            Consent is asserted here rather than assumed. Imported rows used to land
+            with no consent recorded, which once sending began enforcing consent read
+            as "declined" for people nobody had asked - 10,300 rows needed a backfill.
+            Leaving this unticked stores the contacts but does not make them mailable,
+            which is the safe direction.
+          */}
+          <div className="flex items-start gap-2">
+            <input
+              type="checkbox"
+              checked={importConsent}
+              onChange={(e) => setImportConsent(e.target.checked)}
+              id="import-consent"
+              className="w-4 h-4 mt-0.5 accent-brutal-fg"
+            />
+            <label htmlFor="import-consent" className="text-xs font-bold text-brutal-fg/60 uppercase tracking-wider leading-relaxed">
+              These contacts gave me permission to email them
+              <span className="block text-[10px] text-brutal-muted normal-case tracking-normal mt-0.5">
+                Required to send to them. Without it they are stored but excluded from every campaign.
+              </span>
             </label>
           </div>
           {importProgress && importProgress.total > 1 && (

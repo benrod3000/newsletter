@@ -87,8 +87,8 @@ export const subscribersAPI = {
     api.delete<ApiResponse>(`/api/clients/${workspaceId}/subscribers`, { data: { ids } }),
   exportCsv: (workspaceId: string, params?: Record<string, unknown>) =>
     api.get(`/api/clients/${workspaceId}/subscribers/export`, { params, responseType: 'blob' }),
-  importCsv: (workspaceId: string, csv: string, confirmed?: boolean) =>
-    api.post<ApiResponse>(`/api/clients/${workspaceId}/subscribers/import`, { csv, confirmed }),
+  importCsv: (workspaceId: string, csv: string, confirmed?: boolean, consentConfirmed?: boolean) =>
+    api.post<ApiResponse>(`/api/clients/${workspaceId}/subscribers/import`, { csv, confirmed, consent_confirmed: consentConfirmed }),
 }
 
 // ── Campaigns / Broadcasts ──
