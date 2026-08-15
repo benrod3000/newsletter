@@ -164,13 +164,21 @@ export default function WidgetFormPage() {
   const isSmall = widget.size === 'small'
   const isLarge = widget.size === 'large'
   const isCompact = isSlim || isSmall
-  const sizeClasses = {
-    slim: 'max-w-lg',
-    small: 'max-w-xs',
-    medium: 'max-w-md',
-    large: 'max-w-lg',
-  }
-  const sizeCls = sizeClasses[widget.size] || 'max-w-md'
+  /*
+   * No max-width. The host page decides how wide this is.
+   *
+   * Each size used to cap the widget - slim at 512px, small at 320px - which made
+   * sense when this looked like a page. It is not one: it renders inside an iframe
+   * the embed sets to `width:100%`, so the cap fought whatever the host had
+   * allocated. A full-width embed drew a 512px widget with dead space beside it and
+   * an email field far narrower than the room available, which is what "not
+   * resizing correctly" looked like.
+   *
+   * `size` still does real work below - padding, type scale, whether the header
+   * shows - it just no longer overrides the container. Someone who wants a narrow
+   * widget sets the iframe narrow, which is the one place that decision belongs.
+   */
+  const sizeCls = 'w-full'
   const headerPad = isLarge ? 'px-8 py-6' : isCompact ? 'px-3 py-2' : 'px-6 py-4'
   const bodyPad = isSlim ? 'p-2' : isLarge ? 'p-8' : isSmall ? 'p-3' : 'p-6'
   const headlineSize = isLarge ? 'text-3xl sm:text-4xl' : isCompact ? 'text-sm' : 'text-2xl sm:text-3xl'
