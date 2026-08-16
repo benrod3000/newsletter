@@ -16,12 +16,13 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove })
   const [editingName, setEditingName] = useState(false)
   const [editFirst, setEditFirst] = useState(subscriber?.first_name || '')
   const [editLast, setEditLast] = useState(subscriber?.last_name || '')
-  // Accept both spellings for one release. The backend renames client_id to
-  // workspace_id in migration 048, but the two repos deploy independently, so
-  // there is a window where either side is ahead of the other. Without the
-  // fallback this reads undefined in that window and the panel silently renders
-  // nothing. Drop the client_id half once the backend rename is live and stable.
-  const workspaceId = subscriber?.workspace_id ?? subscriber?.client_id
+  // The `?? subscriber?.client_id` fallback that stood here is gone, as its own
+  // comment asked once the backend rename was live and stable. Migration 048
+  // shipped on 2026-07-30 and `client_id` has not existed on any API response
+  // since, so the fallback could only ever have masked a *different* field going
+  // missing - which is precisely how this class of bug has stayed invisible
+  // elsewhere in the codebase.
+  const workspaceId = subscriber?.workspace_id
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
