@@ -2,16 +2,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { useEmbedHeight } from '../hooks/use-embed-height'
 import { useParams } from 'react-router-dom'
 import axios from 'axios'
-import LoadingState from '../components/ux/LoadingState'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
 export default function WidgetFormPage() {
   useEffect(() => { document.title = 'Subscribe | Veloce' }, [])
 
-  // Tells the embedding page how tall this render actually is, so the iframe
-  // can stop relying on a height guessed when the snippet was copied.
-  useEmbedHeight()
   // Keyed by widget id, not slug: slug is only unique within a workspace, so
   // two customers naming a form the same thing would otherwise resolve to
   // whichever was created most recently.
@@ -39,6 +35,19 @@ export default function WidgetFormPage() {
   const [emailSent, setEmailSent] = useState(false)
   const [error, setError] = useState('')
   const [notFound, setNotFound] = useState(false)
+
+  // Tells the embedding page how tall this render actually is, so the iframe can
+  // stop relying on a height guessed when the snippet was copied.
+  //
+  // Reported only once the real form is on screen. Reporting during load sized the
+  // host to the loading placeholder, so the frame moved twice - out to the
+  // placeholder, then back to the widget. Held until the widget renders, the frame
+  // keeps the accurate starting height the snippet chose and moves exactly once.
+  //
+  // Must stay below the useState calls: it reads `loading`, and calling it above
+  // the declaration is a temporal dead zone error that throws at runtime while the
+  // build stays green.
+  useEmbedHeight(!loading)
 
   const fields = widget?.fields || { email: { required: true } }
   const styles = widget?.styles || {}
@@ -136,9 +145,28 @@ export default function WidgetFormPage() {
   }
 
   if (loading) {
+    /*
+     * A placeholder the size of a widget, not the size of a dashboard panel.
+     *
+     * This used to render the shared `LoadingState`, which is built for a full
+     * page: a bordered card, `p-8`, and six skeleton bars, about 400px tall,
+     * inside another `py-10`. The embed snippet starts a slim frame at 64px -
+     * correct - but `useEmbedHeight` then measured the skeleton and told the host
+     * to grow to roughly 500px, so the frame ballooned into a large grey form and
+     * snapped back down once the config arrived. The load looked broken on a phone,
+     * where the round trip is slow enough to watch.
+     *
+     * One muted strip instead. It is smaller than any real widget, so the frame
+     * only ever grows into its final size rather than collapsing into it - and
+     * growth is far less noticeable than collapse.
+     */
     return (
-      <div className="py-10 bg-brutal-bg flex items-center justify-center">
-        <LoadingState label="Loading widget" />
+      <div className="p-1" role="status" aria-live="polite" aria-busy="true">
+        <div className="border-3 border-brutal-fg/20 bg-white p-2 flex items-center gap-2">
+          <div className="skeleton h-9 flex-1" />
+          <div className="skeleton h-9 w-32 shrink-0" />
+        </div>
+        <span className="sr-only">Loading form</span>
       </div>
     )
   }
