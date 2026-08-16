@@ -50,6 +50,20 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
   const [imagePromptOpen, setImagePromptOpen] = useState(false)
   const [previewMode, setPreviewMode] = useState(null) // null=edit, 'mobile'
   const [splitMode, setSplitMode] = useState(false) // side-by-side editor + preview
+  /*
+   * The split view's preview pane read `editor.getHTML()` straight from render.
+   *
+   * TipTap holds its document outside React, so editing it triggers no re-render -
+   * the pane painted once when split mode opened and then went stale. Typing changed
+   * nothing; clicking a toolbar button did, because that set state and re-rendered
+   * the component, which is exactly the "have to click around to get it to load"
+   * behaviour. Whether it looked broken depended entirely on whether anything else
+   * had re-rendered since.
+   *
+   * Mirroring the HTML into state on update makes the preview a function of
+   * something React can see.
+   */
+  const [previewHtml, setPreviewHtml] = useState('')
   const [htmlMode, setHtmlMode] = useState(false)
   const [htmlValue, setHtmlValue] = useState('')
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle' | 'unsaved' | 'saving' | 'saved'
@@ -69,7 +83,9 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
       },
     },
     onUpdate: ({ editor }) => {
-      onChange?.(editor.getHTML())
+      const html = editor.getHTML()
+      onChange?.(html)
+      setPreviewHtml(html)
       setSaveStatus('unsaved')
       if (saveTimer.current) clearTimeout(saveTimer.current)
       saveTimer.current = setTimeout(() => {
@@ -235,7 +251,16 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
         </button>
         <button
           type="button"
-          onClick={() => { setSplitMode(!splitMode); setPreviewMode(null); setHtmlMode(false) }}
+          onClick={() => {
+            // Seed the preview from the document as it stands. Without this, opening
+            // split mode on a campaign loaded from the server - or on anything not
+            // edited since mount - shows an empty pane until the first keystroke,
+            // which is the same "it did not load" symptom by a different route.
+            if (!splitMode && editor) setPreviewHtml(editor.getHTML())
+            setSplitMode(!splitMode)
+            setPreviewMode(null)
+            setHtmlMode(false)
+          }}
           className={`px-3 py-1 border-3 font-bold text-[10px] uppercase tracking-wider transition ${
             splitMode ? 'border-brutal-fg bg-brutal-yellow text-brutal-fg' : 'border-transparent text-brutal-fg/50 hover:text-brutal-fg hover:border-brutal-fg'
           }`}
@@ -318,7 +343,7 @@ export default function EmailEditor({ content, onChange, onSave, saving }) {
             <div className="border-b-2 border-brutal-fg/20 bg-brutal-surface px-3 py-1">
               <span className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">📱 Preview</span>
             </div>
-            <div className="p-4 prose prose-sm max-w-none text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(editor?.getHTML() || '') }} />
+            <div className="p-4 prose prose-sm max-w-none text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewHtml) }} />
           </div>
         </div>
       ) : (

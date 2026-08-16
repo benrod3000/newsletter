@@ -12,7 +12,7 @@ const EmailEditor = lazy(() => import('../../components/EmailEditor'))
 const GeoFilter = lazy(() => import('../../components/GeoFilter'))
 import ConfirmModal from '../../components/ConfirmModal'
 import { useCommandAction } from '../../components/useCommandAction'
-import { STATUS_STYLES, STATUS_LABELS, AUDIENCE_OPTIONS, generateSubjects, getAudienceLabel } from './Campaigns/constants'
+import { STATUS_STYLES, STATUS_LABELS, AUDIENCE_OPTIONS, getAudienceLabel } from './Campaigns/constants'
 
 export default function CampaignsPage() {
   const { workspaceId, email } = useAuthStore()
@@ -38,7 +38,6 @@ export default function CampaignsPage() {
   const [testEmailId, setTestEmailId] = useState(null)
   const [testEmail, setTestEmail] = useState('')
   const [testSending, setTestSending] = useState(false)
-  const [showSubjectSuggestions, setShowSubjectSuggestions] = useState(false)
   const [smsOpen, setSmsOpen] = useState(false)
   const [smsMessage, setSmsMessage] = useState('')
   const [smsSending, setSmsSending] = useState(false)
@@ -508,32 +507,6 @@ export default function CampaignsPage() {
                     className="flex-1 px-4 py-2.5 bg-white border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted"
                     placeholder="Summer Sale Starts Now ☀️"
                   />
-                  <div className="relative">
-                    <Btn
-                      variant="primary"
-                      size="md"
-                      onClick={() => setShowSubjectSuggestions(!showSubjectSuggestions)}
-                    >
-                      Suggest
-                    </Btn>
-                    {showSubjectSuggestions && (
-                      <div className="absolute right-0 top-full mt-1 w-72 border-3 border-brutal-fg bg-white shadow-brutal z-20">
-                        <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-3 py-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider">Subject Ideas</span>
-                        </div>
-                        {generateSubjects(editCampaign?.name || '', editContent).map((s, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => { setEditSubject(s); setShowSubjectSuggestions(false) }}
-                            className="w-full text-left px-3 py-2 text-xs font-bold border-b border-brutal-fg/20 last:border-0 hover:bg-brutal-yellow/20 transition"
-                          >
-                            {s}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
               <div>
@@ -608,6 +581,32 @@ export default function CampaignsPage() {
                     )}
                   </>
                 )}
+                {/*
+                  Sending yourself a preview belonged here, next to the send.
+
+                  The capability already existed - endpoint, API client, handler -
+                  but the only way to reach it was a 🧪 button in the campaign list,
+                  which meant leaving the editor, finding the row, and recognising an
+                  unlabelled emoji. Someone writing an email and wanting to see it in
+                  their inbox first looks where they are, so it is here and it says
+                  what it does.
+
+                  Needs an id: a campaign that has never been saved has nothing on the
+                  server to render. Saving first is what the click does.
+                */}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const id = editingId === 'new' ? await createCampaign() : editingId
+                    if (!id) return
+                    setTestEmailId(id)
+                    setTestEmail(email || '')
+                  }}
+                  disabled={autosaving}
+                  className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-[10px] uppercase tracking-wider hover:bg-brutal-yellow transition disabled:opacity-50"
+                >
+                  Send Me A Preview
+                </button>
                 <Btn
                   variant="primary"
                   size="md"

@@ -33,22 +33,16 @@ export const AUDIENCE_OPTIONS = [
   { value: 'geo', label: '📍 Geo-Targeted' },
 ]
 
-export function generateSubjects(name, content) {
-  if (!name) return []
-  const headingMatch = content.match(/<h[123][^>]*>(.*?)<\/h[123]>/i)
-  const firstHeading = headingMatch ? headingMatch[1].replace(/<[^>]+>/g, '').trim() : null
-  const words = content.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(w => w.length > 4)
-  const freq = {}
-  words.forEach(w => { freq[w] = (freq[w] || 0) + 1 })
-  const topWord = Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] || name
-
-  return [
-    firstHeading ? `${firstHeading}` : `${name} · Latest Update`,
-    `Everything you need to know about ${topWord}`,
-    `Is your ${name.toLowerCase()} working for you?`,
-    `3 ways to improve your ${topWord}`,
-  ]
-}
+/*
+ * `generateSubjects` stood here and is gone with the "Suggest" button it fed.
+ *
+ * It was word-frequency templating, not suggestion: pick the most common long word
+ * in the body and drop it into four fixed sentences. On a real newsletter that
+ * produced lines like "3 ways to improve your subscribers" - grammatical, confident,
+ * and about nothing. A subject line is the one piece of copy that decides whether the
+ * rest is read, which makes plausible-but-empty the worst thing to put in front of
+ * someone writing one.
+ */
 
 export function getAudienceLabel(a, lists) {
   if (a?.startsWith('list:')) return lists.find((l) => l.id === a.slice(5))?.name || a
