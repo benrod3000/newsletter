@@ -283,19 +283,45 @@ export default function SubscribersPage() {
     }
   }
 
-  async function exportCsv() {
+  /**
+   * Export contacts as CSV.
+   *
+   * Pass `{ selection: true }` to export only the ticked rows. Without it the export
+   * follows the current status filter, which is what the header button means.
+   *
+   * These were the same action before, offered from the bulk bar - so ticking five
+   * contacts and pressing Export produced the entire list. Two call sites now, each
+   * saying which set it means.
+   */
+  async function exportCsv({ selection = false } = {}) {
+    const ids = selection ? [...selectedIds] : []
+    if (selection && ids.length === 0) return
+
     try {
-      const response = await subscribersAPI.exportCsv(workspaceId, statusFilter ? { status: statusFilter } : undefined)
+      const params = {}
+      if (selection) params.ids = ids.join(',')
+      else if (statusFilter) params.status = statusFilter
+
+      const response = await subscribersAPI.exportCsv(workspaceId, params)
       const blob = response.data
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `subscribers-${workspaceId.slice(0, 8)}.csv`
+      a.download = selection
+        ? `subscribers-selected-${ids.length}.csv`
+        : `subscribers-${workspaceId.slice(0, 8)}.csv`
       a.click()
       window.URL.revokeObjectURL(url)
-      toast.addToast('Exported CSV', 'success')
+      toast.addToast(selection ? `Exported ${ids.length} contacts` : 'Exported CSV', 'success')
     } catch (err) {
-      toast.addToast('Failed to export', 'error')
+      // The route answers 400 with a reason - too many selected, a malformed id -
+      // and those are worth showing rather than flattening to "failed".
+      let apiErr = err?.response?.data?.error
+      // responseType is blob, so an error body arrives as a Blob rather than JSON.
+      if (err?.response?.data instanceof Blob) {
+        try { apiErr = JSON.parse(await err.response.data.text())?.error } catch { apiErr = null }
+      }
+      toast.addToast(apiErr || 'Failed to export', 'error')
     }
   }
 
@@ -720,6 +746,13 @@ export default function SubscribersPage() {
             {selectedIds.size} selected
           </span>
           <span className="flex-1" />
+          <Btn
+            variant="secondary"
+            size="md"
+            onClick={() => exportCsv({ selection: true })}
+          >
+            Export {selectedIds.size} Selected
+          </Btn>
           <div className="relative">
             <button
               onClick={() => setShowListPicker(!showListPicker)}
