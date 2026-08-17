@@ -44,7 +44,21 @@ export const AUDIENCE_OPTIONS = [
  * someone writing one.
  */
 
-export function getAudienceLabel(a, lists) {
+/**
+ * A human label for a campaign's audience.
+ *
+ * `lists` defaults to empty because every call site omitted it, and the only branch
+ * that reads it is the `list:` one - which no campaign could reach, because the
+ * database rejected list audiences outright. Fixing that constraint made list
+ * campaigns saveable and turned this line into a crash: `undefined is not an object
+ * (evaluating 'lists.find')`, which took the whole Broadcasts page down through the
+ * error boundary the first time one was created.
+ *
+ * Falling back to the raw `list:<uuid>` when the list is not found is deliberate. It
+ * is ugly and it is true; showing a placeholder instead would hide that a campaign is
+ * aimed at a list that has since been deleted.
+ */
+export function getAudienceLabel(a, lists = []) {
   if (a?.startsWith('list:')) return lists.find((l) => l.id === a.slice(5))?.name || a
   const match = AUDIENCE_OPTIONS.find((opt) => opt.value === a)
   return match ? match.label : a

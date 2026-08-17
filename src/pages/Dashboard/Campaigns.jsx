@@ -620,7 +620,7 @@ export default function CampaignsPage() {
                   <p className="text-xs font-bold text-brutal-fg/70 line-clamp-2" title={c.subject}>{c.subject}</p>
                 </div>
                 <div className="border-t-2 border-brutal-fg pt-3 space-y-2">
-                  <div className="flex justify-between text-xs font-bold uppercase tracking-wider"><span className="text-brutal-muted">Audience:</span><span className="text-brutal-fg">{getAudienceLabel(c.audience)}</span></div>
+                  <div className="flex justify-between text-xs font-bold uppercase tracking-wider"><span className="text-brutal-muted">Audience:</span><span className="text-brutal-fg">{getAudienceLabel(c.audience, lists)}</span></div>
                   <div className="flex justify-between text-xs font-bold uppercase tracking-wider"><span className="text-brutal-muted">Sent:</span><span className="font-mono text-brutal-fg">{(c.sent_count ?? 0).toLocaleString()}</span></div>
                 </div>
                 {status === 'draft' && (
@@ -709,7 +709,7 @@ export default function CampaignsPage() {
                       )}
                       <div className="text-xs font-bold text-brutal-muted mt-0.5">{c.subject}</div>
                     </td>
-                    <td className="p-3 text-xs font-bold text-brutal-fg/80 uppercase tracking-wider hidden sm:table-cell">{getAudienceLabel(c.audience)}</td>
+                    <td className="p-3 text-xs font-bold text-brutal-fg/80 uppercase tracking-wider hidden sm:table-cell">{getAudienceLabel(c.audience, lists)}</td>
                     <td className="p-3">
                       <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${pendingSends.current[c.id] ? 'bg-brutal-yellow text-brutal-fg border-2 border-brutal-fg animate-pulse' : STATUS_STYLES[status] || STATUS_STYLES.draft}`}>
                         {pendingSends.current[c.id] ? 'Sending...' : STATUS_LABELS[status] || status}
