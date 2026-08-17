@@ -844,6 +844,56 @@ export default function AnalyticsPage() {
             />
           </div>
 
+          {/*
+            Capture-form engagement, which the four cards above cannot show.
+
+            Those are per campaign: the API fetches events by campaign_id and divides
+            by sent_count. A lead magnet has no campaign row, so its clicks carry a
+            null campaign_id and are excluded by construction - which is why "Avg Open
+            Rate" and "Avg Click Rate" read zero while capture forms were being
+            clicked. At the time of writing every engagement event in the database is
+            a lead-magnet click, so the dashboard was hiding all of it.
+
+            No open rate here on purpose: a delivery email carries no tracking pixel,
+            so there is nothing to measure and a made-up figure would be worse than a
+            missing one.
+          */}
+          {(overview?.lead_magnet?.submissions > 0 || overview?.lead_magnet?.clicks > 0) && (
+            <div className="border-3 border-brutal-fg bg-white">
+              <div className="border-b-3 border-brutal-fg bg-brutal-surface px-4 py-2 flex items-baseline gap-2">
+                <h3 className="font-heading text-lg uppercase tracking-wide">Capture Forms</h3>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">
+                  Last {days}d · not counted in broadcast rates
+                </span>
+              </div>
+              <div className="grid sm:grid-cols-3 divide-y-3 sm:divide-y-0 sm:divide-x-3 divide-brutal-fg">
+                <div className="p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">Submissions</p>
+                  <p className="text-stat text-brutal-green leading-none mt-1">
+                    {(overview.lead_magnet.submissions ?? 0).toLocaleString()}
+                  </p>
+                </div>
+                <div className="p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">Downloads Opened</p>
+                  <p className="text-stat text-brutal-green leading-none mt-1">
+                    {(overview.lead_magnet.clicks ?? 0).toLocaleString()}
+                  </p>
+                </div>
+                <div className="p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">Claim Rate</p>
+                  <p className="text-stat text-brutal-green leading-none mt-1">
+                    {(overview.lead_magnet.click_rate ?? 0).toFixed(1)}%
+                  </p>
+                  {prev?.lead_magnet && (
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mt-1">
+                      {prev.lead_magnet.submissions ?? 0} submissions previous {days}d
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* GROWTH CHART */}
           {growth.length > 0 ? (
             <AnimatedGrowthChart key={days} points={growth} />
