@@ -372,6 +372,23 @@ export default function SubscribersPage() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-4xl font-heading uppercase tracking-tight leading-none"><span className="text-brutal-green">Contacts</span></h2>
         <div className="flex gap-3">
+          {/*
+            Export sits beside Import, where someone looking for it would look.
+
+            It existed only inside the bulk action bar, which renders when at least
+            one contact is ticked - so the feature was invisible unless you happened
+            to select something first, and it is not a bulk action: `exportCsv`
+            ignores the selection entirely and exports whatever the current filter
+            matches. Offering it there implied it would export the ticked rows.
+          */}
+          <Btn
+            variant="secondary"
+            size="md"
+            onClick={exportCsv}
+            title={statusFilter ? `Export contacts matching "${statusFilter}"` : 'Export all contacts'}
+          >
+            Export CSV
+          </Btn>
           <Btn
             variant="secondary"
             size="md"
@@ -703,13 +720,6 @@ export default function SubscribersPage() {
             {selectedIds.size} selected
           </span>
           <span className="flex-1" />
-          <Btn
-            variant="secondary"
-            size="md"
-            onClick={exportCsv}
-          >
-            Export CSV
-          </Btn>
           <div className="relative">
             <button
               onClick={() => setShowListPicker(!showListPicker)}
@@ -914,6 +924,22 @@ export default function SubscribersPage() {
                     </td>
                     <td className="p-3 text-[11px] text-brutal-muted hidden lg:table-cell">
                       {[s.city, s.region, s.postal_code].filter(Boolean).join(', ') || '--'}
+                    </td>
+                    {/*
+                      The Phone cell, which the header has always declared and the body
+                      never rendered. Everything after Location was therefore shifted
+                      one column left: the signup time sat under PHONE and the Remove
+                      button under JOINED, which is what "things don't seem aligned"
+                      was showing.
+
+                      Two columns hold a number and both are real. `phone` is what a
+                      capture form writes; `phone_number` is what CSV import writes and
+                      what the import template documents. A contact can have either, so
+                      the cell reads both rather than picking one and being blank for
+                      half the list.
+                    */}
+                    <td className="p-3 text-brutal-muted text-xs hidden md:table-cell">
+                      {s.phone || s.phone_number || '--'}
                     </td>
                     <td className="p-3 text-brutal-muted text-xs hidden md:table-cell" title={s.created_at ? new Date(s.created_at).toLocaleDateString() : undefined}>
                       {relativeTime(s.created_at)}
