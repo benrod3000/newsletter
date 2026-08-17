@@ -581,32 +581,6 @@ export default function CampaignsPage() {
                     )}
                   </>
                 )}
-                {/*
-                  Sending yourself a preview belonged here, next to the send.
-
-                  The capability already existed - endpoint, API client, handler -
-                  but the only way to reach it was a 🧪 button in the campaign list,
-                  which meant leaving the editor, finding the row, and recognising an
-                  unlabelled emoji. Someone writing an email and wanting to see it in
-                  their inbox first looks where they are, so it is here and it says
-                  what it does.
-
-                  Needs an id: a campaign that has never been saved has nothing on the
-                  server to render. Saving first is what the click does.
-                */}
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const id = editingId === 'new' ? await createCampaign() : editingId
-                    if (!id) return
-                    setTestEmailId(id)
-                    setTestEmail(email || '')
-                  }}
-                  disabled={autosaving}
-                  className="px-4 py-2 border-3 border-brutal-fg bg-white text-brutal-fg font-bold text-[10px] uppercase tracking-wider hover:bg-brutal-yellow transition disabled:opacity-50"
-                >
-                  Send Me A Preview
-                </button>
                 <Btn
                   variant="primary"
                   size="md"
