@@ -1,6 +1,6 @@
 # Veloce - handoff and audit
 
-_Last updated: 2026-08-06. Written for someone picking this up cold, human or agent._
+_Last updated: 2026-08-17. Written for someone picking this up cold, human or agent._
 
 > **Target architecture and roadmap: [`newsletter-core/ARCHITECTURE.md`](../newsletter-core/ARCHITECTURE.md).**
 > Read it before any structural change. This file is current state and known problems;
@@ -41,14 +41,18 @@ exercise anything behind login.
 
 ## 2. State of the repos
 
-Both clean, everything merged and pushed:
-
 ```
-newsletter-core   main @ 2b14b37   0 uncommitted   0 unpushed
-newsletter        main @ 7362a75   0 uncommitted   0 unpushed
+newsletter-core   main @ 0891aea   5 uncommitted   0 unpushed
+newsletter        main @ f0ffde0   5 uncommitted   0 unpushed
 ```
 
-Migrations 055-060 are applied and verified present in the database, not just committed.
+**The uncommitted work in both repos is the send-scheduling change (2026-08-17) and is
+not deployed.** Migrations 069 and 070 have already been applied to production, so the
+database is ahead of the deployed code - harmless in this direction (069 widens a CHECK,
+070 adds a cron that calls an endpoint which already exists), but do not assume the two
+are in step.
+
+Migrations 055-070 are applied and verified present in the database, not just committed.
 All feature branches are merged; nothing is stranded.
 
 ---
@@ -59,6 +63,9 @@ Worth stating explicitly, because a lot of this codebase *looks* wired and is no
 were each traced to a real implementation:
 
 - **Campaign sending.** Queue, provider dispatch, tracking, unsubscribe links, merge tags.
+  Read this narrowly: the *pipeline* works. Until 2026-08-17 the dashboard had no route
+  that invoked it - "Send" only set `status = 'scheduled'` and left the work to a daily
+  cron - so the pipeline being sound was never the same thing as the product sending.
 - **SMS.** Genuinely calls the Twilio API with the workspace's own credentials.
 - **Capture form widgets.** Public form, submission handling, event recording.
 - **Auth.** Login, OAuth (Google/GitHub), TOTP, sessions, Turnstile.
@@ -103,8 +110,10 @@ would need. Do not assume they work because the schema looks complete.
 
 ### Not verified by a human
 
-- The staged send flow end to end. Nobody has actually sent a campaign: there are **zero**
-  sent campaigns and **zero** engagement events in production.
+- The staged send flow end to end. Still **zero** sent campaigns in production as of
+  2026-08-17. Engagement is no longer zero: 20 `campaign_events` and 194 `widget_events`
+  exist, all of it capture-form activity with no campaign attached - which is exactly why
+  analytics reported zeros until the lead-magnet figures were added on 2026-08-16.
 - The mobile tab-row fix. The rows are behind auth so `/demo` cannot exercise them.
 
 ---
@@ -133,6 +142,21 @@ fails config validation *before a deployment record is created*, so nothing appe
 error in `vercel ls` and every subsequent push silently stops deploying. `npx vercel --prod`
 surfaces the real error.
 
+Do not try to solve a scheduling problem by editing `vercel.json`. **Scheduled campaign
+processing moved to Supabase `pg_cron` on 2026-08-17** (migration 070, job
+`process-due-campaigns`, every 5 minutes) because a daily processor cannot honour a
+user-chosen send time - a campaign scheduled at 04:14 UTC waited until the next 00:00.
+The job calls `/api/admin/campaigns/process` through `pg_net` using a Vault secret,
+`campaign_processor_secret`. **Rotating `CRON_SECRET` now means updating Vercel *and*
+that Vault secret**, or the processor 401s every five minutes and nothing sends.
+
+Hobby also caps a project at 2 cron jobs while `vercel.json` declares 7. Which ones
+Vercel actually registered is **unverified** - the crons API returns 404 on this plan.
+`automation_logs` and `campaign_jobs` are both empty, which is consistent with some of
+them never having run, but is equally consistent with there being no work for them. The
+same pg_cron treatment is the fix if they are dead; campaign *recovery* is the one that
+matters most, since it is what finishes a partial send.
+
 **`vercel ls` is unreliable.** Ages and statuses have been repeatedly wrong. Verify a
 deploy by fetching a built asset and grepping for a string you just added, or by hitting an
 endpoint whose behaviour changed.
@@ -153,10 +177,11 @@ Roughly two thirds of everything fixed here was one shape:
 > A control exists, appears to work, returns success, and the value is silently discarded,
 > never read, or never executed.
 
-Thirteen confirmed instances. A representative few:
+Fourteen confirmed instances. A representative few:
 
 | Symptom | Cause |
 | --- | --- |
+| Send button did not send | Marked the campaign scheduled; no route invoked the pipeline |
 | Provider API key would not save | Backend allowlist dropped it, still returned 200 |
 | Brand colours did nothing | Stored, returned, rendered nowhere |
 | Automations never ran | Full CRUD API, no scheduled executor |

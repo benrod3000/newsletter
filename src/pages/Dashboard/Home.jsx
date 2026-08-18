@@ -35,8 +35,15 @@ export default function DashboardHome() {
       setLoading(true)
       setError(null)
       try {
-        const { data } = await analyticsAPI.overview(workspaceId)
-        if (!cancelled) setStats(data)
+        const { data: body } = await analyticsAPI.overview(workspaceId)
+        // The route replies through apiSuccess(), so the payload arrives wrapped
+        // as { data: {...} }. Reading `body.total_subscribers` off the envelope
+        // yielded undefined for every metric, and fmt(undefined) renders '--' -
+        // so a workspace with 10,310 subscribers showed four empty cards and
+        // looked like the stats had stopped updating. Unwrapped tolerantly, the
+        // same way Analytics.jsx does, so this keeps working if the route is
+        // ever changed to return the payload flat.
+        if (!cancelled) setStats(body?.data ?? body)
       } catch (err) {
         console.error('Failed to load overview:', err)
         if (!cancelled) setError('Could not load workspace metrics')
@@ -48,8 +55,10 @@ export default function DashboardHome() {
     async function loadActivity() {
       setActivityLoading(true)
       try {
-        const { data } = await analyticsAPI.activity(workspaceId)
-        if (!cancelled) setActivities(data.activity || [])
+        const { data: body } = await analyticsAPI.activity(workspaceId)
+        // Same envelope as the overview above: apiSuccess({ activity }).
+        const payload = body?.data ?? body
+        if (!cancelled) setActivities(payload?.activity || [])
       } catch (err) {
         // Non-fatal: the panel falls back to its empty state. Logged rather
         // than swallowed so a broken endpoint is still diagnosable.

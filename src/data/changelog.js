@@ -24,6 +24,88 @@
  */
 export const CHANGELOG = [
     {
+      date: 'August 17, 2026',
+      items: [
+        {
+          title: 'Choose when a broadcast sends',
+          body: 'The last step of sending now asks when. Send now goes out immediately; schedule picks a date and time, shown in your own timezone. Previously there was no way to say when you wanted something to send.',
+          list: [
+            'A scheduled broadcast can be put back to draft any time before it goes',
+            'Scheduled sends are now picked up within five minutes of the time you set, rather than once a day',
+          ],
+        },
+        {
+          title: 'Send now actually sends',
+          body: 'Pressing Send did not send. It marked the broadcast as pending and handed it to a job that ran once a day at midnight UTC, so anything sent after that hour waited until the following night with nothing on screen to say so. Send now sends, and tells you how many it reached.',
+        },
+        {
+          title: 'Your dashboard numbers are back',
+          body: 'Audience, Broadcasts Sent, Avg Open Rate and Avg Click Rate all showed a dash on the overview page regardless of what was in the account. The figures were being read from the wrong place and never reached the cards. Recent activity was blank for the same reason.',
+        },
+        {
+          title: 'A large send can no longer be sent twice',
+          body: 'A broadcast too big to finish in one pass is completed in the background. Two internal corrections here: that follow-up could not record its own progress, and a send running longer than the interval between checks could be picked up a second time while the first was still going, which would have delivered it twice to the same people. Neither had been reached yet, as no send has been large enough.',
+        },
+      ],
+    },
+    {
+      date: 'August 16, 2026',
+      items: [
+        {
+          title: 'Broadcasts to a list work',
+          body: 'Choosing a list as the audience failed with "Failed to create campaign", and picking Geo-Targeted made the draft stop saving. Both were the database rejecting a value the picker offered. Both audiences now work, and a rejected value says which one it was instead of reporting a generic failure.',
+        },
+        {
+          title: 'Test sends arrive',
+          body: 'Send yourself a test reported success and delivered nothing - it was wired to a provider that had never been configured. It now sends through your workspace provider with your branding, so the test looks like the real thing, and it tells you when the provider rejects it rather than claiming it was sent.',
+        },
+        {
+          title: 'Preview without leaving the editor',
+          body: 'Send Me A Preview is now in the editor itself. The split view also updates as you type - it painted once and then went stale, which is why it seemed to need clicking around to refresh.',
+          list: [
+            'The subject line suggester has been removed. It assembled confident-sounding lines out of the most common word in your draft, which is the wrong kind of help for the one line that decides whether the rest gets read',
+          ],
+        },
+        {
+          title: 'Analytics counts everyone',
+          body: 'Subscriber growth read at most a thousand contacts and counted those, so on a large list the chart was flat and new signups were invisible. It is now counted by the database with no ceiling.',
+          list: [
+            'Capture form submissions and downloads now appear in analytics - they had no campaign attached, so they were excluded from every figure on the page',
+            'The live activity feed works, and shows only your own workspace',
+          ],
+        },
+        {
+          title: 'Unsubscribing takes effect immediately',
+          body: 'A large broadcast is delivered in batches over time. Someone who unsubscribed while one was in flight was still sent it, because the recipient list was fixed when the send started. Opting out now applies to a broadcast already on its way, not just the next one.',
+        },
+        {
+          title: 'Contacts',
+          body: 'The phone column is now shown, Export CSV has moved somewhere findable, and each export button says which set of contacts it means.',
+          list: [
+            'Ticking rows and exporting now exports those rows, rather than everything matching the current filter',
+          ],
+        },
+        {
+          title: 'Capture forms',
+          body: 'Adding someone to a list is now an explicit choice on the form rather than something that happened automatically. A form that hands over a file and a form that signs someone up for future mail are different promises.',
+          list: [
+            'The delivery email can be edited per form - subject, message, and where the download button goes',
+            'A headline field was added to that email',
+            'The download stays behind the email when the email was sent, and is still offered on screen when it was not',
+            'Embedded forms size themselves correctly - no clipped email field, no giant placeholder while loading, and they fill the width the page gives them',
+          ],
+        },
+        {
+          title: 'Signing in with Google and GitHub',
+          body: 'Both were broken by an internal rename and now work again.',
+        },
+        {
+          title: 'Marketing consent is enforced',
+          body: 'Consent is recorded when contacts are imported, and automated emails now respect the same rules broadcasts do. Automations could previously mail people that a broadcast would have skipped.',
+        },
+      ],
+    },
+    {
       date: 'August 10, 2026',
       items: [
         {

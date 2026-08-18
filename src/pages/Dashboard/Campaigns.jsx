@@ -177,13 +177,15 @@ export default function CampaignsPage() {
     }
   }
 
-  async function handleFlowSent(id) {
+  async function handleFlowSent(id, { scheduled = false } = {}) {
     setSendFlowCampaign(null)
     setBusyId(id)
     try {
       await loadCampaigns()
-      toast.addToast('Your newsletter is on its way. Tracking delivery...', 'success')
-      startPollingSend(id)
+      // SendFlow reports the outcome itself now, with the recipient count for a
+      // send or the time for a schedule. A second toast here said "on its way"
+      // for both, which is wrong for a campaign queued for next Tuesday.
+      if (!scheduled) startPollingSend(id)
     } finally { setBusyId(null) }
   }
 

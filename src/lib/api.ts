@@ -102,8 +102,26 @@ export const campaignsAPI = {
     api.patch<ApiResponse>(`/api/clients/${workspaceId}/campaigns/${id}`, data),
   remove: (workspaceId: string, id: string) =>
     api.delete<ApiResponse>(`/api/clients/${workspaceId}/campaigns/${id}`),
-  schedule: (workspaceId: string, id: string) =>
-    api.patch<ApiResponse>(`/api/clients/${workspaceId}/campaigns/${id}`, { schedule_now: true }),
+  /**
+   * Send to the audience now.
+   *
+   * `schedule()` below used to be the only send path, which meant the Send
+   * button marked a campaign pending and left it for a once-daily cron. These
+   * are now two different verbs because they are two different intentions.
+   */
+  send: (workspaceId: string, id: string) =>
+    api.post<ApiResponse>(`/api/clients/${workspaceId}/campaigns/${id}/send`),
+  /**
+   * Queue for a future time. `sendAt` is an ISO 8601 string; omitting it means
+   * "as soon as the processor next runs", which is the old behaviour.
+   */
+  schedule: (workspaceId: string, id: string, sendAt?: string) =>
+    api.patch<ApiResponse>(`/api/clients/${workspaceId}/campaigns/${id}`, {
+      schedule_now: true,
+      ...(sendAt ? { schedule_for: sendAt } : {}),
+    }),
+  unschedule: (workspaceId: string, id: string) =>
+    api.patch<ApiResponse>(`/api/clients/${workspaceId}/campaigns/${id}`, { unschedule: true }),
   sendTest: (workspaceId: string, id: string, email: string) =>
     api.post<ApiResponse>(`/api/clients/${workspaceId}/campaigns/${id}/test`, { email }),
   publish: (workspaceId: string, id: string) =>

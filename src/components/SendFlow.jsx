@@ -49,6 +49,11 @@ export default function SendFlow({ campaign, workspaceId, ownEmail, onClose, onS
   const [estimateLoading, setEstimateLoading] = useState(false)
   const [estimateError, setEstimateError] = useState(null)
   const [sending, setSending] = useState(false)
+  // 'now' | 'later'. Defaults to 'now' because that is what pressing Send used
+  // to do, or rather what it was labelled as doing.
+  const [when, setWhen] = useState('now')
+  const [sendAt, setSendAt] = useState('')
+  const [nowTs, setNowTs] = useState(null)
   const dialogRef = useRef(null)
 
   const fingerprint = contentFingerprint(campaign)
@@ -56,8 +61,27 @@ export default function SendFlow({ campaign, workspaceId, ownEmail, onClose, onS
   const testValid = testedFingerprint !== null && testedFingerprint === fingerprint
   const testStale = testedFingerprint !== null && testedFingerprint !== fingerprint
 
+  // The picker refuses past times in the browser, and the API refuses them
+  // again on arrival - `min` on an input is a hint, not a guarantee.
+  //
+  // Read from state rather than calling Date.now() during render: "now" is not
+  // a pure value, and a dialog left open long enough for the chosen time to
+  // pass should notice, which a value captured once at mount would not.
+  const minLocal = nowTs === null ? undefined : toLocalInputValue(new Date(nowTs + 60_000))
+  const scheduleValid =
+    when === 'now' || (Boolean(sendAt) && nowTs !== null && new Date(sendAt).getTime() > nowTs)
+
   useEffect(() => {
     dialogRef.current?.focus()
+  }, [])
+
+  // Ticks so a time that was valid when picked stops being valid once it passes.
+  // Deferred, following Analytics.jsx, so the effect body itself never calls
+  // setState synchronously.
+  useEffect(() => {
+    queueMicrotask(() => setNowTs(Date.now()))
+    const id = setInterval(() => setNowTs(Date.now()), 30_000)
+    return () => clearInterval(id)
   }, [])
 
   useEffect(() => {
@@ -106,13 +130,37 @@ export default function SendFlow({ campaign, workspaceId, ownEmail, onClose, onS
   }
 
   async function handleSend() {
+    if (when === 'later' && !scheduleValid) return
     setSending(true)
     try {
-      await campaignsAPI.schedule(workspaceId, campaign.id)
-      onSent?.(campaign.id)
+      if (when === 'later') {
+        // datetime-local yields wall-clock text with no zone ("2026-08-18T09:00").
+        // new Date() reads that in the browser's timezone, which is the one the
+        // person picking it is thinking in, and toISOString converts to the UTC
+        // the API stores.
+        await campaignsAPI.schedule(workspaceId, campaign.id, new Date(sendAt).toISOString())
+        toast.addToast(`Scheduled for ${formatWhen(sendAt)}.`, 'success')
+      } else {
+        const { data } = await campaignsAPI.send(workspaceId, campaign.id)
+        const body = data?.data ?? data
+        // A send too large for one invocation finishes in the background. Saying
+        // "sent" here would be a claim the response does not support.
+        if (body?.remaining > 0) {
+          toast.addToast(
+            `Sending. ${body.sentCount?.toLocaleString() ?? 0} delivered so far, ${body.remaining.toLocaleString()} still going out.`,
+            'success'
+          )
+        } else {
+          toast.addToast(`Sent to ${body?.sentCount?.toLocaleString() ?? recipientCount?.toLocaleString() ?? 0}.`, 'success')
+        }
+      }
+      onSent?.(campaign.id, { scheduled: when === 'later' })
     } catch (err) {
       const msg = err?.response?.data?.error
-      toast.addToast(typeof msg === 'object' ? msg?.message : msg || 'Failed to schedule', 'error')
+      toast.addToast(
+        typeof msg === 'object' ? msg?.message : msg || (when === 'later' ? 'Failed to schedule' : 'Failed to send'),
+        'error'
+      )
       setSending(false)
     }
   }
@@ -270,9 +318,58 @@ export default function SendFlow({ campaign, workspaceId, ownEmail, onClose, onS
                 <Row label="Recipients" value={recipientCount?.toLocaleString()} />
                 <Row label="Tested" value={testValid ? 'Yes' : 'No'} />
               </div>
+
+              <fieldset className="space-y-2">
+                <legend className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-2">
+                  When
+                </legend>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  <WhenOption
+                    checked={when === 'now'}
+                    onChange={() => setWhen('now')}
+                    label="Send now"
+                    hint="Goes out immediately"
+                  />
+                  <WhenOption
+                    checked={when === 'later'}
+                    onChange={() => setWhen('later')}
+                    label="Schedule"
+                    hint="Pick a date and time"
+                  />
+                </div>
+
+                {when === 'later' && (
+                  <div className="space-y-1 pt-1">
+                    <label
+                      htmlFor="send-at"
+                      className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted"
+                    >
+                      Send at ({timeZoneLabel()})
+                    </label>
+                    <input
+                      id="send-at"
+                      type="datetime-local"
+                      value={sendAt}
+                      min={minLocal}
+                      onChange={(e) => setSendAt(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10"
+                    />
+                    {sendAt && !scheduleValid && (
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-red">
+                        That time has already passed
+                      </p>
+                    )}
+                  </div>
+                )}
+              </fieldset>
+
               <div className="border-3 border-brutal-fg bg-brutal-yellow/15 p-3">
                 <p className="text-xs font-bold">
-                  This cannot be undone. Once sending starts, the emails are on their way.
+                  {when === 'later'
+                    ? scheduleValid
+                      ? `This will go out on ${formatWhen(sendAt)} and cannot be undone once it starts. You can unschedule it before then.`
+                      : 'Pick a time in the future.'
+                    : 'This cannot be undone. Once sending starts, the emails are on their way.'}
                 </p>
               </div>
             </div>
@@ -300,14 +397,75 @@ export default function SendFlow({ campaign, workspaceId, ownEmail, onClose, onS
               {advanceLabel(step, { testValid })}
             </Btn>
           ) : (
-            <Btn variant="primary" size="md" onClick={handleSend} disabled={sending || !testValid || !recipientCount}>
-              {sending ? 'Sending...' : `Send to ${recipientCount?.toLocaleString() ?? 0}`}
+            <Btn
+              variant="primary"
+              size="md"
+              onClick={handleSend}
+              disabled={sending || !testValid || !recipientCount || !scheduleValid}
+            >
+              {sending
+                ? when === 'later' ? 'Scheduling...' : 'Sending...'
+                : when === 'later'
+                  ? 'Schedule'
+                  : `Send to ${recipientCount?.toLocaleString() ?? 0}`}
             </Btn>
           )}
         </div>
       </div>
     </div>
   )
+}
+
+function WhenOption({ checked, onChange, label, hint }) {
+  return (
+    <label
+      className={`flex items-start gap-2 p-3 border-3 border-brutal-fg cursor-pointer transition ${
+        checked ? 'bg-brutal-yellow' : 'bg-white hover:bg-brutal-surface'
+      }`}
+    >
+      <input
+        type="radio"
+        name="send-when"
+        checked={checked}
+        onChange={onChange}
+        className="mt-0.5 accent-brutal-fg"
+      />
+      <span className="space-y-0.5">
+        <span className="block text-xs font-bold uppercase tracking-wider">{label}</span>
+        <span className="block text-[10px] text-brutal-muted">{hint}</span>
+      </span>
+    </label>
+  )
+}
+
+/**
+ * A Date as the "YYYY-MM-DDTHH:mm" that datetime-local expects, in local time.
+ * toISOString() would be UTC and would shift the value the user sees by their
+ * offset, so the arithmetic is done against the local getters instead.
+ */
+function toLocalInputValue(date) {
+  const pad = (n) => String(n).padStart(2, '0')
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  )
+}
+
+function formatWhen(localValue) {
+  const d = new Date(localValue)
+  if (Number.isNaN(d.getTime())) return '--'
+  return d.toLocaleString(undefined, {
+    weekday: 'short', month: 'short', day: 'numeric',
+    hour: 'numeric', minute: '2-digit',
+  })
+}
+
+function timeZoneLabel() {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'local time'
+  } catch {
+    return 'local time'
+  }
 }
 
 function Row({ label, value }) {
