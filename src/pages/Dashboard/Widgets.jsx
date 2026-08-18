@@ -78,8 +78,56 @@ const WIDGET_TYPES = [
   { value: 'event_rsvp', label: 'Event RSVP', desc: 'Collects name + email for event registration' },
   { value: 'coupon', label: 'Coupon Code', desc: 'Displays a coupon code after signup' },
   { value: 'feedback', label: 'Feedback Form', desc: 'Collects email + brief message' },
-  { value: 'sms_list', label: 'SMS-Only List', desc: 'Collects phone numbers, SMS opt-in by default' },
+  // PROVISIONAL LABEL. This was "SMS-Only List / Collects phone numbers, SMS
+  // opt-in by default", which the product cannot do: `subscribers` has a NOT
+  // NULL email and is keyed UNIQUE (workspace_id, email), so there is nowhere to
+  // put a phone-only contact, and the public submit endpoint rejects a
+  // submission with no address before doing anything else. Renamed so the
+  // picker stops promising it. Whether this type earns its place at all, or
+  // waits for phone-first identity, is still open.
+  { value: 'sms_list', label: 'SMS List', desc: 'Collects a phone number alongside the email' },
 ]
+
+/**
+ * The fields each type implies, applied when the type is chosen.
+ *
+ * Choosing a type used to set `type` and nothing else, so every description
+ * above was a promise the picker did not keep: Event RSVP said "name + email"
+ * and enabled neither name field, and SMS said "phone numbers" and did not
+ * enable the phone field. The only way to get the advertised form was to know
+ * to configure it by hand underneath.
+ *
+ * Email is in every preset because it is not optional anywhere: `subscribers`
+ * has a NOT NULL email with UNIQUE (workspace_id, email), so an address is what
+ * identifies a contact, and the public submit endpoint rejects a submission
+ * without one before doing anything else. That is why SMS collects a phone
+ * number *as well as* an address rather than instead of one.
+ */
+const TYPE_FIELD_PRESETS = {
+  lead_magnet: { email: { required: true } },
+  newsletter: { email: { required: true } },
+  event_rsvp: { email: { required: true }, first_name: { required: true }, last_name: { required: true } },
+  coupon: { email: { required: true } },
+  feedback: { email: { required: true } },
+  sms_list: { email: { required: true }, phone: { required: true } },
+}
+
+/** Types that exchange something for the address, and so need download_url set. */
+const TYPES_WITH_DOWNLOAD = ['lead_magnet', 'coupon']
+
+/** Per-type wording for the one input that means different things. */
+const DOWNLOAD_FIELD_COPY = {
+  lead_magnet: {
+    label: 'Link to your file',
+    placeholder: 'https://example.com/my-guide.pdf',
+    help: 'Emailed to visitors after they sign up',
+  },
+  coupon: {
+    label: 'Coupon code',
+    placeholder: 'SAVE20',
+    help: 'Shown on screen once the form is submitted',
+  },
+}
 
 export default function WidgetsPage() {
   const { workspaceId } = useAuthStore()
@@ -169,13 +217,53 @@ export default function WidgetsPage() {
     setStep(1)
   }
 
+  /**
+   * Choosing a type applies that type's fields.
+   *
+   * It overwrites whatever is in "Fields to Collect" rather than merging,
+   * because the type buttons describe a form ("name + email") and picking one
+   * should produce that form. Anything extra is still a click away underneath,
+   * and the picker sits above that section so the order reads as choose-then-
+   * adjust.
+   */
+  function selectType(value) {
+    setForm(prev => ({
+      ...prev,
+      type: value,
+      fields: { ...(TYPE_FIELD_PRESETS[value] || { email: { required: true } }) },
+      // The column is shared but the meaning is not - a file URL left over from
+      // Lead Magnet is not a coupon code, and showing it under the new label
+      // would present stale input as if it had been entered for this type.
+      download_url: TYPES_WITH_DOWNLOAD.includes(value) ? prev.download_url : '',
+    }))
+    setIsDirty(true)
+    setErrors(prev => ({ ...prev, download_url: undefined }))
+  }
+
+  /**
+   * The inputs the public form will render, in its order.
+   *
+   * Kept as data so the preview stays a rendering of configuration rather than
+   * a second opinion about it. Email is unconditional here because it is
+   * unconditional in WidgetForm.jsx - see the note on TYPE_FIELD_PRESETS.
+   */
+  const previewFields = [
+    form.fields?.first_name?.required && { key: 'first_name', text: 'First name' },
+    form.fields?.last_name?.required && { key: 'last_name', text: 'Last name' },
+    { key: 'email', text: form.placeholder || 'you@example.com' },
+    form.fields?.phone?.required && { key: 'phone', text: 'Phone number' },
+    form.fields?.postal_code?.required && { key: 'postal_code', text: 'ZIP code' },
+  ].filter(Boolean)
+
   function validateStep(stepNum) {
     const errs = {}
     if (stepNum === 1) {
       if (!form.name.trim()) errs.name = 'Required'
       if (!form.slug.trim()) errs.slug = 'Required'
       if (!form.list_id) errs.list_id = 'Select a list'
-      if (form.type === 'lead_magnet' && !form.download_url.trim()) errs.download_url = 'Required'
+      if (TYPES_WITH_DOWNLOAD.includes(form.type) && !form.download_url.trim()) {
+        errs.download_url = 'Required'
+      }
     }
     setErrors(errs)
     return Object.keys(errs).length === 0
@@ -384,19 +472,28 @@ export default function WidgetsPage() {
                 </select>
                 {errors.list_id && <p className="text-xs font-bold text-brutal-red mt-1">{errors.list_id}</p>}
               </div>
-              {form.type === 'lead_magnet' && (
+              {/*
+                Shown for Coupon as well as Lead Magnet. Both store their value
+                in download_url - the lead magnet links to it, the coupon prints
+                it as the code - but the input rendered only for lead magnets,
+                so a Coupon widget had no way to set the code the success screen
+                displays. The label changes because "Link to your file" is the
+                wrong prompt for "SAVE20".
+              */}
+              {TYPES_WITH_DOWNLOAD.includes(form.type) && (
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
-                  Link to your file
-                </label>
-                <input
-                  value={form.download_url}
-                  onChange={e => updateField('download_url', e.target.value)}
-                  className={`w-full px-4 py-2.5 bg-white border-3 text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted ${errors.download_url ? 'border-brutal-red' : 'border-brutal-fg'}`}
-                  placeholder="https://example.com/my-guide.pdf"
-                />
+                  <label htmlFor="wb-download" className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                    {DOWNLOAD_FIELD_COPY[form.type].label}
+                  </label>
+                  <input
+                    id="wb-download"
+                    value={form.download_url}
+                    onChange={e => updateField('download_url', e.target.value)}
+                    className={`w-full px-4 py-2.5 bg-white border-3 text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted ${errors.download_url ? 'border-brutal-red' : 'border-brutal-fg'}`}
+                    placeholder={DOWNLOAD_FIELD_COPY[form.type].placeholder}
+                  />
                   {errors.download_url && <p className="text-xs font-bold text-brutal-red mt-1">{errors.download_url}</p>}
-                  <p className="text-[10px] font-bold text-brutal-muted uppercase mt-1">Emailed to visitors after they sign up</p>
+                  <p className="text-[10px] font-bold text-brutal-muted uppercase mt-1">{DOWNLOAD_FIELD_COPY[form.type].help}</p>
                 </div>
               )}
             </div>
@@ -485,7 +582,7 @@ export default function WidgetsPage() {
                   <button
                     key={t.value}
                     type="button"
-                    onClick={() => updateField('type', t.value)}
+                    onClick={() => selectType(t.value)}
                     className={`text-left px-3 py-2.5 border-3 text-xs transition ${form.type === t.value ? 'border-brutal-fg bg-brutal-yellow text-brutal-fg' : 'border-brutal-fg/20 bg-white text-brutal-muted hover:border-brutal-fg'}`}
                   >
                     <span className="font-bold block">{t.label}</span>
@@ -514,6 +611,12 @@ export default function WidgetsPage() {
                       key={f.key}
                       type="button"
                       disabled={f.required}
+                      // Email is not a preference. A contact is identified by
+                      // address (subscribers.email is NOT NULL and unique per
+                      // workspace), so this stays on for every type - said out
+                      // loud here because a permanently greyed-out button with
+                      // no explanation reads as broken.
+                      title={f.required ? 'Every contact is identified by email address, so this cannot be turned off' : undefined}
                       onClick={() => {
                         if (isLocationToggle) {
                           updateField('collect_location', !form.collect_location)
@@ -795,9 +898,41 @@ export default function WidgetsPage() {
                         {form.description || 'Your description here.'}
                       </p>
                     )}
-                    <div className="w-full bg-white border-3 text-xs text-brutal-muted" style={{ borderColor: form.styles?.border_color || '#0a0a0a', padding: form.size === 'small' ? '6px 12px' : '12px 16px' }}>
-                      {form.placeholder || 'you@example.com'}
-                    </div>
+                    {/*
+                      The fields this form will actually render.
+
+                      This was a single hardcoded email box that ignored both
+                      `type` and `fields`, so every widget type previewed
+                      identically and toggling Phone or ZIP below changed
+                      nothing on screen. A preview that cannot show the
+                      difference between a Feedback form and a Lead Magnet is
+                      what made the type picker look like it did nothing.
+
+                      Order and conditions mirror WidgetForm.jsx, which is what
+                      visitors get; if that order changes, change it here too.
+                    */}
+                    {previewFields.map(f => (
+                      <div
+                        key={f.key}
+                        className="w-full bg-white border-3 text-xs text-brutal-muted"
+                        style={{ borderColor: form.styles?.border_color || '#0a0a0a', padding: form.size === 'small' ? '6px 12px' : '12px 16px' }}
+                      >
+                        {f.text}
+                      </div>
+                    ))}
+                    {form.type === 'feedback' && (
+                      <div
+                        className="w-full bg-white border-3 text-xs text-brutal-muted"
+                        style={{ borderColor: form.styles?.border_color || '#0a0a0a', padding: form.size === 'small' ? '6px 12px' : '12px 16px', minHeight: form.size === 'small' ? '2.5rem' : '4rem' }}
+                      >
+                        Your feedback...
+                      </div>
+                    )}
+                    {form.fields?.phone?.required && form.type !== 'sms_list' && (
+                      <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: form.styles?.text_color || '#a8a49a' }}>
+                        📱 Text me about events &amp; offers
+                      </p>
+                    )}
                     <div className="w-full border-3 font-bold text-xs uppercase tracking-wider text-center"
                       style={{ backgroundColor: form.styles?.primary_color || '#0a0a0a', borderColor: form.styles?.border_color || '#0a0a0a', color: form.styles?.button_text_color || '#ffffff', padding: form.size === 'small' ? '6px 12px' : '12px 16px' }}>
                       {form.button_text || 'Button'}
