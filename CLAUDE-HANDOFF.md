@@ -10,7 +10,16 @@ _Last updated: 2026-08-17. Written for someone picking this up cold, human or ag
 
 ## 1. The shape of the thing
 
-Veloce is a newsletter platform. Two repos, both auto-deploying to Vercel on push to `main`.
+Veloce is a newsletter platform. Two repos on Vercel.
+
+**Only `newsletter-core` auto-deploys on push to `main`.** The frontend does not, despite
+`vercel git connect` reporting the repo as connected: a push to `newsletter` creates no
+deployment record at all, and every production deployment on that project is a CLI upload
+(5-7s duration, no git metadata under `vercel inspect`). Verified 2026-08-18 - a push
+that deployed the backend automatically produced nothing on the frontend until
+`npx vercel --prod --yes` was run from the repo. **Deploying the frontend is a manual
+step.** Root cause not yet established; check the project's Git settings before assuming
+a push shipped anything.
 
 | | Path | Stack | Live |
 | --- | --- | --- | --- |
