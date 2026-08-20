@@ -10,16 +10,7 @@ _Last updated: 2026-08-17. Written for someone picking this up cold, human or ag
 
 ## 1. The shape of the thing
 
-Veloce is a newsletter platform. Two repos on Vercel.
-
-**Only `newsletter-core` auto-deploys on push to `main`.** The frontend does not, despite
-`vercel git connect` reporting the repo as connected: a push to `newsletter` creates no
-deployment record at all, and every production deployment on that project is a CLI upload
-(5-7s duration, no git metadata under `vercel inspect`). Verified 2026-08-18 - a push
-that deployed the backend automatically produced nothing on the frontend until
-`npx vercel --prod --yes` was run from the repo. **Deploying the frontend is a manual
-step.** Root cause not yet established; check the project's Git settings before assuming
-a push shipped anything.
+Veloce is a newsletter platform. Two repos, both auto-deploying to Vercel on push to `main`.
 
 | | Path | Stack | Live |
 | --- | --- | --- | --- |
@@ -169,6 +160,34 @@ matters most, since it is what finishes a partial send.
 **`vercel ls` is unreliable.** Ages and statuses have been repeatedly wrong. Verify a
 deploy by fetching a built asset and grepping for a string you just added, or by hitting an
 endpoint whose behaviour changed.
+
+**`vercel inspect` (CLI v56) prints no Git fields at all**, and neither does
+`vercel project inspect`. Absence of a commit SHA in that output is not evidence a
+deployment was a manual CLI upload - the data exists, the CLI just does not show it. On
+2026-08-18 this cost real time and produced a confidently wrong entry in this very
+document, claiming the frontend did not auto-deploy. It always had. Both repos deploy on
+push; every commit has a `src=git` production deployment.
+
+To ask how a deployment was triggered, use the API, which answers directly:
+
+```bash
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://api.vercel.com/v6/deployments?projectId=$PID&teamId=$TID&limit=10" \
+  | python3 -c "import sys,json;[print(x.get('source'), (x.get('meta') or {}).get('githubCommitSha','-')[:7]) for x in json.load(sys.stdin)['deployments']]"
+```
+
+The token in `~/Library/Application Support/com.vercel.cli/auth.json` expires and is
+refreshed by the CLI, so re-read it immediately before use rather than caching it.
+
+**Do not read a tool's silence as a finding.** Both of the above, plus the `ugrep` note
+below, are the same mistake: a tool returned nothing and that was taken to mean nothing
+was there.
+
+**`grep` in this environment is `ugrep`.** `-rl` and `-c` have returned empty output for
+patterns that are definitely present in the file, which on 2026-08-18 produced a false
+"the code did not make it into the bundle" conclusion. For anything load-bearing - "is my
+change in this build?" - scan in Python (`open(f).read()`, `needle in text`) rather than
+trusting a silent grep.
 
 **The Supabase MCP reports timeouts on statements that still commit.** Treat a timeout as
 "unknown, go verify", never as "failed". It has left partial state twice.
