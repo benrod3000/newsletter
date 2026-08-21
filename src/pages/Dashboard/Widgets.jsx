@@ -966,7 +966,14 @@ export default function WidgetsPage() {
               {widgets.map(w => (
                 <div key={w.id} className="border-3 border-brutal-fg bg-white hover:shadow-brutal transition">
                   <div className="p-6">
-                    <div className="flex items-start justify-between gap-4">
+                    {/*
+                      Stacks on mobile. The action row is four buttons at
+                      roughly 380px and was `shrink-0`, so on a phone it held
+                      its width, squeezed this column to almost nothing - the
+                      name wrapped one word per line - and still ran off the
+                      right edge. Side by side only once there is room for it.
+                    */}
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-heading text-xl uppercase tracking-wide truncate">{w.name}</h3>
@@ -987,7 +994,7 @@ export default function WidgetsPage() {
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap sm:shrink-0">
                         <a href={`/w/${w.id}`} target="_blank" rel="noopener noreferrer"
                           className="px-3 py-1.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition inline-block">
                           View Live

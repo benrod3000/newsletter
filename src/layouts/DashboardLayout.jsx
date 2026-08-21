@@ -201,7 +201,24 @@ export default function DashboardLayout() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 bg-brutal-bg overflow-x-hidden">
+        {/*
+          `min-w-0` is what makes overflow-x-hidden mean "contain" instead of
+          "clip".
+
+          A flex item defaults to `min-width: auto`, which refuses to shrink
+          below its content's intrinsic width. So any page with a wide child - a
+          table, a row of buttons, a long email address - pushed <main> wider
+          than the viewport, and overflow-x-hidden then cut the excess off with
+          no way to scroll to it. That is the "parts of the site are cut off on
+          mobile" report: not a styling detail on each page, one missing
+          declaration here. The Team badge, the Capture Forms delete button, the
+          Settings tab row and the branding inputs were all the same bug.
+
+          With min-w-0 the column can shrink to the viewport, and children that
+          own an overflow-x-auto (the campaigns table, the settings tabs) scroll
+          themselves, which is the behaviour they were always written for.
+        */}
+        <main className="flex-1 min-w-0 bg-brutal-bg overflow-x-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-10">
             <div className="animate-fade-up">
               <Outlet />

@@ -335,7 +335,9 @@ export default function CampaignsPage() {
           </h2>
           <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider mt-1">Create and send messages to your people</p>
         </div>
-        <div className="flex items-center gap-2">
+        {/* Wraps: three controls in one non-wrapping row ran off a phone screen,
+            taking the SMS button with it. */}
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="flex border-3 border-brutal-fg bg-white overflow-x-auto">
             <button onClick={() => setViewMode('table')} className={`shrink-0 px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition ${viewMode === 'table' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>▤ Table</button>
             <button onClick={() => setViewMode('cards')} className={`shrink-0 px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'cards' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>▥ Cards</button>
@@ -664,7 +666,11 @@ export default function CampaignsPage() {
             )
           })}
         </div>
-      ) : (
+      ) : viewMode === 'table' ? (
+        // Was a bare `else`, so the table rendered for calendar mode too and the
+        // calendar below was appended underneath it - which is why picking
+        // Calendar appeared to show the table "as well as" the calendar. The
+        // three views are alternatives, not layers.
         <div className="border-3 border-brutal-fg overflow-x-auto bg-white shadow-brutal">
           <table className="w-full text-sm border-collapse">
             <thead>
@@ -749,7 +755,7 @@ export default function CampaignsPage() {
             </tbody>
           </table>
         </div>
-      )}
+      ) : null}
 
       {/* ======== Calendar View ======== */}
       {viewMode === 'calendar' && (

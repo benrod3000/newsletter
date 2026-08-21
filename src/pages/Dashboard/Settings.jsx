@@ -33,13 +33,20 @@ function ProviderKeyField({ label, hint, placeholder, value, saved, onChange }) 
         {label}
       </label>
       <div className="flex gap-2">
+        {/*
+          min-w-0 and size={1}: the placeholder ("Saved. Paste a new key to
+          replace it.") sets the input's intrinsic width, a flex item will not
+          go below that, and the Reveal and Remove buttons were pushed off the
+          right edge of the phone. Same fix as the embed form's email field.
+        */}
         <input
           type={reveal ? 'text' : 'password'}
+          size={1}
           value={cleared ? '' : value || ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder={holding ? 'Saved. Paste a new key to replace it.' : placeholder}
           aria-label={label}
-          className={`flex-1 px-4 py-2.5 border-3 border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted ${
+          className={`flex-1 min-w-0 px-4 py-2.5 border-3 border-brutal-fg text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted ${
             holding ? 'bg-brutal-green/5' : 'bg-brutal-bg'
           }`}
         />
@@ -655,7 +662,10 @@ export default function SettingsPage() {
             </div>
 
             {/* Brand Colors */}
-            <div className="grid grid-cols-2 gap-5 mb-6">
+            {/* One column on a phone: two side by side left each swatch plus its
+                hex field about 150px, which the 12-unit swatch and the hex text
+                do not fit into, so the secondary field ran off the edge. */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
               {['primary', 'secondary'].map((color) => (
                 <div key={color}>
                   <label className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
@@ -674,7 +684,7 @@ export default function SettingsPage() {
                           },
                         })
                       }
-                      className="w-12 h-10 border-3 border-brutal-fg cursor-pointer"
+                      className="w-12 h-10 shrink-0 border-3 border-brutal-fg cursor-pointer"
                     />
                     <input
                       type="text"
@@ -688,7 +698,8 @@ export default function SettingsPage() {
                           },
                         })
                       }
-                      className="flex-1 px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg font-mono text-sm focus:outline-none focus:bg-brutal-yellow/10"
+                      size={1}
+                      className="flex-1 min-w-0 px-4 py-2.5 bg-brutal-bg border-3 border-brutal-fg font-mono text-sm focus:outline-none focus:bg-brutal-yellow/10"
                     />
                   </div>
                 </div>
@@ -1225,17 +1236,21 @@ export default function SettingsPage() {
                 {team.length === 0 ? (
                   <p className="text-sm text-brutal-muted font-bold uppercase tracking-wider">No team members yet.</p>
                 ) : team.map(function(m) {
-                  return <div key={m.id} className="flex items-center justify-between border-3 border-brutal-fg p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 border-2 border-brutal-fg bg-brutal-surface flex items-center justify-center text-xs font-bold uppercase">{m.email[0]}</div>
-                      <div>
-                        <p className="text-sm font-bold">{m.email}</p>
+                  // gap-3 + min-w-0 + truncate: a long address
+                  // (benrod1+testteam@gmail.com) has no break opportunity, so
+                  // the name column would not shrink and pushed the role badge
+                  // out through the right edge of the card.
+                  return <div key={m.id} className="flex items-center justify-between gap-3 border-3 border-brutal-fg p-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 shrink-0 border-2 border-brutal-fg bg-brutal-surface flex items-center justify-center text-xs font-bold uppercase">{m.email[0]}</div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold truncate" title={m.email}>{m.email}</p>
                         <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">
                           {m.role} {!m.is_active ? '(inactive)' : ''} · {m.last_login_at ? `Last login ${new Date(m.last_login_at).toLocaleDateString()}` : 'Never logged in'}
                         </p>
                       </div>
                     </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider border-2 ${m.is_active ? 'border-brutal-green text-brutal-green bg-brutal-green/10' : 'border-brutal-fg/30 text-brutal-muted'}`}>{m.role}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 shrink-0 uppercase tracking-wider border-2 ${m.is_active ? 'border-brutal-green text-brutal-green bg-brutal-green/10' : 'border-brutal-fg/30 text-brutal-muted'}`}>{m.role}</span>
                   </div>
                 })}
               </div>
