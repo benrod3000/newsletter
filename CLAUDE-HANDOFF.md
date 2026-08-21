@@ -176,8 +176,19 @@ curl -s -H "Authorization: Bearer $TOKEN" \
   | python3 -c "import sys,json;[print(x.get('source'), (x.get('meta') or {}).get('githubCommitSha','-')[:7]) for x in json.load(sys.stdin)['deployments']]"
 ```
 
-The token in `~/Library/Application Support/com.vercel.cli/auth.json` expires and is
-refreshed by the CLI, so re-read it immediately before use rather than caching it.
+The token in `~/Library/Application Support/com.vercel.cli/auth.json` expires quickly,
+and **re-reading the file is not enough** - it only holds a fresh token just after the
+CLI has run. Run any CLI command first, then read it, then use it immediately:
+
+```bash
+npx vercel whoami >/dev/null 2>&1        # forces the refresh
+TOKEN=$(python3 -c "import json,os;print(json.load(open(os.path.expanduser('~/Library/Application Support/com.vercel.cli/auth.json')))['token'])")
+```
+
+A stale token answers `{"error":{"code":"forbidden","invalidToken":true}}`, which is easy
+to misread as "no such project" or "no deployments" - especially when a wrapper script
+swallows it and prints an empty list. Never keep it in a file; hold it in a shell
+variable for the one command that needs it.
 
 **Do not read a tool's silence as a finding.** Both of the above, plus the `ugrep` note
 below, are the same mistake: a tool returned nothing and that was taken to mean nothing
