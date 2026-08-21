@@ -60,13 +60,33 @@ export default function SubscribersPage() {
   const [tagPromptOpen, setTagPromptOpen] = useState(false)
   const [showListPicker, setShowListPicker] = useState(false)
   const [bulkMoving, setBulkMoving] = useState(false)
+  const [newListPromptOpen, setNewListPromptOpen] = useState(false)
   const [subscriberLists, setSubscriberLists] = useState([])
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
 
   // Geo-radius filter
   const [geoFilter, setGeoFilter] = useState(null)
-  const [geoLoading, setGeoLoading] = useState(false)
+  // geoLoading removed: it tracked the duplicate load that no longer happens.
+  // The GeoFilter spinner now reads the page's own `loading`, which is the
+  // request it was always meant to be reporting on.
+  /**
+   * Sequence number for list requests, so a slow earlier response cannot
+   * overwrite a newer one.
+   *
+   * Applying a radius fired two loads at once - one directly from the
+   * GeoFilter's onChange and one from the effect below, which watches
+   * geoFilter. The direct call read the state it was in the middle of setting,
+   * so it requested the *unfiltered* list, and whichever finished last won.
+   * The unfiltered query counts 10,310 rows with count:exact and is reliably
+   * the slower of the two, so it usually landed second and replaced the seven
+   * matches with everybody - which is exactly what "it says 7 and shows all"
+   * looks like.
+   *
+   * The duplicate call is gone (see the GeoFilter props below), and this makes
+   * the remaining ordering safe rather than relying on it.
+   */
+  const loadSeq = useRef(0)
 
   // Audience segments
   const [segments, setSegments] = useState([])
@@ -102,6 +122,7 @@ export default function SubscribersPage() {
   }, [workspaceId])
 
   async function loadSubscribers() {
+    const seq = ++loadSeq.current
     setLoading(true)
     setError(null)
     try {
@@ -113,22 +134,30 @@ export default function SubscribersPage() {
       }
       if (dateFrom) params.joined_after = dateFrom
       if (dateTo) params.joined_before = dateTo
-      if (geoFilter) {
-        params.near_lat = geoFilter.locations[0].lat
-        params.near_lng = geoFilter.locations[0].lng
-        params.radius = geoFilter.radius
+      if (geoFilter?.locations?.length) {
+        // The radius lives on the location, not on the payload - GeoFilter emits
+        // `{ locations: [{ lat, lng, radius, ... }] }` and each area carries its
+        // own. Reading `geoFilter.radius` gave undefined, axios dropped the
+        // param, and the API fell back to its 10-mile default: pick 25 miles and
+        // you silently got 10.
+        const [area] = geoFilter.locations
+        params.near_lat = area.lat
+        params.near_lng = area.lng
+        params.radius = area.radius ?? 10
       }
       if (search.trim()) params.search = search.trim()
       params.limit = perPage
       params.offset = (page - 1) * perPage
       const { data } = await subscribersAPI.list(workspaceId, params)
+      if (seq !== loadSeq.current) return // A newer request has already answered.
       setSubscribers(data.subscribers || [])
       setTotal(data.total ?? data.subscribers?.length ?? 0)
     } catch (err) {
+      if (seq !== loadSeq.current) return
       console.error('Failed to load subscribers:', err)
       setError('Could not load subscribers. Is the API running?')
     } finally {
-      setLoading(false)
+      if (seq === loadSeq.current) setLoading(false)
     }
   }
 
@@ -190,6 +219,59 @@ export default function SubscribersPage() {
       setSelectedIds(new Set())
     } else {
       setSelectedIds(new Set(subscribers.map((s) => s.id)))
+    }
+  }
+
+  /**
+   * Create a list and put the current selection in it, in one step.
+   *
+   * Two calls rather than one endpoint, because the API has no
+   * create-with-members route and inventing one for this is more surface than
+   * the feature needs. The order matters: if the member add fails, the list
+   * still exists and is visible in the picker, so a retry is "move to list"
+   * rather than a duplicate-name 409.
+   */
+  async function createListFromSelection(name) {
+    setNewListPromptOpen(false)
+    setBulkMoving(true)
+    const ids = Array.from(selectedIds)
+    try {
+      const token = getAuthToken()
+      const base = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
+      const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+
+      const createRes = await fetch(`${base}/api/clients/${workspaceId}/subscriber-lists`, {
+        method: 'POST', headers, body: JSON.stringify({ name }),
+      })
+      if (!createRes.ok) {
+        // 409 is the common one and is worth saying plainly - the name is taken.
+        const msg = createRes.status === 409
+          ? `A list called "${name}" already exists.`
+          : `Could not create the list (HTTP ${createRes.status}).`
+        toast.addToast(msg, 'error')
+        return
+      }
+      const created = await createRes.json().catch(() => null)
+      const list = created?.list ?? created?.data?.list ?? created
+      if (!list?.id) {
+        toast.addToast('List created, but the response had no id - add the members from the picker.', 'error')
+        return
+      }
+
+      const addRes = await fetch(`${base}/api/clients/${workspaceId}/subscriber-lists/${list.id}/members`, {
+        method: 'POST', headers, body: JSON.stringify({ subscriber_ids: ids }),
+      })
+      if (!addRes.ok) throw new Error(`HTTP ${addRes.status}`)
+      const body = await addRes.json().catch(() => null)
+      const added = body?.added ?? ids.length
+
+      setSubscriberLists((prev) => [...prev, list])
+      setSelectedIds(new Set())
+      toast.addToast(`Created "${name}" with ${added} contact${added === 1 ? '' : 's'}.`, 'success')
+    } catch {
+      toast.addToast(`List "${name}" was created but the contacts could not be added. Try Move to List.`, 'error')
+    } finally {
+      setBulkMoving(false)
     }
   }
 
@@ -641,20 +723,30 @@ export default function SubscribersPage() {
       </div>
 
       {/* Geo-radius filter */}
+      {/*
+        Both handlers only set state. They used to also call loadSubscribers()
+        directly, which read the geoFilter it was in the middle of setting and
+        so requested the unfiltered list - a second, racing request whose slower
+        count:exact scan usually landed last and put all 10,310 rows back. The
+        effect above already reloads when geoFilter changes; one path is enough.
+
+        Page resets to 1 because the filtered set is far smaller: applying a
+        radius while on page 3 of 10,310 otherwise lands past the end of seven
+        results and shows an empty table.
+      */}
       <GeoFilter
-        onChange={async (geo) => {
+        onChange={(geo) => {
+          setPage(1)
           setGeoFilter(geo)
-          setGeoLoading(true)
-          await loadSubscribers()
-          setGeoLoading(false)
         }}
         onClear={() => {
+          setPage(1)
           setGeoFilter(null)
-          loadSubscribers()
         }}
-        loading={geoLoading}
+        loading={loading}
         active={!!geoFilter}
         subscribers={subscribers}
+        total={total}
       />
 
       {/* Save the current filter values under a name, for re-use. */}
@@ -766,6 +858,19 @@ export default function SubscribersPage() {
                 <div className="border-b-2 border-brutal-fg bg-brutal-yellow px-3 py-1.5">
                   <span className="text-[10px] font-bold uppercase tracking-wider">Select List</span>
                 </div>
+                {/*
+                  Creating the list from here is the point when a radius is
+                  applied: the reason to select seven people in Encinitas is
+                  usually to make them a list, and previously the only way was to
+                  leave, create an empty list on another page, come back, and
+                  re-select. The picker offered existing lists only.
+                */}
+                <button
+                  onClick={() => { setShowListPicker(false); setNewListPromptOpen(true) }}
+                  className="w-full text-left px-3 py-2 text-xs font-bold text-brutal-green hover:bg-brutal-green/10 border-b-2 border-brutal-fg/20"
+                >
+                  + New list from selection
+                </button>
                 {subscriberLists?.map((list) => (
                   <button
                     key={list.id}
@@ -1064,6 +1169,26 @@ export default function SubscribersPage() {
         validate={(v) => (!v ? 'Enter a tag name' : v.length > 50 ? 'Keep tags under 50 characters' : '')}
         onSubmit={bulkTag}
         onCancel={() => setTagPromptOpen(false)}
+      />
+
+      <PromptModal
+        open={newListPromptOpen}
+        title="New list from selection"
+        message={
+          geoFilter?.locations?.length
+            ? `${selectedIds.size} contact${selectedIds.size === 1 ? '' : 's'} selected within ${geoFilter.locations[0].radius ?? 10} mi of ${geoFilter.locations[0].city || 'the selected point'}.`
+            : `${selectedIds.size} contact${selectedIds.size === 1 ? '' : 's'} selected.`
+        }
+        label="List name"
+        placeholder={
+          geoFilter?.locations?.[0]?.city
+            ? `e.g. ${geoFilter.locations[0].city} ${geoFilter.locations[0].radius ?? 10}mi`
+            : 'e.g. Local subscribers'
+        }
+        confirmLabel="Create list"
+        validate={(v) => (!v ? 'Enter a list name' : v.length > 100 ? 'Keep list names under 100 characters' : '')}
+        onSubmit={createListFromSelection}
+        onCancel={() => setNewListPromptOpen(false)}
       />
     </div>
   )

@@ -40,8 +40,10 @@ function AnimatedStat({ value }) {
  *   loading?: boolean // spinner on the apply button
  *   active?: boolean  // highlights the toggle when a filter is active
  *   subscribers?: [{ id, latitude, longitude, health_score }] // plotted + counted
+ *   total?: number // workspace-wide count, so the preview can say when it is
+ *                  // counting a sample rather than everyone
  */
-export default function GeoFilter({ onChange, onClear, loading = false, active = false, subscribers = [] }) {
+export default function GeoFilter({ onChange, onClear, loading = false, active = false, subscribers = [], total = null }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState([])
@@ -241,6 +243,21 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   })() : 0
 
   const hasPlottable = subscribers.some(s => s.latitude && s.longitude)
+
+  /*
+   * totalInRange is Haversine over the `subscribers` prop, which is the page
+   * the table currently has - fifty rows - not the workspace. On a workspace of
+   * 10,310 that is a sample, and the number was presented as fact. It happened
+   * to be correct in testing because the recent real signups sort above the
+   * 10,300 rows imported on one day, so page one held all of them; on page two,
+   * or after any import, it would not be.
+   *
+   * The count still comes from the loaded rows - the alternative is a
+   * server-side count endpoint per keystroke of the radius slider - but it says
+   * when it is looking at part of the data. Once the filter is applied the
+   * table's own total is server-derived and authoritative.
+   */
+  const sampling = typeof total === 'number' && subscribers.length < total
   const maxRadius = locations.length ? Math.max(...locations.map(l => l.radius ?? 10)) : 0
   // Derived (not synced) so removing a location can never leave a stale index.
   const safeIdx = locations.length ? Math.min(selectedLocIdx, locations.length - 1) : 0
@@ -613,8 +630,12 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
               <div className="border-3 border-brutal-fg bg-brutal-green text-white px-4 py-3 flex items-center justify-between gap-3">
                 <div className="flex items-baseline gap-2 min-w-0">
                   <Users size={20} className="shrink-0 self-center" />
-                  <span className="font-heading text-4xl sm:text-5xl leading-none"><AnimatedStat value={totalInRange} /></span>
-                  <span className="text-[11px] font-bold uppercase tracking-wider opacity-90">subscribers<br className="hidden sm:inline" /> in range</span>
+                  <span className="font-heading text-4xl sm:text-5xl leading-none">
+                    {sampling && '~'}<AnimatedStat value={totalInRange} />
+                  </span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider opacity-90">
+                    subscribers<br className="hidden sm:inline" /> in range
+                  </span>
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-wider opacity-80 text-right shrink-0">
                   {locations.length} area{locations.length !== 1 ? 's' : ''}<br />up to {maxRadius} mi
@@ -676,7 +697,11 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
               disabled={locations.length === 0 || loading}
               className="flex-1 px-4 py-2.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal disabled:opacity-40 disabled:cursor-not-allowed transition active:translate-y-0.5"
             >
-              {loading ? 'Loading...' : hasPlottable && locations.length > 0 ? `Show ${totalInRange} subscribers` : 'Show subscribers'}
+              {loading
+                ? 'Loading...'
+                : hasPlottable && locations.length > 0
+                  ? `Show ${sampling ? '~' : ''}${totalInRange} subscribers`
+                  : 'Show subscribers'}
             </button>
             {applied && (
               <button
