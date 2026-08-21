@@ -225,9 +225,17 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     gsapTweens.current.push(tw)
   }
 
-  // ─── Count subscribers within any location's radius (Haversine) ───
-  const totalInRange = locations.length > 0 ? (() => {
+  /*
+   * The ids inside any location's radius (Haversine).
+   *
+   * The set itself is what the map needs, not just its size: every contact
+   * rendered identically whether it was inside the circle or not, so a cleared
+   * filter and an applied one drew the same green dots and the map looked like
+   * it was still holding a selection. The pins below dim anything outside.
+   */
+  const inRangeIds = (() => {
     const set = new Set()
+    if (locations.length === 0) return set
     const R = 3959
     locations.forEach(loc => {
       const locRadius = loc.radius ?? 10
@@ -239,8 +247,10 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
         if (2 * R * Math.asin(Math.sqrt(a)) <= locRadius) set.add(s.id)
       })
     })
-    return set.size
-  })() : 0
+    return set
+  })()
+
+  const totalInRange = inRangeIds.size
 
   const hasPlottable = subscribers.some(s => s.latitude && s.longitude)
 
@@ -264,13 +274,22 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
 
   // ─── Helper: add subscriber pins to a Leaflet layer ───
   function addSubscriberPins(layer) {
+    // With a radius drawn, contacts outside it are context rather than content:
+    // dimmed and small, so the ones the filter has actually caught are the only
+    // thing reading as selected. With no radius, every contact is drawn normally
+    // - the map's other job is showing where an audience is.
+    const filtering = locations.length > 0
     subscribers.forEach(s => {
       if (!s.latitude || !s.longitude) return
       const colors = { active: '#2b7657', at_risk: '#f5e642', cold: '#e03131' }
       const sizes = { active: 7, at_risk: 5, cold: 3 }
+      const inRange = !filtering || inRangeIds.has(s.id)
       L.circleMarker([s.latitude, s.longitude], {
-        radius: sizes[s.health_score] || 4, color: '#0a0a0a',
-        fillColor: colors[s.health_score] || '#a8a49a', fillOpacity: 1, weight: 2,
+        radius: inRange ? (sizes[s.health_score] || 4) : 3,
+        color: inRange ? '#0a0a0a' : '#a8a49a',
+        fillColor: inRange ? (colors[s.health_score] || '#a8a49a') : '#d4d0c8',
+        fillOpacity: inRange ? 1 : 0.45,
+        weight: inRange ? 2 : 1,
       }).addTo(layer)
     })
   }
@@ -586,11 +605,21 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
           <div className="border-3 border-brutal-fg overflow-hidden">
             <div className="bg-brutal-fg text-white px-3 py-1.5 flex flex-wrap items-center justify-between text-[10px] font-bold uppercase tracking-wider gap-x-3 gap-y-1">
               <span>{locations.length === 0 ? 'Click the map to drop a pin' : `${locations.length} location${locations.length !== 1 ? 's' : ''}`}</span>
+              {/*
+                Says "your contacts" explicitly. The dots are health-coloured, so
+                the common case is green - and green is also this UI's selection
+                colour, which made a cleared filter look like it was still
+                holding a selection. Naming what they are costs two words.
+              */}
               {hasPlottable && (
                 <span className="flex items-center gap-2">
+                  <span className="opacity-70">Your contacts:</span>
                   <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#2b7657'}} /> Active</span>
                   <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#f5e642'}} /> Risk</span>
                   <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#e03131'}} /> Cold</span>
+                  {locations.length > 0 && (
+                    <span className="flex items-center gap-1 opacity-70"><span className="inline-block w-2 h-2 rounded-full border border-white/40" style={{background:'#d4d0c8'}} /> Outside</span>
+                  )}
                 </span>
               )}
             </div>

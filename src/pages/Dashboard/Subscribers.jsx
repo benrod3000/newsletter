@@ -61,6 +61,7 @@ export default function SubscribersPage() {
   const [showListPicker, setShowListPicker] = useState(false)
   const [bulkMoving, setBulkMoving] = useState(false)
   const [newListPromptOpen, setNewListPromptOpen] = useState(false)
+  const [filterListPromptOpen, setFilterListPromptOpen] = useState(false)
   const [subscriberLists, setSubscriberLists] = useState([])
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -121,33 +122,42 @@ export default function SubscribersPage() {
       .finally(() => setSegmentsLoading(false))
   }, [workspaceId])
 
+  /**
+   * The filter currently on screen, as query params.
+   *
+   * One definition, used by the table load, the export and the build-a-list
+   * action, so those three cannot disagree about what the operator is looking
+   * at. They did: the table filtered by radius, the export by status only.
+   */
+  function activeFilterParams() {
+    const params = {}
+    if (statusFilter) params.status = statusFilter
+    if (dateFrom) params.joined_after = dateFrom
+    if (dateTo) params.joined_before = dateTo
+    if (search.trim()) params.search = search.trim()
+    if (geoFilter?.locations?.length) {
+      const [area] = geoFilter.locations
+      params.near_lat = area.lat
+      params.near_lng = area.lng
+      params.radius = area.radius ?? 10
+    }
+    return params
+  }
+
+  /** True when anything is narrowing the list, so the UI can say what it will act on. */
+  const filterActive = Boolean(statusFilter || dateFrom || dateTo || search.trim() || geoFilter)
+
   async function loadSubscribers() {
     const seq = ++loadSeq.current
     setLoading(true)
     setError(null)
     try {
-      const params = {}
-      if (statusFilter === 'active' || statusFilter === 'at_risk' || statusFilter === 'cold') {
-        params.status = statusFilter
-      } else if (statusFilter) {
-        params.status = statusFilter
-      }
-      if (dateFrom) params.joined_after = dateFrom
-      if (dateTo) params.joined_before = dateTo
-      if (geoFilter?.locations?.length) {
-        // The radius lives on the location, not on the payload - GeoFilter emits
-        // `{ locations: [{ lat, lng, radius, ... }] }` and each area carries its
-        // own. Reading `geoFilter.radius` gave undefined, axios dropped the
-        // param, and the API fell back to its 10-mile default: pick 25 miles and
-        // you silently got 10.
-        const [area] = geoFilter.locations
-        params.near_lat = area.lat
-        params.near_lng = area.lng
-        params.radius = area.radius ?? 10
-      }
-      if (search.trim()) params.search = search.trim()
-      params.limit = perPage
-      params.offset = (page - 1) * perPage
+      // The radius lives on the location, not on the payload - GeoFilter emits
+      // `{ locations: [{ lat, lng, radius, ... }] }` and each area carries its
+      // own. Reading `geoFilter.radius` gave undefined, axios dropped the param,
+      // and the API fell back to its 10-mile default: pick 25 miles and you
+      // silently got 10. See activeFilterParams().
+      const params = { ...activeFilterParams(), limit: perPage, offset: (page - 1) * perPage }
       const { data } = await subscribersAPI.list(workspaceId, params)
       if (seq !== loadSeq.current) return // A newer request has already answered.
       setSubscribers(data.subscribers || [])
@@ -231,45 +241,108 @@ export default function SubscribersPage() {
    * still exists and is visible in the picker, so a retry is "move to list"
    * rather than a duplicate-name 409.
    */
+  /**
+   * Every contact matching the current filter, not just the page on screen.
+   *
+   * Selection is per-page, so "select all" on a radius matching 400 people means
+   * 50. Building a list out of a filter is the whole point of drawing a circle
+   * on a map, so the filter - not the checkbox state - is the input.
+   *
+   * Pages through the same endpoint the table uses, so the set is exactly what
+   * was on screen. 1000 is the server's per-request ceiling.
+   */
+  async function fetchAllMatchingIds() {
+    const PAGE = 1000
+    const out = []
+    for (let offset = 0; ; offset += PAGE) {
+      const { data } = await subscribersAPI.list(workspaceId, {
+        ...activeFilterParams(), limit: PAGE, offset,
+      })
+      const rows = data.subscribers || []
+      out.push(...rows.map((s) => s.id))
+      const totalMatching = data.total ?? out.length
+      if (rows.length < PAGE || out.length >= totalMatching) break
+      // A filter matching the whole workspace is a mis-click, not a request.
+      if (out.length >= 25000) break
+    }
+    return out
+  }
+
+  async function createListFromFilter(name) {
+    setFilterListPromptOpen(false)
+    setBulkMoving(true)
+    try {
+      const ids = await fetchAllMatchingIds()
+      if (ids.length === 0) {
+        toast.addToast('No contacts match this filter.', 'error')
+        return
+      }
+      await createListWithMembers(name, ids)
+    } catch {
+      toast.addToast('Could not read the filtered contacts.', 'error')
+    } finally {
+      setBulkMoving(false)
+    }
+  }
+
+  async function createListWithMembers(name, ids) {
+    const token = getAuthToken()
+    const base = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+
+    const createRes = await fetch(`${base}/api/clients/${workspaceId}/subscriber-lists`, {
+      method: 'POST', headers, body: JSON.stringify({ name }),
+    })
+    if (!createRes.ok) {
+      // 409 is the common one and is worth saying plainly - the name is taken.
+      toast.addToast(
+        createRes.status === 409
+          ? `A list called "${name}" already exists.`
+          : `Could not create the list (HTTP ${createRes.status}).`,
+        'error'
+      )
+      return
+    }
+    const created = await createRes.json().catch(() => null)
+    const list = created?.list ?? created?.data?.list ?? created
+    if (!list?.id) {
+      toast.addToast('List created, but the response had no id - add the members from the picker.', 'error')
+      return
+    }
+
+    // Chunked: a filter can match thousands, and one enormous request is a worse
+    // failure than several small ones - a partial add leaves a list that is
+    // short, which is fixable, rather than one that does not exist.
+    const CHUNK = 500
+    let added = 0
+    for (let i = 0; i < ids.length; i += CHUNK) {
+      const addRes = await fetch(`${base}/api/clients/${workspaceId}/subscriber-lists/${list.id}/members`, {
+        method: 'POST', headers, body: JSON.stringify({ subscriber_ids: ids.slice(i, i + CHUNK) }),
+      })
+      if (!addRes.ok) {
+        setSubscriberLists((prev) => [...prev, list])
+        toast.addToast(
+          `Created "${name}" with ${added} of ${ids.length} contacts before failing. Add the rest with Move to List.`,
+          'error'
+        )
+        return
+      }
+      const body = await addRes.json().catch(() => null)
+      added += body?.added ?? Math.min(CHUNK, ids.length - i)
+    }
+
+    setSubscriberLists((prev) => [...prev, list])
+    setSelectedIds(new Set())
+    toast.addToast(`Created "${name}" with ${added} contact${added === 1 ? '' : 's'}.`, 'success')
+  }
+
   async function createListFromSelection(name) {
     setNewListPromptOpen(false)
     setBulkMoving(true)
-    const ids = Array.from(selectedIds)
     try {
-      const token = getAuthToken()
-      const base = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
-      const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
-
-      const createRes = await fetch(`${base}/api/clients/${workspaceId}/subscriber-lists`, {
-        method: 'POST', headers, body: JSON.stringify({ name }),
-      })
-      if (!createRes.ok) {
-        // 409 is the common one and is worth saying plainly - the name is taken.
-        const msg = createRes.status === 409
-          ? `A list called "${name}" already exists.`
-          : `Could not create the list (HTTP ${createRes.status}).`
-        toast.addToast(msg, 'error')
-        return
-      }
-      const created = await createRes.json().catch(() => null)
-      const list = created?.list ?? created?.data?.list ?? created
-      if (!list?.id) {
-        toast.addToast('List created, but the response had no id - add the members from the picker.', 'error')
-        return
-      }
-
-      const addRes = await fetch(`${base}/api/clients/${workspaceId}/subscriber-lists/${list.id}/members`, {
-        method: 'POST', headers, body: JSON.stringify({ subscriber_ids: ids }),
-      })
-      if (!addRes.ok) throw new Error(`HTTP ${addRes.status}`)
-      const body = await addRes.json().catch(() => null)
-      const added = body?.added ?? ids.length
-
-      setSubscriberLists((prev) => [...prev, list])
-      setSelectedIds(new Set())
-      toast.addToast(`Created "${name}" with ${added} contact${added === 1 ? '' : 's'}.`, 'success')
+      await createListWithMembers(name, Array.from(selectedIds))
     } catch {
-      toast.addToast(`List "${name}" was created but the contacts could not be added. Try Move to List.`, 'error')
+      toast.addToast('Failed to create the list.', 'error')
     } finally {
       setBulkMoving(false)
     }
@@ -380,9 +453,11 @@ export default function SubscribersPage() {
     if (selection && ids.length === 0) return
 
     try {
-      const params = {}
-      if (selection) params.ids = ids.join(',')
-      else if (statusFilter) params.status = statusFilter
+      // Not selection-or-status. Export takes the filter the table is showing,
+      // because "Export CSV" sitting above a filtered list means "export this".
+      // It previously sent status and nothing else, so with a radius applied and
+      // seven contacts on screen it downloaded all 10,310.
+      const params = selection ? { ids: ids.join(',') } : activeFilterParams()
 
       const response = await subscribersAPI.exportCsv(workspaceId, params)
       const blob = response.data
@@ -702,12 +777,32 @@ export default function SubscribersPage() {
             </button>
           ))}
         </div>
-        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
-          className="px-3 py-2 bg-white border-3 border-brutal-fg text-xs font-bold focus:outline-none"
-          title="Joined after" />
-        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
-          className="px-3 py-2 bg-white border-3 border-brutal-fg text-xs font-bold focus:outline-none"
-          title="Joined before" />
+        {/*
+          Labelled, because a date input cannot carry a placeholder. These were
+          bare inputs with a `title`, which is a hover tooltip - so on a phone
+          they were two blank boxes between the status pills and the search
+          field with nothing to say what they were or that they took a date.
+        */}
+        <div className="flex items-end gap-2">
+          <label className="flex flex-col gap-1">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">Joined after</span>
+            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
+              className="px-3 py-2 bg-white border-3 border-brutal-fg text-xs font-bold focus:outline-none" />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">Joined before</span>
+            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
+              className="px-3 py-2 bg-white border-3 border-brutal-fg text-xs font-bold focus:outline-none" />
+          </label>
+          {(dateFrom || dateTo) && (
+            <button
+              onClick={() => { setDateFrom(''); setDateTo('') }}
+              className="px-2 py-2 border-3 border-brutal-fg bg-white text-[9px] font-bold uppercase tracking-wider text-brutal-red hover:bg-brutal-red/10 transition"
+            >
+              Clear
+            </button>
+          )}
+        </div>
         <input
           type="text"
           value={search}
@@ -748,6 +843,40 @@ export default function SubscribersPage() {
         subscribers={subscribers}
         total={total}
       />
+
+      {/*
+        What to do with the contacts a filter just found.
+
+        Drawing a circle on a map and then having no way to act on the result is
+        the gap this closes. Both actions take the filter, not the checkboxes -
+        selection is per-page, so ticking "all" on a radius matching 400 people
+        selects 50 of them, and that is not what anyone means by all.
+
+        Shown only when something is actually narrowing the list, so it does not
+        offer to make a list of every contact in the workspace by default.
+      */}
+      {filterActive && !loading && total > 0 && (
+        <div className="flex flex-wrap items-center gap-2 border-3 border-brutal-fg bg-brutal-yellow/20 px-4 py-3">
+          <span className="text-xs font-bold uppercase tracking-wider">
+            {total.toLocaleString()} contact{total === 1 ? '' : 's'} match this filter
+          </span>
+          <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+            <button
+              onClick={() => setFilterListPromptOpen(true)}
+              disabled={bulkMoving}
+              className="px-3 py-1.5 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-[10px] uppercase tracking-wider hover:shadow-brutal transition disabled:opacity-50"
+            >
+              {bulkMoving ? 'Working...' : 'Create list from these'}
+            </button>
+            <button
+              onClick={() => exportCsv()}
+              className="px-3 py-1.5 border-3 border-brutal-fg bg-white font-bold text-[10px] uppercase tracking-wider hover:shadow-brutal transition"
+            >
+              Export these {total.toLocaleString()}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Save the current filter values under a name, for re-use. */}
       {(statusFilter || search.trim() || geoFilter) && (
@@ -1189,6 +1318,26 @@ export default function SubscribersPage() {
         validate={(v) => (!v ? 'Enter a list name' : v.length > 100 ? 'Keep list names under 100 characters' : '')}
         onSubmit={createListFromSelection}
         onCancel={() => setNewListPromptOpen(false)}
+      />
+
+      <PromptModal
+        open={filterListPromptOpen}
+        title="Create list from filter"
+        message={
+          geoFilter?.locations?.length
+            ? `All ${total.toLocaleString()} contacts within ${geoFilter.locations[0].radius ?? 10} mi of ${geoFilter.locations[0].city || 'the selected point'}.`
+            : `All ${total.toLocaleString()} contacts matching the current filter.`
+        }
+        label="List name"
+        placeholder={
+          geoFilter?.locations?.[0]?.city
+            ? `e.g. ${geoFilter.locations[0].city} ${geoFilter.locations[0].radius ?? 10}mi`
+            : 'e.g. Recent signups'
+        }
+        confirmLabel="Create list"
+        validate={(v) => (!v ? 'Enter a list name' : v.length > 100 ? 'Keep list names under 100 characters' : '')}
+        onSubmit={createListFromFilter}
+        onCancel={() => setFilterListPromptOpen(false)}
       />
     </div>
   )
