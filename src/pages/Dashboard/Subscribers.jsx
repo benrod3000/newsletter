@@ -136,12 +136,28 @@ export default function SubscribersPage() {
     if (dateTo) params.joined_before = dateTo
     if (search.trim()) params.search = search.trim()
     if (geoFilter?.locations?.length) {
-      const [area] = geoFilter.locations
-      params.near_lat = area.lat
-      params.near_lng = area.lng
-      params.radius = area.radius ?? 10
+      // Every area, as `lat,lng,radiusMiles` triples. This sent locations[0]
+      // only, so a second area was drawn on the map, listed in a chip, counted
+      // in "targeting 2 areas" - and excluded from the query. Picking Oceanside
+      // at 10mi (nobody) alongside Encinitas at 100mi (eight people) returned
+      // zero contacts and rendered the empty state over a workspace of 10,310.
+      params.areas = geoFilter.locations
+        .filter((l) => Number.isFinite(l.lat) && Number.isFinite(l.lng))
+        .map((l) => `${l.lat},${l.lng},${l.radius ?? 10}`)
+        .join(';')
     }
     return params
+  }
+
+  /** How the current geo selection reads in a sentence, for prompts and labels. */
+  function describeAreas() {
+    const locs = geoFilter?.locations ?? []
+    if (locs.length === 0) return ''
+    if (locs.length === 1) {
+      const [a] = locs
+      return `within ${a.radius ?? 10} mi of ${a.city || 'the selected point'}`
+    }
+    return `across ${locs.length} areas`
   }
 
   /** True when anything is narrowing the list, so the UI can say what it will act on. */
@@ -1303,11 +1319,7 @@ export default function SubscribersPage() {
       <PromptModal
         open={newListPromptOpen}
         title="New list from selection"
-        message={
-          geoFilter?.locations?.length
-            ? `${selectedIds.size} contact${selectedIds.size === 1 ? '' : 's'} selected within ${geoFilter.locations[0].radius ?? 10} mi of ${geoFilter.locations[0].city || 'the selected point'}.`
-            : `${selectedIds.size} contact${selectedIds.size === 1 ? '' : 's'} selected.`
-        }
+        message={`${selectedIds.size} contact${selectedIds.size === 1 ? '' : 's'} selected${describeAreas() ? ` ${describeAreas()}` : ''}.`}
         label="List name"
         placeholder={
           geoFilter?.locations?.[0]?.city
@@ -1324,8 +1336,8 @@ export default function SubscribersPage() {
         open={filterListPromptOpen}
         title="Create list from filter"
         message={
-          geoFilter?.locations?.length
-            ? `All ${total.toLocaleString()} contacts within ${geoFilter.locations[0].radius ?? 10} mi of ${geoFilter.locations[0].city || 'the selected point'}.`
+          describeAreas()
+            ? `All ${total.toLocaleString()} contacts ${describeAreas()}.`
             : `All ${total.toLocaleString()} contacts matching the current filter.`
         }
         label="List name"
