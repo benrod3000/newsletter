@@ -30,8 +30,38 @@ export const AUDIENCE_OPTIONS = [
   { value: 'confirmed', label: 'Confirmed Subscribers' },
   { value: 'all', label: 'All Subscribers' },
   { value: 'pending', label: 'Pending Verification' },
-  { value: 'geo', label: '📍 Geo-Targeted' },
 ]
+
+/*
+ * `{ value: 'geo', label: '📍 Geo-Targeted' }` stood here and is gone with the
+ * map it revealed.
+ *
+ * It never worked. Selecting it showed a GeoFilter whose value was written to a
+ * `geoAudience` state that nothing read - no save or send payload carried it,
+ * and the campaign PATCH allowlist would not have accepted `geo_filter` anyway.
+ * So a radius could be drawn on a campaign, appear accepted, and the send went
+ * to everybody. No campaign has ever been stored with this audience.
+ *
+ * Not replaced with a working version, because targeting by list is the same
+ * capability with better properties: a list can be looked at before an
+ * irreversible send, it answers "who got this?" afterwards, and it keeps one
+ * implementation of what a radius means instead of three that have to agree -
+ * the list route, the export and the send path have already disagreed twice,
+ * once over miles versus kilometres and once over how many areas count.
+ *
+ * The route is Contacts -> radius filter -> "Create list from these" -> pick the
+ * list here, under Custom Lists.
+ *
+ * What this gives up is freshness: a list is a snapshot, so someone who signs up
+ * inside the radius tomorrow is not in it. If that becomes a real need, the
+ * shape is letting a campaign target a *saved filter* - which already exists on
+ * Contacts and would cover status, dates and search too - not a geo-specific
+ * system on the send path.
+ *
+ * `geo` remains a valid audience in the API and in campaigns_audience_check.
+ * Nothing produces it now, and tightening the constraint is churn with no
+ * benefit; see src/lib/__tests__/audience-values.test.ts in newsletter-core.
+ */
 
 /*
  * `generateSubjects` stood here and is gone with the "Suggest" button it fed.

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback, lazy, Suspense } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 import { campaignsAPI, listsAPI, getAuthToken } from '../../lib/api'
 import SendFlow from '../../components/SendFlow'
@@ -9,7 +10,6 @@ import { useToast } from '../../components/Toast'
 // it is only rendered while editing a campaign - most visits here are to read
 // the list. Loading it on demand keeps the list view light.
 const EmailEditor = lazy(() => import('../../components/EmailEditor'))
-const GeoFilter = lazy(() => import('../../components/GeoFilter'))
 import ConfirmModal from '../../components/ConfirmModal'
 import { useCommandAction } from '../../components/useCommandAction'
 import { STATUS_STYLES, STATUS_LABELS, AUDIENCE_OPTIONS, getAudienceLabel } from './Campaigns/constants'
@@ -32,7 +32,6 @@ export default function CampaignsPage() {
   const [editContent, setEditContent] = useState('')
   const [editSubject, setEditSubject] = useState('')
   const [editAudience, setEditAudience] = useState('confirmed')
-  const [geoAudience, setGeoAudience] = useState(null)
   const [autosaving, setAutosaving] = useState(false)
   const autosaveTimer = useRef(null)
   const [testEmailId, setTestEmailId] = useState(null)
@@ -134,7 +133,6 @@ export default function CampaignsPage() {
     setEditContent('')
     setEditSubject('')
     setEditAudience('confirmed')
-    setGeoAudience(null)
     setShowAddForm(false)
   }
 
@@ -523,17 +521,16 @@ export default function CampaignsPage() {
                   {AUDIENCE_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
                   {lists.length > 0 && (<optgroup label="Custom Lists">{lists.map((l) => (<option key={`list:${l.id}`} value={`list:${l.id}`}>{l.name}</option>))}</optgroup>)}
                 </select>
-                {editAudience === 'geo' && (
-                  <div className="mt-3">
-                    <Suspense fallback={<div className="text-xs font-bold uppercase tracking-wider text-brutal-muted" role="status">Loading map…</div>}>
-                      <GeoFilter
-                        onChange={(geo) => setGeoAudience(geo)}
-                        onClear={() => setGeoAudience(null)}
-                        active={!!geoAudience}
-                      />
-                    </Suspense>
-                  </div>
-                )}
+                {/* To send to an area, build the list in Contacts and pick it
+                    above. See the note on AUDIENCE_OPTIONS for why the map that
+                    used to appear here is gone. */}
+                <p className="mt-1.5 text-[10px] font-bold uppercase tracking-wider text-brutal-muted">
+                  Sending to a location?{' '}
+                  <Link to="/dashboard/subscribers" className="text-brutal-green underline">
+                    Filter contacts by radius
+                  </Link>
+                  {' '}and create a list.
+                </p>
               </div>
             </div>
 

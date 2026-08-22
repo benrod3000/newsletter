@@ -24,6 +24,40 @@
  */
 export const CHANGELOG = [
     {
+      date: 'August 21, 2026',
+      items: [
+        {
+          title: 'Send to an area, properly',
+          body: 'Filter your contacts by radius, then turn the result into a list and send to it. Choosing "Geo-Targeted" on a broadcast used to show a map that quietly did nothing - the radius was never applied and the broadcast went to your whole audience. That option has been removed rather than half-fixed.',
+          list: [
+            'Contacts, then draw a radius, then "Create list from these" - the list appears in the audience picker on a broadcast',
+            'A list can be checked before you send, which a map cannot',
+          ],
+        },
+        {
+          title: 'The radius filter actually filters',
+          body: 'Applying a radius showed the right count and then listed everybody. Two requests were racing and the unfiltered one usually won. It now shows the contacts inside the radius, and the export and list buttons act on exactly that set.',
+          list: [
+            'Selecting more than one area now searches all of them. Only the first was used, so adding a second area could empty your list entirely',
+            'Picking 25 miles gave you 10 - the radius was being dropped on the way to the server',
+            'Export CSV takes your current filter instead of always exporting everyone',
+            'Contacts outside the radius are dimmed on the map, so it is clear what is selected',
+          ],
+        },
+        {
+          title: 'Smaller fixes',
+          body: 'A pass over things that were wrong rather than merely rough.',
+          list: [
+            'The joined-after and joined-before filters were two unlabelled empty boxes',
+            'The calendar view was showing the table underneath it',
+            'Pages no longer get cut off on a phone',
+            'Feedback, Newsletter, Event RSVP and SMS capture forms can be created - four of the six types could not be saved',
+            'A coupon form now has somewhere to put the coupon code',
+          ],
+        },
+      ],
+    },
+    {
       date: 'August 17, 2026',
       items: [
         {
