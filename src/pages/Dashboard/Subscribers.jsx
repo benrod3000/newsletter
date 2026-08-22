@@ -35,7 +35,10 @@ export default function SubscribersPage() {
     const id = action.id
     consume()
     if (id === 'add-subscriber') setShowAddForm(true)
-    else if (id === 'export-csv') exportCsv()
+    // Through the same confirmation as the button. Triggering a full export of
+    // personal data from a keyboard palette, with no count and no pause, is the
+    // version of this that most deserves one.
+    else if (id === 'export-csv') setConfirmExport(true)
     else if (id === 'import-csv') setShowImport(true)
   }, [action?.timestamp])
 
@@ -62,6 +65,7 @@ export default function SubscribersPage() {
   const [bulkMoving, setBulkMoving] = useState(false)
   const [newListPromptOpen, setNewListPromptOpen] = useState(false)
   const [filterListPromptOpen, setFilterListPromptOpen] = useState(false)
+  const [confirmExport, setConfirmExport] = useState(false)
   const [subscriberLists, setSubscriberLists] = useState([])
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -580,11 +584,23 @@ export default function SubscribersPage() {
             ignores the selection entirely and exports whatever the current filter
             matches. Offering it there implied it would export the ticked rows.
           */}
+          {/*
+            Asks first. This was `onClick={exportCsv}`, which both exported
+            immediately and passed the click event in as the options object -
+            harmless only because destructuring `selection` off a SyntheticEvent
+            happens to give undefined.
+
+            One press downloaded every contact in the workspace: names, phone
+            numbers, consent state. That is a file that then exists on a laptop,
+            in a downloads folder, in a backup. It is also recorded in the audit
+            log as a subscriber export, so it is an action worth being sure
+            about.
+          */}
           <Btn
             variant="secondary"
             size="md"
-            onClick={exportCsv}
-            title={statusFilter ? `Export contacts matching "${statusFilter}"` : 'Export all contacts'}
+            onClick={() => setConfirmExport(true)}
+            title={filterActive ? 'Export the contacts matching your filter' : 'Export all contacts'}
           >
             Export CSV
           </Btn>
@@ -1292,6 +1308,25 @@ export default function SubscribersPage() {
         danger
         onConfirm={() => { const id = confirmRemoveId; setConfirmRemoveId(null); removeSubscriber(id) }}
         onCancel={() => setConfirmRemoveId(null)}
+      />
+
+      {/*
+        Names the number and says what is in the file. "Are you sure?" on its
+        own tells the operator nothing they did not already know; the useful
+        part is 10,310 rather than the seven they may think they have filtered
+        to, and that the file carries personal data.
+      */}
+      <ConfirmModal
+        open={confirmExport}
+        title={filterActive ? 'Export filtered contacts' : 'Export every contact'}
+        message={
+          filterActive
+            ? `Downloads ${total.toLocaleString()} contact${total === 1 ? '' : 's'} matching your current filter, including names, phone numbers and consent state.`
+            : `Downloads all ${total.toLocaleString()} contacts in this workspace, including names, phone numbers and consent state. Filter the list first if you only need some of them.`
+        }
+        confirmLabel={`Export ${total.toLocaleString()}`}
+        onConfirm={() => { setConfirmExport(false); exportCsv() }}
+        onCancel={() => setConfirmExport(false)}
       />
 
       <ConfirmModal
