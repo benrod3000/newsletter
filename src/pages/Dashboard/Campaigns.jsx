@@ -13,6 +13,7 @@ const EmailEditor = lazy(() => import('../../components/EmailEditor'))
 import ConfirmModal from '../../components/ConfirmModal'
 import { useCommandAction } from '../../components/useCommandAction'
 import { STATUS_STYLES, STATUS_LABELS, AUDIENCE_OPTIONS, getAudienceLabel } from './Campaigns/constants'
+import { SMS_ENABLED } from '../../lib/features'
 
 export default function CampaignsPage() {
   const { workspaceId, email } = useAuthStore()
@@ -342,7 +343,7 @@ export default function CampaignsPage() {
             <button onClick={() => setViewMode('calendar')} className={`shrink-0 px-3 py-1.5 font-bold text-xs uppercase tracking-wider transition border-l-3 border-brutal-fg ${viewMode === 'calendar' ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg'}`}>📅 Calendar</button>
           </div>
           <Btn variant="primary" size="md" onClick={startNewCampaign}>+ New Broadcast</Btn>
-          <button
+          {SMS_ENABLED && <button
             onClick={async () => {
               setSmsOpen(!smsOpen)
               if (!smsOpen) {
@@ -357,11 +358,11 @@ export default function CampaignsPage() {
             className="px-3 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-[10px] uppercase tracking-wider hover:shadow-brutal transition flex items-center gap-1.5"
           >
             📱 SMS/RC{smsOpen ? 'S ▲' : 'S ▼'}
-          </button>
+          </button>}
         </div>
       </div>
       {/* SMS / RCS Panel */}
-      {smsOpen && (
+      {SMS_ENABLED && smsOpen && (
         <div className="border-3 border-brutal-fg bg-white p-5 space-y-4 animate-fade-up">
           <div className="flex items-center justify-between">
             <div>

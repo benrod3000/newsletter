@@ -5,6 +5,7 @@ import { EmptyState, LoadingState } from '../../components/ux'
 import { useToast } from '../../components/Toast'
 import Btn from '../../components/ui/Button'
 import ConfirmModal from '../../components/ConfirmModal'
+import { SMS_ENABLED } from '../../lib/features'
 
 const EMBED_BASE = 'https://newsletter.brod3000.com/w'
 
@@ -78,15 +79,22 @@ const WIDGET_TYPES = [
   { value: 'event_rsvp', label: 'Event RSVP', desc: 'Collects name + email for event registration' },
   { value: 'coupon', label: 'Coupon Code', desc: 'Displays a coupon code after signup' },
   { value: 'feedback', label: 'Feedback Form', desc: 'Collects email + brief message' },
-  // PROVISIONAL LABEL. This was "SMS-Only List / Collects phone numbers, SMS
-  // opt-in by default", which the product cannot do: `subscribers` has a NOT
-  // NULL email and is keyed UNIQUE (workspace_id, email), so there is nowhere to
-  // put a phone-only contact, and the public submit endpoint rejects a
-  // submission with no address before doing anything else. Renamed so the
-  // picker stops promising it. Whether this type earns its place at all, or
-  // waits for phone-first identity, is still open.
-  { value: 'sms_list', label: 'SMS List', desc: 'Collects a phone number alongside the email' },
 ]
+
+/*
+ * The SMS List type is withheld while SMS sending is off.
+ *
+ * A form that collects phone numbers, for a channel that cannot send, is a
+ * promise to the visitor as well as to the operator - they hand over a number
+ * expecting to be texted. It reappears with the rest of the SMS surface.
+ *
+ * It also still carries the unresolved question from before: `subscribers` has
+ * a NOT NULL email keyed UNIQUE (workspace_id, email), so a phone-first contact
+ * has nowhere to live regardless of whether sending works.
+ */
+if (SMS_ENABLED) {
+  WIDGET_TYPES.push({ value: 'sms_list', label: 'SMS List', desc: 'Collects a phone number alongside the email' })
+}
 
 /**
  * The fields each type implies, applied when the type is chosen.

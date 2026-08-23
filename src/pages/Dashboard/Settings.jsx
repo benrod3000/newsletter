@@ -7,6 +7,7 @@ import Btn from '../../components/ui/Button'
 import LoadingState from '../../components/ux/LoadingState'
 import { describeAudit, SENSITIVE_ACTIONS } from '../../lib/audit'
 import { toQrDataUrl } from '../../lib/qr'
+import { SMS_ENABLED } from '../../lib/features'
 
 /**
  * An API key input that knows the difference between "not set" and "set, but the
@@ -358,7 +359,7 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <div className="flex border-3 border-brutal-fg overflow-x-auto mb-8">
-        {['branding', 'sms', 'automations', 'security', 'team'].map(function(tab) {
+        {['branding', ...(SMS_ENABLED ? ['sms'] : []), 'automations', 'security', 'team'].map(function(tab) {
           return <button key={tab} onClick={function() { setActiveTab(tab) }}
             className={'shrink-0 px-4 sm:px-6 py-3 font-bold text-sm uppercase tracking-wider border-r border-brutal-fg last:border-r-0 transition ' + (activeTab === tab ? 'bg-brutal-yellow text-brutal-fg' : 'bg-white text-brutal-muted hover:text-brutal-fg')}>
             {tab === 'branding' ? 'Branding' : tab === 'sms' ? 'SMS' : tab === 'automations' ? 'Automations' : tab === 'security' ? 'Security' : 'Team'}
@@ -731,7 +732,7 @@ export default function SettingsPage() {
       )}
 
       {/* SMS Tab */}
-      {activeTab === 'sms' && (
+      {SMS_ENABLED && activeTab === 'sms' && (
         <div className="space-y-8">
           <div className="border-3 border-brutal-fg bg-white p-8">
             <h3 className="font-heading text-2xl uppercase tracking-wide mb-6">📱 SMS Provider</h3>

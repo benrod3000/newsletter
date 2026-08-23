@@ -7,6 +7,7 @@ import ErrorBoundary from '../../components/ErrorBoundary'
 import CampaignTimeline from '../../components/CampaignTimeline'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { SMS_ENABLED } from '../../lib/features'
 if (typeof window !== 'undefined') { gsap.registerPlugin(ScrollTrigger) }
 
 /**
@@ -682,6 +683,7 @@ export default function AnalyticsPage() {
       }
     }
 
+    if (!SMS_ENABLED) return
     // SMS is an optional channel - the panel stays hidden unless it's set up
     // and has reach, so there's no separate loading/error surface to track.
     async function loadSms() {
@@ -931,7 +933,7 @@ export default function AnalyticsPage() {
           )}
 
           {/* SMS - collapsible, most users don't need it */}
-          {smsStats && smsStats.reachable > 0 && (
+          {SMS_ENABLED && smsStats && smsStats.reachable > 0 && (
             <div className="border-3 border-brutal-fg bg-white shadow-brutal">
               <button
                 onClick={() => setShowSms(!showSms)}
