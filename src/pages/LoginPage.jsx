@@ -21,17 +21,20 @@ const OAUTH_ERROR_MESSAGES = {
 }
 
 /**
- * Where to send the user after a successful login: wherever they were headed
- * before being bounced here, or the dashboard by default.
+ * Where to send the user after a successful login: always the dashboard home.
  *
- * Only a same-site path is accepted - `redirect` arrives via a URL query
- * param, so an unvalidated value would let a crafted login link send the
- * user's session on to an attacker's origin after they authenticate.
+ * This honoured `location.state.from` and a `?redirect=` param, returning the
+ * user wherever they had been headed. Right for a deep link followed out of an
+ * email; wrong for the ordinary case, which is opening the app. A bookmark or a
+ * browser autocompleting to /dashboard/campaigns meant every sign-in landed on
+ * Broadcasts, and home became a page you had to go to on purpose.
+ *
+ * Taking the parameter out removes an open-redirect surface with it: `redirect`
+ * arrived from the query string and had to be checked as same-site before it
+ * could be trusted, or a crafted login link would forward a fresh session to
+ * another origin. A constant needs no validation.
  */
-function resolvePostLoginDestination(location) {
-  if (location.state?.from) return location.state.from
-  const redirect = new URLSearchParams(window.location.search).get('redirect')
-  if (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) return redirect
+function resolvePostLoginDestination() {
   return '/dashboard'
 }
 
@@ -141,7 +144,7 @@ export default function LoginPage() {
         role: data.role,
         workspaceName: data.workspace_name,
       })
-      navigate(resolvePostLoginDestination(location))
+      navigate(resolvePostLoginDestination())
     } catch (err) {
       setError(normalizeAuthError(err, { fallback: 'Login failed. Try again.' }))
       // Only a rejected challenge needs re-solving; a wrong password does not.
@@ -177,7 +180,7 @@ export default function LoginPage() {
         role: data.role,
         workspaceName: data.workspace_name,
       })
-      navigate(resolvePostLoginDestination(location))
+      navigate(resolvePostLoginDestination())
     } catch {
       setError({ message: 'Verification failed. Try again.' })
     } finally {
