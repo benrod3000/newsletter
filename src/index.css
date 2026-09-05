@@ -236,61 +236,66 @@ button:disabled, input:disabled, select:disabled, textarea:disabled, [disabled] 
   background-size: 24px 24px;
 }
 
-/* =============================================
-   Oversized display typography
-   ============================================= */
+/* These sit in `components` so Tailwind utilities can override them.
+   Un-layered, they beat every utility - `leading-none` on a .text-stat
+   was silently a no-op, and the size could not be corrected from markup. */
+@layer components {
+  /* =============================================
+     Oversized display typography
+     ============================================= */
 
-.text-display {
-  font-family: 'Bebas Neue', Impact, 'Arial Black', sans-serif;
-  font-size: clamp(3rem, 8vw, 7rem);
-  line-height: 0.85;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-}
+  .text-display {
+    font-family: 'Bebas Neue', Impact, 'Arial Black', sans-serif;
+    font-size: clamp(3rem, 8vw, 7rem);
+    line-height: 0.85;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+  }
 
-.text-stat {
-  font-family: 'Bebas Neue', Impact, 'Arial Black', sans-serif;
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
-  line-height: 0.9;
-}
+  .text-stat {
+    font-family: 'Bebas Neue', Impact, 'Arial Black', sans-serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 0.9;
+  }
 
-.text-mega {
-  font-family: 'Bebas Neue', Impact, 'Arial Black', sans-serif;
-  font-size: clamp(4rem, 10vw, 9rem);
-  line-height: 0.8;
-  text-transform: uppercase;
-}
+  .text-mega {
+    font-family: 'Bebas Neue', Impact, 'Arial Black', sans-serif;
+    font-size: clamp(4rem, 10vw, 9rem);
+    line-height: 0.8;
+    text-transform: uppercase;
+  }
 
-/* =============================================
-   Vibrant card variants
-   ============================================= */
+  /* =============================================
+     Vibrant card variants
+     ============================================= */
 
-.card-yellow {
-  border: 3px solid #0a0a0a;
-  background: #f5e642;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-.card-yellow:hover {
-  box-shadow: 6px 6px 0px #0a0a0a;
-  transform: translateY(-2px);
-}
+  .card-yellow {
+    border: 3px solid #0a0a0a;
+    background: #f5e642;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .card-yellow:hover {
+    box-shadow: 6px 6px 0px #0a0a0a;
+    transform: translateY(-2px);
+  }
 
-.card-green {
-  border: 3px solid #0a0a0a;
-  background: var(--color-brutal-green);
-  color: #fff;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-.card-green:hover {
-  box-shadow: 6px 6px 0px #0a0a0a;
-  transform: translateY(-2px);
-}
+  .card-green {
+    border: 3px solid #0a0a0a;
+    background: var(--color-brutal-green);
+    color: #fff;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .card-green:hover {
+    box-shadow: 6px 6px 0px #0a0a0a;
+    transform: translateY(-2px);
+  }
 
-.card-white {
-  border: 3px solid #0a0a0a;
-  background: #fff;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-.card-white:hover {
-  box-shadow: 4px 4px 0px #0a0a0a;
+  .card-white {
+    border: 3px solid #0a0a0a;
+    background: #fff;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .card-white:hover {
+    box-shadow: 4px 4px 0px #0a0a0a;
+  }
 }
