@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import LandingPage from './LandingPage'
@@ -68,6 +69,21 @@ describe('LandingPage', () => {
     for (const fake of ['Zapier', 'WordPress', 'Shopify', 'Custom API', 'Webhook']) {
       expect(text).not.toMatch(new RegExp(fake, 'i'))
     }
+  })
+
+  // index.html is not rendered by these tests, and the SMS/RCS overclaim was
+  // removed from the page body before anyone noticed it was still in the meta
+  // description - which is the copy that actually reaches search results and
+  // social cards. Second time this claim has had to be walked back, so it is
+  // pinned here rather than left to review.
+  it('does not claim SMS or RCS in the page metadata', () => {
+    // Bare relative path on purpose: import.meta.url is an http URL under
+    // jsdom, and process.cwd() is not in the browser globals lint runs with.
+    // Vitest's working directory is the project root.
+    const html = readFileSync('index.html', 'utf8')
+    const meta = html.slice(0, html.indexOf('</head>'))
+    expect(meta).not.toMatch(/\bSMS\b/i)
+    expect(meta).not.toMatch(/\bRCS\b/i)
   })
 
   it('presents SMS and RCS as roadmap, never as available', () => {

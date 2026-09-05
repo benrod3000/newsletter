@@ -160,14 +160,17 @@ export default function LandingPage() {
 
               {/* Main content: the reachability view, because that is the thesis */}
               <div className="flex-1 min-w-0 p-4 sm:p-6 space-y-5">
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   {[
-                    { label: 'In audience', value: 10310, tone: 'text-brutal-fg' },
-                    { label: 'Reachable now', value: 8642, tone: 'text-brutal-green' },
-                    { label: 'Needs confirming', value: 1204, tone: 'text-brutal-yellow-dark' },
+                    { label: 'In audience', short: 'Audience', value: 10310, tone: 'text-brutal-fg' },
+                    { label: 'Reachable now', short: 'Reachable', value: 8642, tone: 'text-brutal-green' },
+                    { label: 'Needs confirming', short: 'Confirming', value: 1204, tone: 'text-brutal-yellow-dark' },
                   ].map((kpi) => (
-                    <div key={kpi.label} className="border-2 border-brutal-fg p-3">
-                      <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">{kpi.label}</p>
+                    <div key={kpi.label} className="border-2 border-brutal-fg p-2 sm:p-3">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">
+                        <span className="sm:hidden">{kpi.short}</span>
+                        <span className="hidden sm:inline">{kpi.label}</span>
+                      </p>
                       <p className={`text-xl sm:text-2xl font-heading ${kpi.tone}`}><CountUp value={kpi.value} /></p>
                     </div>
                   ))}
