@@ -413,15 +413,18 @@ export default function LandingPage() {
       {/* ═══ 7. HOW IT WORKS ═══════════════════════════════ */}
       <Section padding="py-16 sm:py-20" className="border-t-3 border-brutal-fg">
         <div className="max-w-5xl mx-auto space-y-10">
-          <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none max-w-xl">
-            How it{' '}
-            <span className="text-brutal-green">works.</span>
-          </h2>
+          <div className="space-y-5">
+            <Badge variant="muted">Getting started</Badge>
+            <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none max-w-xl">
+              How it{' '}
+              <span className="text-brutal-green">works.</span>
+            </h2>
+          </div>
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {HOW_IT_WORKS.map((step) => (
               <div key={step.id} className="reveal-step space-y-2.5">
-                <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/30">{step.number}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/55">{step.number}</p>
                 <div className="flex items-center gap-2">
                   <step.icon size={18} className="text-brutal-green shrink-0" aria-hidden="true" />
                   <h3 className="font-heading text-2xl uppercase tracking-tight leading-none">{step.title}</h3>
