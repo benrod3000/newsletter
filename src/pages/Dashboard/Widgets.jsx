@@ -143,6 +143,12 @@ export default function WidgetsPage() {
   const [widgets, setWidgets] = useState([])
   const [lists, setLists] = useState([])
   const [loading, setLoading] = useState(true)
+  // Without these, a failed load was indistinguishable from an empty workspace:
+  // the page told the user their widgets did not exist and invited them to make
+  // a duplicate, and a lists outage left Target List empty while validation
+  // blocked on "Select a list" with nothing on screen explaining why.
+  const [loadError, setLoadError] = useState(null)
+  const [listsError, setListsError] = useState(null)
   const [step, setStep] = useState(0) // 0=list, 1=details, 2=content
   const [editingId, setEditingId] = useState(null)
   const [removingId, setRemovingId] = useState(null)
@@ -165,20 +171,24 @@ export default function WidgetsPage() {
 
   async function loadWidgets() {
     setLoading(true)
+    setLoadError(null)
     try {
       const { data } = await widgetsAPI.list(workspaceId)
       setWidgets(data.widgets || [])
     } catch (err) {
       console.error('Failed to load widgets:', err)
+      setLoadError(err?.response?.data?.error || 'Could not load capture forms. Is the API running?')
     } finally { setLoading(false) }
   }
 
   async function loadLists() {
+    setListsError(null)
     try {
       const { data } = await listsAPI.list(workspaceId)
       setLists(data.lists || [])
     } catch (err) {
       console.error('Failed to load lists:', err)
+      setListsError('Could not load your lists, so this picker is empty. Retry before saving.')
     }
   }
 
@@ -317,8 +327,15 @@ export default function WidgetsPage() {
   // Keyed by widget id, not slug. Slug is unique per workspace
   // (widgets_workspace_id_slug_key), so it cannot identify a widget from a
   // public URL - two customers naming a form the same thing would collide.
-  function copyEmbed(widgetId, widgetSize, fieldCount) {
-    navigator.clipboard.writeText(buildEmbedCode(widgetId, widgetSize, fieldCount))
+  async function copyEmbed(widgetId, widgetSize, fieldCount) {
+    // Unawaited and uncaught, this toasted success on a denied clipboard
+    // permission or a non-secure origin, and the user pasted stale content.
+    try {
+      await navigator.clipboard.writeText(buildEmbedCode(widgetId, widgetSize, fieldCount))
+    } catch {
+      toast.addToast('Could not copy - select the code and copy it manually.', 'error')
+      return
+    }
     setCopiedId(widgetId)
     toast.addToast('Embed code copied!', 'success')
     setTimeout(() => setCopiedId(null), 2000)
@@ -479,6 +496,12 @@ export default function WidgetsPage() {
                   ))}
                 </select>
                 {errors.list_id && <p className="text-xs font-bold text-brutal-red mt-1">{errors.list_id}</p>}
+                {listsError && (
+                  <p className="text-xs font-bold text-brutal-red mt-1">
+                    {listsError}{' '}
+                    <button type="button" onClick={loadLists} className="underline">Retry</button>
+                  </p>
+                )}
               </div>
               {/*
                 Shown for Coupon as well as Lead Magnet. Both store their value
@@ -963,7 +986,13 @@ export default function WidgetsPage() {
       {/* ======== WIDGET LIST ======== */}
       {step === 0 && (
         <>
-          {widgets.length === 0 ? (
+          {loadError ? (
+            <EmptyState
+              title="Couldn't load capture forms"
+              description={loadError}
+              action={{ label: 'Retry', onClick: loadWidgets }}
+            />
+          ) : widgets.length === 0 ? (
             <EmptyState
               title="No widgets yet"
               description="Create an embeddable signup form to collect emails. Add it to your site in under a minute."

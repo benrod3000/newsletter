@@ -48,6 +48,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState([])
   const [searching, setSearching] = useState(false)
+  const [searchFailed, setSearchFailed] = useState(false)
   const [geoLocating, setGeoLocating] = useState(false)
   const [selectedLocIdx, setSelectedLocIdx] = useState(0)
   const panelRef = useRef(null)
@@ -126,6 +127,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
       setSearching(true)
       try {
         let results = []
+        setSearchFailed(false)
         if (/^\d{5}(-\d{4})?$/.test(clean)) {
           const r = await resolveZip(clean)
           if (r) results = [{ ...r, zip: clean, label: [r.city, r.state].filter(Boolean).join(', ') || `ZIP ${clean}` }]
@@ -134,8 +136,11 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
         }
         setSuggestions(results)
       } catch (err) {
+        // setSuggestions([]) alone renders "No matches", so a network failure
+        // told the user the place does not exist.
         console.error('[GeoFilter] search failed:', err)
         setSuggestions([])
+        setSearchFailed(true)
       } finally {
         setSearching(false)
       }
@@ -556,7 +561,9 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
             )}
             {!searching && query.trim().length >= 3 && suggestions.length === 0 && (
               <p className="mt-1.5 text-[10px] font-bold text-brutal-red uppercase tracking-wider">
-                No matches - try a city name or 5-digit ZIP
+                {searchFailed
+                  ? 'Lookup unavailable - check your connection and try again'
+                  : 'No matches - try a city name or 5-digit ZIP'}
               </p>
             )}
           </div>

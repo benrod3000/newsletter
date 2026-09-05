@@ -33,7 +33,11 @@ export default function CampaignsPage() {
   const [editContent, setEditContent] = useState('')
   const [editSubject, setEditSubject] = useState('')
   const [editAudience, setEditAudience] = useState('confirmed')
+  const [listsError, setListsError] = useState(null)
   const [autosaving, setAutosaving] = useState(false)
+  // The indicator was driven purely by "is a request in flight", so a failed
+  // save rendered a green "Saved" over unsaved newsletter copy.
+  const [autosaveFailed, setAutosaveFailed] = useState(false)
   const autosaveTimer = useRef(null)
   const [testEmailId, setTestEmailId] = useState(null)
   const [testEmail, setTestEmail] = useState('')
@@ -52,6 +56,10 @@ export default function CampaignsPage() {
   const [inlineEditVal, setInlineEditVal] = useState('')
   const { action, consume } = useCommandAction()
   const pendingSends = useRef({}) // { [campaignId]: { pollCount: number, intervalId: any } }
+  // Render must not read the ref above: on the poll-timeout path it is mutated
+  // with no state change, so React never re-rendered and the row pulsed
+  // "Sending..." forever, contradicting the toast that just said to check back.
+  const [sendingIds, setSendingIds] = useState({})
 
   function startPollingSend(id) {
     if (pendingSends.current[id]) return
@@ -64,17 +72,20 @@ export default function CampaignsPage() {
         if (updated && updated.status === 'sent') {
           clearInterval(intervalId)
           delete pendingSends.current[id]
+          setSendingIds(({ [id]: _drop, ...rest }) => rest)
           await loadCampaigns()
           toast.addToast(`Your newsletter reached ${(updated.sent_count || 0).toLocaleString()} people.`, 'success')
         } else if (pollCount >= 30) {
           // 5 min timeout (~10s × 30)
           clearInterval(intervalId)
           delete pendingSends.current[id]
+          setSendingIds(({ [id]: _drop, ...rest }) => rest)
           toast.addToast('Still delivering. Check back in a moment.', 'info')
         }
       } catch { /* keep polling */ }
     }, 10000)
     pendingSends.current[id] = { pollCount, intervalId }
+    setSendingIds((prev) => ({ ...prev, [id]: true }))
   }
 
   useEffect(() => {
@@ -100,7 +111,13 @@ export default function CampaignsPage() {
   }, [workspaceId])
 
   async function loadLists() {
-    try { const { data } = await listsAPI.list(workspaceId); setLists(data.lists || []) } catch {}
+    // An empty catch here dropped the "Custom Lists" optgroup from the audience
+    // picker with no explanation, which reads as "my lists were deleted".
+    try { const { data } = await listsAPI.list(workspaceId); setLists(data.lists || []); setListsError(null) }
+    catch (err) {
+      console.error('Failed to load lists:', err)
+      setListsError('Could not load your custom lists.')
+    }
   }
 
   async function loadCampaigns() {
@@ -252,8 +269,10 @@ export default function CampaignsPage() {
       setAutosaving(true)
       try {
         await campaignsAPI.update(workspaceId, editingId, { editor_html: html })
+        setAutosaveFailed(false)
       } catch (err) {
         console.error('Autosave failed:', err)
+        setAutosaveFailed(true)
       } finally {
         setAutosaving(false)
       }
@@ -522,6 +541,12 @@ export default function CampaignsPage() {
                   {AUDIENCE_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
                   {lists.length > 0 && (<optgroup label="Custom Lists">{lists.map((l) => (<option key={`list:${l.id}`} value={`list:${l.id}`}>{l.name}</option>))}</optgroup>)}
                 </select>
+                {listsError && (
+                  <p className="text-[10px] font-bold text-brutal-red mt-1">
+                    {listsError}{' '}
+                    <button type="button" onClick={loadLists} className="underline">Retry</button>
+                  </p>
+                )}
                 {/* To send to an area, build the list in Contacts and pick it
                     above. See the note on AUDIENCE_OPTIONS for why the map that
                     used to appear here is gone. */}
@@ -551,8 +576,11 @@ export default function CampaignsPage() {
             {/* Bottom actions */}
             <div className="flex items-center justify-between pt-2 border-t-3 border-brutal-fg">
               <div className="flex items-center gap-3">
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${autosaving ? 'text-brutal-yellow' : 'text-brutal-green'}`}>
-                  {autosaving ? '● Saving...' : '● Saved'}
+                <span
+                  role="status"
+                  className={`text-[10px] font-bold uppercase tracking-wider ${autosaving ? 'text-brutal-yellow' : autosaveFailed ? 'text-brutal-red' : 'text-brutal-green'}`}
+                >
+                  {autosaving ? '● Saving...' : autosaveFailed ? '● Not saved - check your connection' : '● Saved'}
                 </span>
               </div>
               <div className="flex gap-2">
@@ -693,12 +721,19 @@ export default function CampaignsPage() {
                           value={inlineEditVal}
                           onChange={e => setInlineEditVal(e.target.value)}
                           onBlur={async () => {
-                            if (inlineEditVal.trim() && inlineEditVal !== (c.title || c.name)) {
-                              await campaignsAPI.update(workspaceId, c.id, { title: inlineEditVal.trim() })
-                              toast.addToast('Campaign renamed', 'success')
+                            try {
+                              if (inlineEditVal.trim() && inlineEditVal !== (c.title || c.name)) {
+                                await campaignsAPI.update(workspaceId, c.id, { title: inlineEditVal.trim() })
+                                toast.addToast('Campaign renamed', 'success')
+                              }
+                            } catch (err) {
+                              // Without this the throw skipped both lines below, so the
+                              // field stayed open showing a name that was never saved.
+                              toast.addToast(err?.response?.data?.error || 'Could not rename campaign', 'error')
+                            } finally {
+                              setInlineEditId(null)
+                              loadCampaigns()
                             }
-                            setInlineEditId(null)
-                            loadCampaigns()
                           }}
                           onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') setInlineEditId(null) }}
                           className="px-2 py-1 border-3 border-brutal-fg text-sm focus:outline-none bg-brutal-yellow/20"
@@ -717,8 +752,8 @@ export default function CampaignsPage() {
                     </td>
                     <td className="p-3 text-xs font-bold text-brutal-fg/80 uppercase tracking-wider hidden sm:table-cell">{getAudienceLabel(c.audience, lists)}</td>
                     <td className="p-3">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${pendingSends.current[c.id] ? 'bg-brutal-yellow text-brutal-fg border-2 border-brutal-fg animate-pulse' : STATUS_STYLES[status] || STATUS_STYLES.draft}`}>
-                        {pendingSends.current[c.id] ? 'Sending...' : STATUS_LABELS[status] || status}
+                      <span className={`text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider ${sendingIds[c.id] ? 'bg-brutal-yellow text-brutal-fg border-2 border-brutal-fg animate-pulse' : STATUS_STYLES[status] || STATUS_STYLES.draft}`}>
+                        {sendingIds[c.id] ? 'Sending...' : STATUS_LABELS[status] || status}
                       </span>
                     </td>
                     <td className="p-3 text-right font-mono font-bold hidden md:table-cell">{(c.sent_count ?? 0).toLocaleString()}</td>

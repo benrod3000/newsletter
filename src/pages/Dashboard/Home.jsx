@@ -62,7 +62,7 @@ function Sparkline({ points }) {
         <path d={area} fill="#2b7657" opacity="0.12" />
         <path d={line} fill="none" stroke="#2b7657" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
       </svg>
-      <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-brutal-muted">
+      <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-[10px] font-bold uppercase tracking-wider text-brutal-muted">
         <span>{points[0]?.date}</span>
         <span className="text-brutal-fg">{fmt(total)} total · peak {fmt(peak.count)}</span>
         <span>{points[points.length - 1]?.date}</span>
@@ -79,6 +79,10 @@ export default function DashboardHome() {
   const [loading, setLoading] = useState(true)
   const [activityLoading, setActivityLoading] = useState(true)
   const [error, setError] = useState(null)
+  // A failed load used to render "Your audience is growing" and "Nothing sent
+  // yet" - positive factual claims manufactured by an outage.
+  const [activityError, setActivityError] = useState(null)
+  const [securityError, setSecurityError] = useState(null)
   const [securityLog, setSecurityLog] = useState([])
   const [securityLoading, setSecurityLoading] = useState(true)
   // Sources for the attention panel. Both load independently of the metrics and
@@ -137,11 +141,12 @@ export default function DashboardHome() {
         const { data: body } = await analyticsAPI.activity(workspaceId)
         // Same envelope as the overview above: apiSuccess({ activity }).
         const payload = body?.data ?? body
-        if (!cancelled) setActivities(payload?.activity || [])
+        if (!cancelled) { setActivities(payload?.activity || []); setActivityError(null) }
       } catch (err) {
         // Non-fatal: the panel falls back to its empty state. Logged rather
         // than swallowed so a broken endpoint is still diagnosable.
         console.error('Failed to load activity:', err)
+        if (!cancelled) setActivityError('Could not load recent activity.')
       }
       finally { if (!cancelled) setActivityLoading(false) }
     }
@@ -154,9 +159,10 @@ export default function DashboardHome() {
       setSecurityLoading(true)
       try {
         const { data } = await auditAPI.list(workspaceId, 5)
-        if (!cancelled) setSecurityLog(data?.data?.logs || [])
+        if (!cancelled) { setSecurityLog(data?.data?.logs || []); setSecurityError(null) }
       } catch (err) {
         console.error('Failed to load security activity:', err)
+        if (!cancelled) setSecurityError('Could not load security activity.')
       }
       finally { if (!cancelled) setSecurityLoading(false) }
     }
@@ -346,8 +352,11 @@ export default function DashboardHome() {
 
       {/* Error */}
       {error && (
-        <div className="border-3 border-brutal-fg bg-brutal-yellow p-4">
+        <div className="border-3 border-brutal-fg bg-brutal-red/10 p-4">
           <p className="text-xs font-bold uppercase tracking-wide">⚠ {error}</p>
+          <p className="text-[10px] text-brutal-muted mt-1">
+            Figures below are unavailable, not zero. Reload to try again.
+          </p>
         </div>
       )}
 
@@ -396,7 +405,7 @@ export default function DashboardHome() {
           endpoint has always returned and this page has never read.
         */
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link to="/dashboard/subscribers" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition">
+          <Link to="/dashboard/subscribers" className="cursor-pointer hover:-translate-y-0.5 transition">
             <MetricCard
               label="Audience"
               value={fmt(stats?.total_subscribers)}
@@ -404,7 +413,7 @@ export default function DashboardHome() {
               {...deltaProps(stats?.new_subscribers, null, (n) => `+${fmt(n)} in ${periodDays}d`)}
             />
           </Link>
-          <Link to="/dashboard/subscribers" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition">
+          <Link to="/dashboard/subscribers" className="cursor-pointer hover:-translate-y-0.5 transition">
             <MetricCard
               label={`New in ${periodDays} days`}
               value={fmt(stats?.new_subscribers)}
@@ -418,7 +427,7 @@ export default function DashboardHome() {
             payload and shown only on Analytics, so the homepage reported two
             campaign rates of zero and omitted the thing that was working.
           */}
-          <Link to="/dashboard/widgets" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition">
+          <Link to="/dashboard/widgets" className="cursor-pointer hover:-translate-y-0.5 transition">
             <MetricCard
               label="Form signups"
               value={fmt(stats?.lead_magnet?.submissions)}
@@ -432,7 +441,7 @@ export default function DashboardHome() {
             unknown, and printing 0.0% next to "Avg Open Rate" states a result
             that was never measured.
           */}
-          <Link to="/dashboard/analytics" className="cursor-pointer hover:shadow-brutal hover:-translate-y-0.5 transition">
+          <Link to="/dashboard/analytics" className="cursor-pointer hover:-translate-y-0.5 transition">
             <MetricCard
               label={stats?.campaigns_sent ? `Open rate · ${stats.campaigns_sent} sent` : 'Open rate'}
               value={stats?.campaigns_sent ? fmtPct(stats?.avg_open_rate) : '--'}
@@ -456,7 +465,7 @@ export default function DashboardHome() {
           <div className="w-10 h-10 border-3 border-brutal-fg bg-brutal-yellow flex items-center justify-center shrink-0">
             <span className="text-lg font-heading">→</span>
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <p className="text-sm font-bold">You have contacts but no broadcasts yet</p>
             <p className="text-xs text-brutal-muted mt-1">Your people are waiting. Create your first broadcast to start engaging your audience.</p>
             {/* Router navigation, not window.location - a full reload here
@@ -474,14 +483,14 @@ export default function DashboardHome() {
           <div className="w-10 h-10 border-3 border-brutal-fg bg-brutal-green flex items-center justify-center shrink-0">
             <span className="text-lg font-heading text-white">1</span>
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <p className="text-sm font-bold">Start building your audience</p>
             <p className="text-xs text-brutal-muted mt-1">Set up a signup widget and start collecting subscribers. Embed it on your website in under a minute.</p>
             <Link to="/dashboard/widgets" className="inline-block mt-3 px-4 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal active:translate-y-0.5 transition">
               Create a Widget →
             </Link>
           </div>
-          <div className="hidden sm:flex items-center gap-6 text-[10px] font-bold text-brutal-muted uppercase tracking-wider">
+          <div className="hidden sm:flex shrink-0 items-center gap-6 text-[10px] font-bold text-brutal-muted uppercase tracking-wider">
             <span>← 1. Widget</span>
             <span className="opacity-30">2. Subscribers</span>
             <span className="opacity-30">3. Campaign</span>
@@ -568,8 +577,17 @@ export default function DashboardHome() {
         ) : (
           <Panel title="Last broadcast">
             <div className="text-center py-6">
-              <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">Nothing sent yet</p>
-              <p className="text-[10px] text-brutal-muted mt-1">Results will appear here after your first broadcast.</p>
+              {error ? (
+                <>
+                  <p className="text-xs font-bold text-brutal-red uppercase tracking-wider">Unavailable</p>
+                  <p className="text-[10px] text-brutal-muted mt-1">We could not load your broadcasts, so this is unknown rather than empty.</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">Nothing sent yet</p>
+                  <p className="text-[10px] text-brutal-muted mt-1">Results will appear here after your first broadcast.</p>
+                </>
+              )}
             </div>
           </Panel>
         )}
@@ -579,6 +597,11 @@ export default function DashboardHome() {
       <Panel title="Recent Activity">
         {activityLoading ? (
           <LoadingState label="Loading activity" />
+        ) : activityError ? (
+          <div className="text-center py-6">
+            <p className="text-xs font-bold text-brutal-red uppercase tracking-wider">Unavailable</p>
+            <p className="text-[10px] text-brutal-muted mt-1">{activityError}</p>
+          </div>
         ) : activities.length === 0 ? (
           <div className="text-center py-6">
             <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">Your audience is growing</p>
@@ -588,11 +611,11 @@ export default function DashboardHome() {
           <div className="space-y-3">
             {activities.map((a, i) => (
               <div key={i} className="flex items-center justify-between py-2 border-b-2 border-brutal-fg/10 last:border-0">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <div className="h-2 w-2 bg-brutal-green shrink-0" />
-                  <p className="text-xs font-bold">{a.description}</p>
+                  <p className="text-xs font-bold truncate">{a.description}</p>
                 </div>
-                <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">{relativeTime(a.timestamp)}</p>
+                <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider shrink-0 ml-3">{relativeTime(a.timestamp)}</p>
               </div>
             ))}
           </div>
@@ -609,6 +632,11 @@ export default function DashboardHome() {
         <Panel title="Security Activity">
           {securityLoading ? (
             <LoadingState label="Loading security activity" />
+          ) : securityError ? (
+            <div className="text-center py-6">
+              <p className="text-xs font-bold text-brutal-red uppercase tracking-wider">Unavailable</p>
+              <p className="text-[10px] text-brutal-muted mt-1">{securityError}</p>
+            </div>
           ) : securityLog.length === 0 ? (
             <div className="text-center py-6">
               <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider">Nothing to report</p>

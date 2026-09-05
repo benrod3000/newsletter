@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "//lint:ci": "Capped baseline - see eslint.config.js. Lower this number as warnings are fixed; never raise it.",
-    "lint:ci": "eslint . --max-warnings=22",
+    "lint:ci": "eslint . --max-warnings=21",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"

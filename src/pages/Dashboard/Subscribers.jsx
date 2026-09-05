@@ -116,7 +116,10 @@ export default function SubscribersPage() {
     const token = getAuthToken()
     fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/subscriber-lists`, {
       headers: { Authorization: `Bearer ${token}` }
-    }).then(r => r.json()).then(d => setSubscriberLists(d.lists || d || [])).catch(() => {})
+    }).then(r => r.json()).then(d => setSubscriberLists(d.lists || d || []))
+      // Swallowed, this left "Move to List" showing only "+ New list from
+      // selection", which reads as "this workspace has no lists".
+      .catch((err) => console.error('Failed to load subscriber lists:', err))
     // Through the API client so an expired session redirects to sign in rather
     // than silently rendering an empty filter bar.
     setSegmentsLoading(true)

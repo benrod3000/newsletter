@@ -94,6 +94,14 @@ export default function SettingsPage() {
   const [inviting, setInviting] = useState(false)
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
+  // A failed branding load used to be invisible: `branding` kept its hardcoded
+  // defaults below, the form rendered as though those were the workspace's real
+  // values, and one press of Save PUT them over the live sending config.
+  const [brandingError, setBrandingError] = useState(null)
+  // The form renders only once a load has genuinely succeeded. Inferring that
+  // from "not loading and no error" would show the defaults-filled form to a
+  // session with no workspace, which is the case that caused the data loss.
+  const [brandingLoaded, setBrandingLoaded] = useState(false)
   const [branding, setBranding] = useState({
     logo_url: '',
     brand_colors: { primary: '#f59e0b', secondary: '#18181b' },
@@ -255,8 +263,11 @@ export default function SettingsPage() {
     try {
       const { data } = await brandingAPI.get(workspaceId)
       mergeBranding(data?.data)
+      setBrandingError(null)
+      setBrandingLoaded(true)
     } catch (error) {
       console.error('Failed to load branding:', error)
+      setBrandingError(error?.response?.data?.error || 'Could not reach the server.')
     } finally {
       setPageLoading(false)
     }
@@ -281,6 +292,12 @@ export default function SettingsPage() {
   }
 
   async function saveBranding() {
+    // Belt as well as braces: the form is hidden while this is set, but a stale
+    // render must not be able to PUT the defaults over the stored config.
+    if (!brandingLoaded) {
+      toast.addToast('Settings never loaded, so saving would overwrite them. Reload first.', 'error')
+      return
+    }
     setLoading(true)
     try {
       await brandingAPI.update(workspaceId, branding)
@@ -304,7 +321,9 @@ export default function SettingsPage() {
       toast.addToast('Branding updated successfully!', 'success')
     } catch (error) {
       console.error('Failed to update branding:', error)
-      toast.addToast('Failed to update branding', 'error')
+      // Every other page unwraps this; Settings flattened "sender domain not
+      // verified" - the most actionable failure on this form - into a generic.
+      toast.addToast(error?.response?.data?.error || 'Failed to update branding', 'error')
     } finally {
       setLoading(false)
     }
@@ -351,6 +370,8 @@ export default function SettingsPage() {
     }
   }
 
+  const brandingTab = activeTab === 'branding' || (SMS_ENABLED && activeTab === 'sms')
+
   return (
     <div>
       <h2 className="text-4xl font-heading uppercase tracking-tight leading-none mb-8">
@@ -367,10 +388,26 @@ export default function SettingsPage() {
         })}
       </div>
 
-      {pageLoading && <LoadingState label="Loading settings" />}
+      {/* Only Branding and SMS render out of `branding`; the other tabs load
+          independently, so a branding failure must not blank them. */}
+      {brandingTab && workspaceId && pageLoading && <LoadingState label="Loading settings" />}
+
+      {brandingTab && !brandingLoaded && !(workspaceId && pageLoading) && (
+        <div className="border-3 border-brutal-fg bg-brutal-red/10 p-6 space-y-3">
+          <p className="text-sm font-bold">Could not load your settings</p>
+          <p className="text-xs text-brutal-muted">{brandingError || 'No workspace is selected for this session.'}</p>
+          <p className="text-xs text-brutal-muted">
+            The form stays hidden on purpose. It would show defaults rather than your
+            saved values, and saving those would overwrite your sending configuration.
+          </p>
+          <Btn variant="primary" size="md" onClick={() => { setPageLoading(true); loadBranding() }}>
+            Try again
+          </Btn>
+        </div>
+      )}
 
       {/* Branding Tab */}
-      {activeTab === 'branding' && (
+      {activeTab === 'branding' && brandingLoaded && (
         <div className="space-y-8">
           <div className="border-3 border-brutal-fg bg-white p-8">
             <h3 className="font-heading text-2xl uppercase tracking-wide mb-6">Workspace Branding</h3>
@@ -732,7 +769,7 @@ export default function SettingsPage() {
       )}
 
       {/* SMS Tab */}
-      {SMS_ENABLED && activeTab === 'sms' && (
+      {SMS_ENABLED && activeTab === 'sms' && brandingLoaded && (
         <div className="space-y-8">
           <div className="border-3 border-brutal-fg bg-white p-8">
             <h3 className="font-heading text-2xl uppercase tracking-wide mb-6">📱 SMS Provider</h3>
