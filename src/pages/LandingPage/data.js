@@ -47,21 +47,21 @@ export const AUDIENCE_QUESTIONS = [
     key: 'Who',
     icon: Users,
     question: 'Who is actually in my audience?',
-    body: 'Not just an email address. Where they signed up, what they told you, where they are, which lists they belong to, and how they have engaged since.',
+    body: 'Where they signed up, what they told you, which lists they are on, and what they have done since.',
   },
   {
     id: 'why',
     key: 'Why',
     icon: ShieldCheck,
-    question: 'Why am I allowed to contact them?',
-    body: 'The wording they agreed to, where that agreement came from, and when. Kept on the record itself, so permission is something you can show rather than assume.',
+    question: 'Why can I contact this person?',
+    body: 'The wording they agreed to, where it came from, and the day they agreed to it.',
   },
   {
     id: 'when',
     key: 'When',
     icon: Clock,
     question: 'When does it make sense to reach out?',
-    body: 'Whether they have confirmed, how recently they engaged, and whether anything has happened since that should stop you sending.',
+    body: 'Whether they confirmed, how recently they engaged, and whether anything since should stop you sending.',
   },
 ]
 
@@ -76,27 +76,27 @@ export const REACHABILITY_STATES = [
     id: 'reachable',
     label: 'Reachable',
     tone: 'green',
-    detail: 'Confirmed, consented, and not suppressed. Safe to send to today.',
+    detail: 'Confirmed, still consented, not suppressed. Safe to send to today.',
   },
   {
     id: 'pending',
     label: 'Not yet confirmed',
     tone: 'yellow',
-    detail: 'They signed up but have not confirmed. In the audience, not in the send.',
+    detail: 'Signed up, never confirmed. In your audience, not in your send.',
   },
   {
     id: 'blocked',
     label: 'Unreachable',
     tone: 'red',
-    detail: 'Unsubscribed, bounced, or suppressed. The reason and the date stay on the record.',
+    detail: 'Unsubscribed, bounced or suppressed. The reason and the date stay on the record.',
   },
 ]
 
 export const HOW_IT_WORKS = [
-  { id: 'connect', number: '01', icon: Plug, title: 'Connect', body: 'Add your own Resend, SES or SendGrid key. Your sending reputation, your bill.' },
-  { id: 'import', number: '02', icon: Upload, title: 'Import', body: 'Bring a CSV, or put a capture form on your site. Consent is recorded as it arrives.' },
-  { id: 'understand', number: '03', icon: Search, title: 'Understand', body: 'See who you can reach, why, and what has happened with them before.' },
-  { id: 'send', number: '04', icon: Send, title: 'Send', body: 'Choose an audience, see the real recipient count, then send.' },
+  { id: 'connect', number: '01', icon: Plug, title: 'Connect', body: 'Add your own Resend, SES or SendGrid key.' },
+  { id: 'import', number: '02', icon: Upload, title: 'Import', body: 'Bring a CSV, or collect signups from your site.' },
+  { id: 'understand', number: '03', icon: Search, title: 'Understand', body: 'See who you can reach, and why.' },
+  { id: 'send', number: '04', icon: Send, title: 'Send', body: 'Pick an audience, check the real count, send.' },
 ]
 
 /*

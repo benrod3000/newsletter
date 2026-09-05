@@ -41,7 +41,7 @@ describe('LandingPage', () => {
   it('asks the who, why and when questions', () => {
     renderPage()
     expect(screen.getByText(/who is actually in my audience/i)).toBeInTheDocument()
-    expect(screen.getByText(/why am i allowed to contact them/i)).toBeInTheDocument()
+    expect(screen.getByText(/why can i contact this person/i)).toBeInTheDocument()
     expect(screen.getByText(/when does it make sense to reach out/i)).toBeInTheDocument()
   })
 
@@ -52,7 +52,7 @@ describe('LandingPage', () => {
     expect(screen.getAllByText('Reachable').length).toBeGreaterThan(0)
     expect(screen.getByText(/not yet confirmed/i)).toBeInTheDocument()
     expect(screen.getByText('Unreachable')).toBeInTheDocument()
-    expect(screen.getByText(/confirmed, consented, and not suppressed/i)).toBeInTheDocument()
+    expect(screen.getByText(/confirmed, still consented, not suppressed/i)).toBeInTheDocument()
   })
 
   it('lists only providers that exist', () => {
@@ -89,9 +89,21 @@ describe('LandingPage', () => {
     expect(signup.length).toBeLessThanOrEqual(3)
   })
 
-  it('keeps the capture form reachable and labelled', () => {
+  // Removed in the final refinement pass: it read as documentation and its
+  // submit button competed with the closing call to action, which is the one
+  // thing the bottom of the page is for. The widget itself is unaffected and
+  // still served at /w/:id.
+  it('does not carry the capture-form walkthrough', () => {
+    const { container } = renderPage()
+    expect(container.textContent).not.toMatch(/this is a capture form/i)
+    expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull()
+  })
+
+  it('uses one wording for the account CTA and one for the demo', () => {
     renderPage()
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /subscribe/i })).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /^create free account$/i }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('button', { name: /^see the live demo$/i }).length).toBeGreaterThan(0)
+    // The old second phrasing must not come back alongside it.
+    expect(screen.queryByRole('button', { name: /explore the demo/i })).toBeNull()
   })
 })

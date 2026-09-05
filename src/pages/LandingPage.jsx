@@ -5,7 +5,6 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Badge from '../components/ui/Badge'
 import Btn from '../components/ui/Button'
-import Input from '../components/ui/Input'
 import { Annotation, Section, CountUp } from '../components/ux'
 import {
   NAV_ITEMS, FOOTER_LINKS,
@@ -13,23 +12,7 @@ import {
 } from './LandingPage/data'
 import {
   Mail, Users, BarChart3, Menu, X, ArrowRight, Share2, Activity,
-  MapPin, Inbox,
 } from 'lucide-react'
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
-
-/**
- * Which workspace the "Get notified" form on this page subscribes people to.
- *
- * This must match a real `clients.slug`. It was `'demo'`, and no workspace has
- * ever had that slug - `/api/subscribe` requires an explicit, resolvable slug and
- * has no default - so every submission came back `400 Invalid or missing
- * workspace identifier`. The form then reported success anyway (see
- * handleNotifySubmit below), so it looked like it worked and captured nobody, for
- * as long as it has existed.
- */
-const SIGNUP_WORKSPACE_SLUG =
-  import.meta.env.VITE_SIGNUP_WORKSPACE_SLUG || 'benrod1-e9487515'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -40,48 +23,16 @@ gsap.registerPlugin(ScrollTrigger)
 export default function LandingPage() {
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [notifyStatus, setNotifyStatus] = useState(null)
   const heroRef = useRef(null)
   const dashboardRef = useRef(null)
 
-  /**
-   * Three outcomes, not two. A 2xx with `emailSent: false` means the row was
-   * written but the confirmation could not go out, which is a third outcome the
-   * visitor deserves to know about rather than a second kind of success.
-   */
-  async function handleNotifySubmit(e) {
-    e.preventDefault()
-    const input = e.target.email
-    const email = input.value.trim()
-    if (!email) return
-
-    setNotifyStatus('sending')
-    try {
-      const res = await fetch(`${API_URL}/api/subscribe`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          client_slug: SIGNUP_WORKSPACE_SLUG,
-          landing_path: window.location.pathname,
-        }),
-      })
-      const data = await res.json().catch(() => null)
-
-      if (!res.ok) {
-        setNotifyStatus(data?.error || 'That did not go through. Please try again.')
-        return
-      }
-
-      input.value = ''
-      setNotifyStatus(data?.emailSent === false ? 'saved-no-email' : 'sent')
-    } catch {
-      setNotifyStatus('Could not reach the server. Please try again.')
-    }
-  }
-
   useReveal(heroRef, { stagger: 0.08, y: 20 })
-  useScrollReveal('.reveal-item', { stagger: 0.08, y: 24, start: 'top 90%' })
+  // One ScrollTrigger per group. useScrollReveal keys its trigger off the
+  // first matched element, so a single shared class meant eleven elements
+  // spread down the page all animated from one trigger far above them.
+  useScrollReveal('.reveal-q', { stagger: 0.08, y: 24, start: 'top 90%' })
+  useScrollReveal('.reveal-state', { stagger: 0.08, y: 24, start: 'top 90%' })
+  useScrollReveal('.reveal-step', { stagger: 0.06, y: 20, start: 'top 92%' })
   useTerminalReveal('.annotation', { stagger: 0.08 })
 
   useEffect(() => {
@@ -143,9 +94,9 @@ export default function LandingPage() {
           The product visual lives in this section rather than below it, so the
           app is on screen without scrolling past two argument sections first.
           It used to hang off the next section on a negative margin. */}
-      <Section className="bg-dots-light pt-28 sm:pt-32">
+      <Section padding="pt-28 sm:pt-32 pb-20 sm:pb-28" className="bg-dots-light">
         <div ref={heroRef} className="max-w-4xl mx-auto space-y-7">
-          <Badge variant="yellow">Audience platform · Email</Badge>
+          <Badge variant="muted">Audience platform · Email</Badge>
 
           <h1 className="text-display leading-[0.85]">
             Stop Renting{' '}
@@ -157,8 +108,9 @@ export default function LandingPage() {
           </p>
 
           <p className="text-base sm:text-lg text-brutal-fg/70 leading-relaxed max-w-2xl">
-            Veloce keeps your audience, their consent, their history and your sending in
-            one place. You own the list and bring your own provider: Resend, SES or SendGrid.
+            Bring your audience into one place, with the evidence behind every name:
+            where they came from, what they agreed to, and what has happened since.
+            When you are ready to send, use the provider you already trust.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center pt-1">
@@ -252,20 +204,20 @@ export default function LandingPage() {
 
       {/* ═══ 2. THE PROBLEM ════════════════════════════════
           Short by design. It exists to say why the product exists, then move on. */}
-      <Section className="border-t-3 border-brutal-fg">
-        <div className="max-w-3xl mx-auto space-y-6 text-center">
+      <Section padding="py-14 sm:py-20" className="border-t-3 border-brutal-fg">
+        <div className="max-w-2xl mx-auto space-y-5 text-center">
           <Badge variant="muted">The problem</Badge>
           <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
             Your audience is{' '}
             <span className="text-brutal-green">scattered.</span>
           </h2>
-          <p className="text-base sm:text-lg text-brutal-fg/70 leading-relaxed">
-            Names in one platform, email addresses in another, phone numbers in a
-            spreadsheet, and the record of what anyone actually agreed to spread across
-            an inbox, a form tool and nobody&apos;s memory. So the question that matters,
-            who can I contact and why, has no answer you can trust.
+          <p className="text-base sm:text-lg text-brutal-fg/75 leading-relaxed">
+            Names in one platform. Email addresses in another. Phone numbers in a
+            spreadsheet. Consent somewhere else, if it was written down at all.
           </p>
-          <Annotation>one record per person · consent kept with the person · not in a spreadsheet</Annotation>
+          <p className="text-base sm:text-lg font-bold leading-relaxed">
+            Veloce keeps the evidence together, so who you can contact stops being a guess.
+          </p>
         </div>
       </Section>
 
@@ -273,9 +225,9 @@ export default function LandingPage() {
           The centre of the page. Deliberately unboxed: three ideas with room
           around them, rather than three more bordered cards. */}
       <Section id="features" className="bg-brutal-surface/40 border-t-3 border-brutal-fg">
-        <div className="max-w-5xl mx-auto space-y-12 sm:space-y-16">
+        <div className="max-w-5xl mx-auto space-y-10 sm:space-y-14">
           <div className="max-w-2xl space-y-5">
-            <Badge variant="yellow">What Veloce answers</Badge>
+            <Badge variant="muted">What Veloce answers</Badge>
             <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
               Three questions,{' '}
               <span className="text-brutal-green">answered per person.</span>
@@ -284,14 +236,14 @@ export default function LandingPage() {
 
           <div className="grid gap-10 sm:gap-8 sm:grid-cols-3">
             {AUDIENCE_QUESTIONS.map((q) => (
-              <div key={q.id} className="reveal-item space-y-3">
+              <div key={q.id} className="reveal-q space-y-3">
                 <div className="flex items-center gap-2.5">
                   <q.icon size={20} className="text-brutal-green shrink-0" aria-hidden="true" />
                   <p className="font-heading text-3xl uppercase tracking-tight leading-none">{q.key}</p>
                 </div>
                 <div className="h-1 w-12 bg-brutal-yellow" aria-hidden="true" />
                 <h3 className="text-base font-bold leading-snug">{q.question}</h3>
-                <p className="text-sm text-brutal-fg/70 leading-relaxed">{q.body}</p>
+                <p className="text-sm text-brutal-fg/75 leading-relaxed">{q.body}</p>
               </div>
             ))}
           </div>
@@ -304,21 +256,22 @@ export default function LandingPage() {
       <Section className="bg-brutal-fg text-brutal-bg border-t-3 border-brutal-fg">
         <div className="max-w-5xl mx-auto space-y-10 sm:space-y-12">
           <div className="max-w-2xl space-y-5">
-            <Badge variant="yellow">Reachability</Badge>
+            <Badge variant="default">Reachability</Badge>
             <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
               A list of 10,000 is not{' '}
               <span className="text-brutal-yellow">10,000 people you can email.</span>
             </h2>
             <p className="text-sm sm:text-base opacity-70 leading-relaxed">
-              Veloce works out who you can actually contact right now, and keeps the reason
-              attached. Consent is checked again when a broadcast goes out, so the count you
-              see before you send is the count that gets sent to.
+              Being in your database is not the same as being contactable. Veloce works out
+              who you can actually email today, and keeps the reason attached to each person.
+              Consent is checked again when a broadcast goes out, so the number you see before
+              you send is the number that gets sent to.
             </p>
           </div>
 
           <div className="grid gap-px sm:grid-cols-3 bg-brutal-bg/20 border-3 border-brutal-bg/20">
             {REACHABILITY_STATES.map((state) => (
-              <div key={state.id} className="reveal-item bg-brutal-fg p-6 space-y-2.5">
+              <div key={state.id} className="reveal-state bg-brutal-fg p-6 space-y-2.5">
                 <span
                   className={`inline-block h-2.5 w-10 ${
                     state.tone === 'green' ? 'bg-brutal-green' : state.tone === 'yellow' ? 'bg-brutal-yellow' : 'bg-brutal-red'
@@ -345,14 +298,14 @@ export default function LandingPage() {
               <span className="text-brutal-green">permission to contact someone.</span>
             </h2>
             <p className="text-base text-brutal-fg/70 leading-relaxed">
-              Opt-ins, imports, confirmations, unsubscribes and delivery events stay attached
-              to the person they belong to, with the wording they agreed to and the date they
-              agreed to it. If you are ever asked to prove it, the answer is on the record.
+              Most tools store a yes. Veloce stores what they said yes to, where it happened
+              and when, and everything that has happened since. If you are ever asked to prove
+              it, the answer is already on the record.
             </p>
           </div>
 
           {/* One large product visual rather than several small ones */}
-          <div className="reveal-item border-3 border-brutal-fg bg-white shadow-brutal">
+          <div className="border-3 border-brutal-fg bg-white shadow-brutal">
             <div className="border-b-3 border-brutal-fg bg-brutal-surface px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 border-2 border-brutal-fg bg-brutal-yellow flex items-center justify-center font-heading text-lg uppercase shrink-0">B</div>
@@ -419,17 +372,18 @@ export default function LandingPage() {
       </Section>
 
       {/* ═══ 6. CHANNELS AND PROVIDERS ═════════════════════ */}
-      <Section className="bg-brutal-surface/40 border-t-3 border-brutal-fg">
-        <div className="max-w-4xl mx-auto space-y-10">
+      <Section padding="py-16 sm:py-20" className="bg-brutal-surface/40 border-t-3 border-brutal-fg">
+        <div className="max-w-4xl mx-auto space-y-8">
           <div className="max-w-2xl space-y-5">
-            <Badge variant="muted">Channels and providers</Badge>
+            <Badge variant="muted">Providers</Badge>
             <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none">
               Your audience.{' '}
               <span className="text-brutal-green">Your sending account.</span>
             </h2>
             <p className="text-base text-brutal-fg/70 leading-relaxed">
-              Veloce does not resell email. You connect your own provider, so your sending
-              reputation and your bill stay yours, and you can leave without losing either.
+              Veloce does not resell email and does not hold your sending hostage. Connect the
+              provider you already use, and keep both your audience and your sending account
+              on the day you decide to leave.
             </p>
           </div>
 
@@ -454,8 +408,8 @@ export default function LandingPage() {
       </Section>
 
       {/* ═══ 7. HOW IT WORKS ═══════════════════════════════ */}
-      <Section className="border-t-3 border-brutal-fg">
-        <div className="max-w-5xl mx-auto space-y-12">
+      <Section padding="py-16 sm:py-20" className="border-t-3 border-brutal-fg">
+        <div className="max-w-5xl mx-auto space-y-10">
           <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none max-w-xl">
             How it{' '}
             <span className="text-brutal-green">works.</span>
@@ -463,7 +417,7 @@ export default function LandingPage() {
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {HOW_IT_WORKS.map((step) => (
-              <div key={step.id} className="reveal-item space-y-2.5">
+              <div key={step.id} className="reveal-step space-y-2.5">
                 <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/30">{step.number}</p>
                 <div className="flex items-center gap-2">
                   <step.icon size={18} className="text-brutal-green shrink-0" aria-hidden="true" />
@@ -474,84 +428,11 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* The capture form, working. It is the honest form of proof: rather
-              than claiming forms collect consent, this one does it live. */}
-          <div className="grid lg:grid-cols-2 gap-8 items-center pt-4 border-t-3 border-brutal-fg">
-            <div className="space-y-3 pt-8">
-              <h3 className="text-2xl sm:text-3xl font-heading uppercase tracking-tight leading-none">
-                This is a capture form.
-              </h3>
-              <p className="text-sm text-brutal-fg/70 leading-relaxed max-w-md">
-                The same one you would embed on your own site. Subscribe and you become a
-                record with a source, a timestamp and a confirmation step, exactly as described above.
-              </p>
-              <Annotation>one line to embed · consent recorded on arrival · location captured</Annotation>
-            </div>
-
-            <form onSubmit={handleNotifySubmit} className="border-3 border-brutal-fg bg-white shadow-brutal lg:mt-8">
-              <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-4 py-3 flex items-center gap-2">
-                <Inbox size={16} aria-hidden="true" />
-                <p className="font-heading text-lg sm:text-xl uppercase">Get notified</p>
-              </div>
-              <div className="p-4 space-y-3">
-                {/*
-                  Illustrative, not an input. It was a readOnly text box
-                  pre-filled with "Austin, TX", which looked like a field
-                  someone had already filled in on the visitor's behalf and
-                  was focusable with nothing to type. It is a picture of what
-                  the widget captures, so it is presented as one and hidden
-                  from assistive tech.
-                */}
-                <div
-                  aria-hidden="true"
-                  className="flex items-center gap-2 px-3 py-2 border-3 border-dashed border-brutal-fg/30 bg-brutal-bg text-xs text-brutal-muted"
-                >
-                  <MapPin size={14} />
-                  <span>Austin, TX</span>
-                </div>
-                <Input
-                  label="Email"
-                  name="email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                />
-                <Btn
-                  variant="primary"
-                  fullWidth
-                  size="md"
-                  type="submit"
-                  disabled={notifyStatus === 'sending'}
-                  icon={<ArrowRight size={14} />}
-                >
-                  {notifyStatus === 'sending' ? 'Subscribing...' : 'Subscribe'}
-                </Btn>
-                {notifyStatus && notifyStatus !== 'sending' && (
-                  <p
-                    role="status"
-                    aria-live="polite"
-                    className={`text-[10px] font-bold uppercase tracking-wider text-center ${
-                      notifyStatus === 'sent' || notifyStatus === 'saved-no-email'
-                        ? 'text-brutal-green'
-                        : 'text-brutal-red'
-                    }`}
-                  >
-                    {notifyStatus === 'sent'
-                      ? 'Check your inbox to confirm.'
-                      : notifyStatus === 'saved-no-email'
-                        ? "You're on the list. The confirmation email could not be sent right now."
-                        : notifyStatus}
-                  </p>
-                )}
-              </div>
-            </form>
-          </div>
         </div>
       </Section>
 
       {/* ═══ 8. FINAL CTA ══════════════════════════════════ */}
-      <Section className="border-t-3 border-brutal-fg bg-brutal-fg text-brutal-bg">
+      <Section padding="py-20 sm:py-24" className="border-t-3 border-brutal-fg bg-brutal-fg text-brutal-bg">
         <div className="text-center space-y-7 max-w-2xl mx-auto">
           <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
             Own the list.{' '}
@@ -565,7 +446,7 @@ export default function LandingPage() {
               Create Free Account
             </Btn>
             <Btn variant="ghostOnDark" size="lg" onClick={() => navigate('/demo')}>
-              Explore the demo
+              See the live demo
             </Btn>
           </div>
           <Annotation className="justify-center !text-brutal-bg/50">no credit card · no monthly fees · bring your own Resend, SES or SendGrid</Annotation>
