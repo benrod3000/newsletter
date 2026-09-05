@@ -6,11 +6,15 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Badge from '../components/ui/Badge'
 import Btn from '../components/ui/Button'
 import Input from '../components/ui/Input'
-import Card from '../components/ui/Card'
 import { Annotation, Section, CountUp } from '../components/ux'
 import {
-  NAV_ITEMS, PILLARS, FOOTER_LINKS,
+  NAV_ITEMS, FOOTER_LINKS,
+  AUDIENCE_QUESTIONS, REACHABILITY_STATES, HOW_IT_WORKS, PROVIDERS, PLANNED_CHANNELS,
 } from './LandingPage/data'
+import {
+  Mail, Users, BarChart3, Menu, X, ArrowRight, Share2, Activity,
+  MapPin, Inbox,
+} from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
 
@@ -28,37 +32,22 @@ const SIGNUP_WORKSPACE_SLUG =
   import.meta.env.VITE_SIGNUP_WORKSPACE_SLUG || 'benrod1-e9487515'
 
 gsap.registerPlugin(ScrollTrigger)
-import {
-  MapPin, Mail, Zap, Target, Users, BarChart3,
-  Menu, X, CheckCircle,
-  Globe, ArrowRight,
-  Share2, Activity, Radio, Smartphone, Clock,
-  FileText, GitBranch, Monitor, UserCheck,
-} from 'lucide-react'
 
 /* ═══════════════════════════════════════════════════════
    COMPONENT
    ═══════════════════════════════════════════════════════ */
 
 export default function LandingPage() {
-  useEffect(() => { document.title = 'Veloce · Own your audience. Reach them anywhere.' }, [])
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const heroRef = useRef(null)
-  // null while untouched, then 'sending' | 'sent' | 'saved-no-email' | a message.
   const [notifyStatus, setNotifyStatus] = useState(null)
+  const heroRef = useRef(null)
+  const dashboardRef = useRef(null)
 
   /**
-   * Subscribe from the "Get notified" form.
-   *
-   * The previous version set the button to "Sent!" on the line after `fetch`
-   * resolved. `fetch` only rejects on a network failure - it resolves for 400,
-   * 429 and 500 alike - so every rejected submission was reported as a success,
-   * including the 400 that every submission actually received. Status is checked
-   * explicitly here, and `/api/subscribe` also answers `202` with
-   * `emailSent: false` when the address was saved but the confirmation email
-   * could not go out, which is a third outcome the visitor deserves to know
-   * about rather than a second kind of success.
+   * Three outcomes, not two. A 2xx with `emailSent: false` means the row was
+   * written but the confirmation could not go out, which is a third outcome the
+   * visitor deserves to know about rather than a second kind of success.
    */
   async function handleNotifySubmit(e) {
     e.preventDefault()
@@ -90,18 +79,17 @@ export default function LandingPage() {
       setNotifyStatus('Could not reach the server. Please try again.')
     }
   }
-  const dashboardRef = useRef(null)
 
-  useReveal(heroRef, { stagger: 0.1, y: 20 })
-  useScrollReveal('.pillar-card', { stagger: 0.08, y: 30, start: 'top 90%' })
+  useReveal(heroRef, { stagger: 0.08, y: 20 })
+  useScrollReveal('.reveal-item', { stagger: 0.08, y: 24, start: 'top 90%' })
   useTerminalReveal('.annotation', { stagger: 0.08 })
 
   useEffect(() => {
     if (dashboardRef.current) {
       const ctx = gsap.context(() => {
         gsap.fromTo(dashboardRef.current,
-          { opacity: 0, y: 40 },
-          { opacity: 1, y: 0, duration: 0.8, delay: 0.4, ease: 'power3.out', scrollTrigger: { trigger: dashboardRef.current, start: 'top 92%', toggleActions: 'play none none none' } }
+          { opacity: 0, y: 32 },
+          { opacity: 1, y: 0, duration: 0.7, delay: 0.35, ease: 'power3.out' }
         )
       }, dashboardRef)
       return () => ctx.revert()
@@ -134,9 +122,11 @@ export default function LandingPage() {
           </button>
         </div>
 
-        {/* Mobile nav drawer */}
+        {/* Mobile nav drawer. Capped and scrollable: it is a child of the sticky
+            nav, so an uncapped drawer on a short landscape viewport pushed its
+            own last item off screen with no way to reach it. */}
         {mobileOpen && (
-          <div className="md:hidden border-t-3 border-brutal-fg bg-brutal-bg px-4 py-4 space-y-3 animate-fade-in">
+          <div className="md:hidden border-t-3 border-brutal-fg bg-brutal-bg px-4 py-4 space-y-3 max-h-[70vh] overflow-y-auto">
             {NAV_ITEMS.map((item) => (
               <Link key={item.label} to={item.href} onClick={(e) => { setMobileOpen(false); if (item.href.startsWith('/#')) { e.preventDefault(); document.getElementById(item.href.slice(2))?.scrollIntoView({ behavior: 'smooth' }) } }} className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/70 hover:text-brutal-fg">{item.label}</Link>
             ))}
@@ -147,594 +137,438 @@ export default function LandingPage() {
         )}
       </nav>
 
-      {/*
-        Everything between the nav and the footer is the page's main content, and
-        it now says so. There was no <main> at all: the skip link pointed at the
-        hero <Section>, which moves focus but gives assistive tech no landmark to
-        jump to, so "skip to content" and the main landmark disagreed about where
-        the content began.
-      */}
       <main id="main-content" tabIndex={-1} className="focus:outline-none">
-      {/* ═══ HERO ═══ */}
-      <Section className="bg-dots-light pt-28 sm:pt-36">
-        <div ref={heroRef} className="max-w-5xl mx-auto space-y-10 sm:space-y-12">
-          <Badge variant="yellow">Newsletter platform · Email · SMS · RCS</Badge>
+
+      {/* ═══ 1. HERO ═══════════════════════════════════════
+          The product visual lives in this section rather than below it, so the
+          app is on screen without scrolling past two argument sections first.
+          It used to hang off the next section on a negative margin. */}
+      <Section className="bg-dots-light pt-28 sm:pt-32">
+        <div ref={heroRef} className="max-w-4xl mx-auto space-y-7">
+          <Badge variant="yellow">Audience platform · Email</Badge>
 
           <h1 className="text-display leading-[0.85]">
             Stop Renting{' '}
             <span className="text-brutal-green">Your Audience.</span>
           </h1>
 
-          <div className="h-2 w-24 bg-brutal-yellow border-2 border-brutal-fg" aria-hidden="true" />
-
-          <p className="text-lg sm:text-xl text-brutal-fg/80 leading-relaxed max-w-2xl font-medium">
-            The newsletter platform where you own the list and bring your own sending - Resend, SES, or SendGrid. One audience, reachable by email, SMS, or RCS.
+          <p className="text-xl sm:text-2xl font-bold leading-tight max-w-2xl">
+            Know who you can reach, why you can reach them, and when to talk to them.
           </p>
 
-          <Annotation>audience ownership · bring your own Resend / SES / SendGrid · no monthly fees</Annotation>
+          <p className="text-base sm:text-lg text-brutal-fg/70 leading-relaxed max-w-2xl">
+            Veloce keeps your audience, their consent, their history and your sending in
+            one place. You own the list and bring your own provider: Resend, SES or SendGrid.
+          </p>
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-            <span className="flex items-center gap-1 text-[10px] font-bold text-brutal-green uppercase tracking-wider"><CheckCircle size={12} aria-hidden="true" /> No per-contact fees</span>
-            <span className="flex items-center gap-1 text-[10px] font-bold text-brutal-green uppercase tracking-wider"><CheckCircle size={12} aria-hidden="true" /> TLS 1.3 encrypted</span>
-            <span className="flex items-center gap-1 text-[10px] font-bold text-brutal-green uppercase tracking-wider"><CheckCircle size={12} aria-hidden="true" /> Radius geo targeting</span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 items-start">
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center pt-1">
             <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => navigate('/signup')}>
               Create Free Account
             </Btn>
-            <Btn variant="secondary" size="lg" onClick={() => navigate('/demo')}>
-              See Live Demo
+            <Btn variant="ghost" size="lg" onClick={() => navigate('/demo')}>
+              See the live demo
             </Btn>
           </div>
-          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">No credit card required · No monthly fees · You pay your Resend, SES, or SendGrid bill directly</p>
-        </div>
-      </Section>
 
-      {/* ═══ AUDIENCE OWNERSHIP ═══ */}
-      <Section className="bg-brutal-fg text-brutal-bg">
-        <div className="max-w-4xl mx-auto text-center space-y-8 sm:space-y-10">
-          <Badge variant="yellow">Your audience. Your data. Your rules.</Badge>
-          <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
-            Your audience{' '}
-            <span className="text-brutal-yellow">belongs to you.</span>
-          </h2>
-          <p className="text-sm sm:text-base opacity-60 max-w-xl mx-auto leading-relaxed">
-            Stop rebuilding your business every time an algorithm changes. Collect once. Reach everywhere. Never rent again.
+          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">
+            No credit card · No per-contact fees · You pay your provider directly
           </p>
+        </div>
 
-          {/* Flow diagram */}
-          <div className="border-3 border-brutal-yellow bg-brutal-bg text-brutal-fg p-6 sm:p-8 max-w-xl mx-auto">
-            {/* Social platforms row */}
-            <div className="flex justify-center gap-4 sm:gap-6 flex-wrap">
-              {['Facebook', 'Instagram', 'TikTok', 'YouTube'].map((p) => (
-                <div key={p} className="border-2 border-brutal-fg px-3 py-2 text-[9px] font-bold uppercase tracking-wider">{p}</div>
-              ))}
+        {/* Product visual */}
+        <div ref={dashboardRef} className="mt-14 sm:mt-20 max-w-6xl mx-auto">
+          <div className="border-3 border-brutal-fg bg-white shadow-brutal overflow-hidden">
+            {/* Window chrome */}
+            <div className="border-b-3 border-brutal-fg bg-brutal-surface px-4 py-2 flex items-center gap-3">
+              <div className="flex gap-1.5" aria-hidden="true">
+                <span className="w-3 h-3 border-2 border-brutal-fg bg-brutal-red" />
+                <span className="w-3 h-3 border-2 border-brutal-fg bg-brutal-yellow" />
+                <span className="w-3 h-3 border-2 border-brutal-fg bg-brutal-green" />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-brutal-fg/40 flex-1 text-center">Veloce · Audience</span>
+              <span className="text-[10px] font-mono text-brutal-muted hidden sm:inline">brod3000</span>
             </div>
-            {/* Down arrows */}
-            <div className="flex justify-center gap-4 sm:gap-6 mt-3 text-brutal-muted">
-              {[1,2,3,4].map(i => <span key={i} className="text-sm">↓</span>)}
-            </div>
-            {/* Veloce hub */}
-            <div className="border-3 border-brutal-green bg-brutal-green/10 p-4 mt-3">
-              <p className="font-heading text-2xl uppercase tracking-wider">Veloce</p>
-              <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted mt-1">Your audience. Your data. No algorithms.</p>
-            </div>
-            {/* Out arrows */}
-            <div className="flex justify-center gap-4 sm:gap-6 mt-3 text-brutal-green">
-              {[1,2,3,4].map(i => <span key={i} className="text-sm">↓</span>)}
-            </div>
-            {/* Channels row */}
-            <div className="flex justify-center gap-4 sm:gap-6 flex-wrap mt-3">
-              {['Email', 'SMS', 'RCS', 'Website'].map((ch) => (
-                <div key={ch} className="border-2 border-brutal-green bg-brutal-green/10 px-4 py-2 text-[10px] font-bold uppercase tracking-wider">{ch}</div>
-              ))}
+
+            <div className="flex flex-col sm:flex-row min-h-[340px] sm:min-h-[440px]">
+              {/* Sidebar */}
+              <div className="w-full sm:w-52 shrink-0 border-b-3 sm:border-b-0 sm:border-r-3 border-brutal-fg bg-brutal-fg text-white p-4 flex sm:block gap-1 overflow-x-auto">
+                {[
+                  { icon: BarChart3, label: 'Analytics' },
+                  { icon: Users, label: 'Audience' },
+                  { icon: Mail, label: 'Broadcasts' },
+                  { icon: Share2, label: 'Capture forms' },
+                  { icon: Activity, label: 'Automations' },
+                ].map((item) => (
+                  <div key={item.label} className={`flex items-center gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${item.label === 'Audience' ? 'bg-brutal-yellow/20 border-l-3 border-brutal-yellow' : 'opacity-60'}`}>
+                    <item.icon size={14} aria-hidden="true" />
+                    {item.label}
+                  </div>
+                ))}
+              </div>
+
+              {/* Main content: the reachability view, because that is the thesis */}
+              <div className="flex-1 min-w-0 p-4 sm:p-6 space-y-5">
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: 'In audience', value: 10310, tone: 'text-brutal-fg' },
+                    { label: 'Reachable now', value: 8642, tone: 'text-brutal-green' },
+                    { label: 'Needs confirming', value: 1204, tone: 'text-brutal-yellow-dark' },
+                  ].map((kpi) => (
+                    <div key={kpi.label} className="border-2 border-brutal-fg p-3">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">{kpi.label}</p>
+                      <p className={`text-xl sm:text-2xl font-heading ${kpi.tone}`}><CountUp value={kpi.value} /></p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-2 border-brutal-fg">
+                  <div className="border-b-2 border-brutal-fg bg-brutal-surface px-3 py-2 flex items-center justify-between gap-2">
+                    <span className="text-[9px] font-bold uppercase tracking-wider">Audience</span>
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted truncate">Consent source</span>
+                  </div>
+                  {[
+                    { name: 'ben@example.com', where: 'Austin, TX', state: 'Reachable', src: 'Capture form · 12 Mar', tone: 'text-brutal-green' },
+                    { name: 'dana@example.com', where: 'Portland, OR', state: 'Reachable', src: 'CSV import · 04 Jan', tone: 'text-brutal-green' },
+                    { name: 'sam@example.com', where: 'Denver, CO', state: 'Unconfirmed', src: 'Capture form · 28 Aug', tone: 'text-brutal-yellow-dark' },
+                    { name: 'rae@example.com', where: 'Austin, TX', state: 'Unsubscribed', src: 'Unsubscribed · 02 Sep', tone: 'text-brutal-red' },
+                  ].map((row) => (
+                    <div key={row.name} className="flex items-center justify-between gap-3 px-3 py-2.5 border-b border-brutal-fg/20 last:border-0">
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold truncate">{row.name}</p>
+                        <p className="text-[9px] text-brutal-muted truncate">{row.where}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className={`text-[10px] font-bold uppercase tracking-wider ${row.tone}`}>{row.state}</p>
+                        <p className="text-[9px] text-brutal-muted hidden sm:block">{row.src}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </Section>
 
-      {/*
-        A "The Problem" section stood here and was removed on 2026-08-10 as
-        duplication, not as a disagreement with what it said.
-
-        It argued the ownership thesis - algorithm dependent, charged per contact,
-        locked in - in three cards, directly after the section above had just made
-        the same argument with the platforms-to-channels diagram. The page said it
-        twice in a row, and the second time was the weaker of the two.
-      */}
-
-      {/* ═══ DASHBOARD PREVIEW ═══ */}
-      <div ref={dashboardRef} className="-mt-10 sm:-mt-16 mb-20 sm:mb-28 relative z-10 max-w-6xl mx-auto px-4 sm:px-8">
-        <div className="border-3 border-brutal-fg bg-white shadow-brutal overflow-hidden">
-          {/* Window chrome */}
-          <div className="border-b-3 border-brutal-fg bg-brutal-surface px-4 py-2 flex items-center gap-3">
-            <div className="flex gap-1.5">
-              <span className="w-3 h-3 border-2 border-brutal-fg bg-brutal-red" />
-              <span className="w-3 h-3 border-2 border-brutal-fg bg-brutal-yellow" />
-              <span className="w-3 h-3 border-2 border-brutal-fg bg-brutal-green" />
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-brutal-fg/40 flex-1 text-center">Veloce · Dashboard</span>
-            <span className="text-[10px] font-mono text-brutal-muted">brod3000</span>
-          </div>
-
-          {/* Dashboard mockup */}
-          <div className="flex flex-col sm:flex-row min-h-[280px] sm:min-h-[360px]">
-            {/* Sidebar */}
-            <div className="w-full sm:w-48 border-b-3 sm:border-b-0 sm:border-r-3 border-brutal-fg bg-brutal-fg text-white p-4 space-y-1">
-              {[
-                { icon: BarChart3, label: 'Analytics' },
-                { icon: Mail, label: 'Campaigns' },
-                { icon: Users, label: 'Subscribers' },
-                { icon: Share2, label: 'Widgets' },
-                { icon: Activity, label: 'Automations' },
-              ].map((item) => (
-                <div key={item.label} className={`flex items-center gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-wider ${item.label === 'Campaigns' ? 'bg-brutal-yellow/20 border-l-3 border-brutal-yellow' : 'opacity-60 hover:opacity-100'} transition`}>
-                  <item.icon size={14} />
-                  {item.label}
-                </div>
-              ))}
-            </div>
-
-            {/* Main content */}
-            <div className="flex-1 p-4 sm:p-6 space-y-4">
-              {/* KPI row */}
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { label: 'Subscribers', value: 1892, change: '+12%', color: 'text-brutal-green' },
-                  { label: 'Open Rate', value: 47, suffix: '%', change: '+3%', color: 'text-brutal-green' },
-                  { label: 'Active Campaigns', value: 3, change: '--', color: 'text-brutal-fg' },
-                ].map((kpi) => (
-                  <div key={kpi.label} className="border-2 border-brutal-fg p-3">
-                    <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">{kpi.label}</p>
-                    <p className={`text-xl font-heading ${kpi.color}`}>
-                      {typeof kpi.value === 'number' ? <><CountUp value={kpi.value} />{kpi.suffix || ''}</> : kpi.value}
-                    </p>
-                    <p className="text-[9px] font-bold text-brutal-green">{kpi.change}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Table mockup */}
-              <div className="border-2 border-brutal-fg">
-                <div className="border-b-2 border-brutal-fg bg-brutal-surface px-3 py-2 flex items-center justify-between">
-                  <span className="text-[9px] font-bold uppercase tracking-wider">Recent Campaigns</span>
-                  <span className="text-[8px] font-bold text-brutal-green">📍 Geo-targeted</span>
-                </div>
-                {[
-                  { name: 'South Congress Sale', sent: '847', status: 'Sent', geo: 'Austin, TX / 5mi' },
-                  { name: 'East Side Workshop', sent: '312', status: 'Scheduled', geo: 'Portland, OR / 10mi' },
-                  { name: 'Weekend Special', sent: '--', status: 'Draft', geo: '--' },
-                ].map((row) => (
-                  <div key={row.name} className="flex items-center justify-between px-3 py-2 border-b border-brutal-fg/20 last:border-0">
-                    <div>
-                      <p className="text-xs font-bold">{row.name}</p>
-                      <p className="text-[9px] text-brutal-muted">{row.geo}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs font-bold">{row.sent}</p>
-                      <span className={`text-[8px] font-bold uppercase ${row.status === 'Sent' ? 'text-brutal-green' : row.status === 'Scheduled' ? 'text-brutal-yellow-dark' : 'text-brutal-muted'}`}>{row.status}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+      {/* ═══ 2. THE PROBLEM ════════════════════════════════
+          Short by design. It exists to say why the product exists, then move on. */}
+      <Section className="border-t-3 border-brutal-fg">
+        <div className="max-w-3xl mx-auto space-y-6 text-center">
+          <Badge variant="muted">The problem</Badge>
+          <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
+            Your audience is{' '}
+            <span className="text-brutal-green">scattered.</span>
+          </h2>
+          <p className="text-base sm:text-lg text-brutal-fg/70 leading-relaxed">
+            Names in one platform, email addresses in another, phone numbers in a
+            spreadsheet, and the record of what anyone actually agreed to spread across
+            an inbox, a form tool and nobody&apos;s memory. So the question that matters,
+            who can I contact and why, has no answer you can trust.
+          </p>
+          <Annotation>one record per person · consent kept with the person · not in a spreadsheet</Annotation>
         </div>
-      </div>
+      </Section>
 
-      {/*
-        The standalone automations section was removed on 2026-08-10. Automations
-        are pillar 04 below, which makes the same points with its own visual and a
-        CTA, so this was the third place on one page describing welcome drips and
-        auto-tagging.
-      */}
-
-      {/* ═══ SMS / RCS PHONE MOCKUP ═══ */}
-      <Section>
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-8">
-            <Badge variant="yellow">Reach them anywhere</Badge>
-            <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none mt-4">
-              One audience.{' '}
-              <span className="text-brutal-green">Every channel.</span>
+      {/* ═══ 3. WHO / WHY / WHEN ═══════════════════════════
+          The centre of the page. Deliberately unboxed: three ideas with room
+          around them, rather than three more bordered cards. */}
+      <Section id="features" className="bg-brutal-surface/40 border-t-3 border-brutal-fg">
+        <div className="max-w-5xl mx-auto space-y-12 sm:space-y-16">
+          <div className="max-w-2xl space-y-5">
+            <Badge variant="yellow">What Veloce answers</Badge>
+            <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
+              Three questions,{' '}
+              <span className="text-brutal-green">answered per person.</span>
             </h2>
           </div>
-          <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {/* Email on left */}
-            <div className="border-3 border-brutal-fg bg-white p-5">
-              <div className="border-b-2 border-brutal-fg/20 pb-2 mb-3 flex items-center gap-2">
-                <Mail size={16} className="text-brutal-green" />
-                <p className="text-[9px] font-bold uppercase tracking-wider">Email Newsletter</p>
-              </div>
-              <p className="text-lg font-heading uppercase">Big News</p>
-              <p className="text-xs text-brutal-muted mt-1 leading-relaxed">Hey Ben, your event at South Congress is coming up. We've got 47 subscribers within 5 miles ready to hear about it.</p>
-              <div className="mt-3 border-2 border-brutal-fg bg-brutal-yellow px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-center">Learn More</div>
-            </div>
-            {/* Phone on right */}
-            <div className="border-3 border-brutal-fg bg-brutal-fg p-3">
-              <div className="bg-brutal-bg rounded p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Smartphone size={14} className="text-brutal-green" />
-                  <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-muted">SMS Preview</p>
-                </div>
-                <div className="bg-white border-2 border-brutal-fg p-3 max-w-[200px] mx-auto">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-6 h-6 border-2 border-brutal-fg bg-brutal-green flex items-center justify-center text-[8px] font-bold text-white">V</div>
-                    <div>
-                      <p className="text-[9px] font-bold">Veloce</p>
-                      <p className="text-[7px] text-brutal-muted">Now</p>
-                    </div>
-                  </div>
-                  <p className="text-[10px] leading-relaxed">Hey Ben! Your event South Congress starts tomorrow. 47 locals are invited. See you there!</p>
-                </div>
-                <div className="text-center">
-                  <div className="inline-block border-2 border-brutal-fg bg-white px-4 py-1.5 text-[8px] font-bold uppercase tracking-wider">Tap to Reply</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Section>
 
-      {/* ═══ PROBLEM STATEMENT ═══ */}
-      <Section className="bg-brutal-surface/40 -mt-12">
-        <div className="max-w-4xl mx-auto text-center space-y-8 sm:space-y-10">
-          {/*
-            Was also badged "The Problem", which is why the page appeared to have
-            two of them. This one is about reaching the wrong people, which the
-            ownership argument above does not cover, so it stays - under a label
-            that says which problem it is.
-          */}
-          <Badge variant="green">Wasted Reach</Badge>
-          <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
-            Sending emails{' '}
-            <span className="text-brutal-green">to the wrong people?</span>
-          </h2>
-          <div className="grid sm:grid-cols-3 gap-6 text-left max-w-3xl mx-auto">
-            {[
-              { icon: Globe, title: 'Wrong audience', desc: 'Sending emails to people hundreds of miles away who will never show up.' },
-              { icon: FileText, title: 'CSV tedium', desc: 'Uploading spreadsheets every week because your tool has no geo awareness.' },
-              { icon: Clock, title: 'Overpaying', desc: 'Paying for contacts you cannot actually reach. Most platforms charge per contact, not per send.' },
-            ].map((p) => (
-              <Card key={p.title} padding="p-5">
-                <p.icon size={20} className="text-brutal-green mb-2" />
-                <h3 className="font-heading text-lg uppercase tracking-wide">{p.title}</h3>
-                <p className="text-xs text-brutal-muted mt-1 leading-relaxed">{p.desc}</p>
-              </Card>
+          <div className="grid gap-10 sm:gap-8 sm:grid-cols-3">
+            {AUDIENCE_QUESTIONS.map((q) => (
+              <div key={q.id} className="reveal-item space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <q.icon size={20} className="text-brutal-green shrink-0" aria-hidden="true" />
+                  <p className="font-heading text-3xl uppercase tracking-tight leading-none">{q.key}</p>
+                </div>
+                <div className="h-1 w-12 bg-brutal-yellow" aria-hidden="true" />
+                <h3 className="text-base font-bold leading-snug">{q.question}</h3>
+                <p className="text-sm text-brutal-fg/70 leading-relaxed">{q.body}</p>
+              </div>
             ))}
           </div>
-          <p className="text-base sm:text-lg text-brutal-fg/70 max-w-xl mx-auto font-medium">
-            Veloce organizes your audience by location automatically. Every newsletter reaches the people who actually matter, without extra work.
-          </p>
-          <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => navigate('/signup')}>
-            Create Free Account
-          </Btn>
         </div>
       </Section>
-      {/* ═══ SUBSCRIBER INTELLIGENCE ═══ */}
-      <Section>
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-8">
-            <Badge variant="green">Know Your Audience</Badge>
-            <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none mt-4">
-              Every subscriber.{' '}
-              <span className="text-brutal-green">A full picture.</span>
+
+      {/* ═══ 4. REACHABILITY ═══════════════════════════════
+          One of two dark sections on the page. Used here because this is the
+          differentiated idea and deserves the strongest visual break. */}
+      <Section className="bg-brutal-fg text-brutal-bg border-t-3 border-brutal-fg">
+        <div className="max-w-5xl mx-auto space-y-10 sm:space-y-12">
+          <div className="max-w-2xl space-y-5">
+            <Badge variant="yellow">Reachability</Badge>
+            <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
+              A list of 10,000 is not{' '}
+              <span className="text-brutal-yellow">10,000 people you can email.</span>
             </h2>
+            <p className="text-sm sm:text-base opacity-70 leading-relaxed">
+              Veloce works out who you can actually contact right now, and keeps the reason
+              attached. Consent is checked again when a broadcast goes out, so the count you
+              see before you send is the count that gets sent to.
+            </p>
           </div>
-          <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {/* Profile card */}
-            <div className="border-3 border-brutal-fg bg-white p-5 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 border-2 border-brutal-fg bg-brutal-yellow flex items-center justify-center font-heading text-lg font-bold uppercase">B</div>
-                <div>
-                  <p className="font-heading text-lg uppercase">Ben Rodriguez</p>
-                  <p className="text-[9px] text-brutal-muted uppercase tracking-wider">ben@example.com</p>
+
+          <div className="grid gap-px sm:grid-cols-3 bg-brutal-bg/20 border-3 border-brutal-bg/20">
+            {REACHABILITY_STATES.map((state) => (
+              <div key={state.id} className="reveal-item bg-brutal-fg p-6 space-y-2.5">
+                <span
+                  className={`inline-block h-2.5 w-10 ${
+                    state.tone === 'green' ? 'bg-brutal-green' : state.tone === 'yellow' ? 'bg-brutal-yellow' : 'bg-brutal-red'
+                  }`}
+                  aria-hidden="true"
+                />
+                <p className="font-heading text-2xl uppercase tracking-tight leading-none">{state.label}</p>
+                <p className="text-xs opacity-70 leading-relaxed">{state.detail}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      {/* ═══ 5. EVIDENCE ═══════════════════════════════════
+          Outcome first. The feature is a consent ledger and a timeline; the
+          promise is that you never have to guess why you may contact someone. */}
+      <Section className="border-t-3 border-brutal-fg">
+        <div className="max-w-5xl mx-auto space-y-10 sm:space-y-14">
+          <div className="max-w-2xl space-y-5">
+            <Badge variant="muted">Evidence</Badge>
+            <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
+              Never wonder why you have{' '}
+              <span className="text-brutal-green">permission to contact someone.</span>
+            </h2>
+            <p className="text-base text-brutal-fg/70 leading-relaxed">
+              Opt-ins, imports, confirmations, unsubscribes and delivery events stay attached
+              to the person they belong to, with the wording they agreed to and the date they
+              agreed to it. If you are ever asked to prove it, the answer is on the record.
+            </p>
+          </div>
+
+          {/* One large product visual rather than several small ones */}
+          <div className="reveal-item border-3 border-brutal-fg bg-white shadow-brutal">
+            <div className="border-b-3 border-brutal-fg bg-brutal-surface px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 border-2 border-brutal-fg bg-brutal-yellow flex items-center justify-center font-heading text-lg uppercase shrink-0">B</div>
+                <div className="min-w-0">
+                  <p className="font-heading text-lg uppercase leading-none truncate">Ben Rodriguez</p>
+                  <p className="text-[10px] text-brutal-muted uppercase tracking-wider truncate">ben@example.com</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-[9px]">
-                <div className="border border-brutal-fg/20 p-2">
-                  <p className="font-bold uppercase tracking-wider text-brutal-muted">Location</p>
-                  <p className="font-bold mt-0.5">📍 Austin, TX</p>
-                </div>
-                <div className="border border-brutal-fg/20 p-2">
-                  <p className="font-bold uppercase tracking-wider text-brutal-muted">Status</p>
-                  <p className="text-brutal-green font-bold mt-0.5">🟢 Active</p>
-                </div>
-                <div className="border border-brutal-fg/20 p-2">
-                  <p className="font-bold uppercase tracking-wider text-brutal-muted">Channels</p>
-                  <p className="font-bold mt-0.5">Email + SMS</p>
-                </div>
-                <div className="border border-brutal-fg/20 p-2">
-                  <p className="font-bold uppercase tracking-wider text-brutal-muted">Last Open</p>
-                  <p className="font-bold mt-0.5">3 hours ago</p>
-                </div>
-                <div className="border border-brutal-fg/20 p-2">
-                  <p className="font-bold uppercase tracking-wider text-brutal-muted">Tags</p>
-                  <div className="flex gap-1 mt-0.5 flex-wrap">
-                    <span className="text-[7px] bg-brutal-green/10 border border-brutal-green px-1 py-0.5 font-bold uppercase">engaged</span>
-                    <span className="text-[7px] bg-brutal-yellow/20 border border-brutal-yellow px-1 py-0.5 font-bold uppercase">mobile</span>
-                  </div>
-                </div>
-                <div className="border border-brutal-fg/20 p-2">
-                  <p className="font-bold uppercase tracking-wider text-brutal-muted">Open Rate</p>
-                  <p className="text-brutal-green font-bold mt-0.5">42%</p>
-                </div>
-              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-brutal-green border-2 border-brutal-green px-2 py-1 shrink-0">Reachable</span>
             </div>
-            {/* What this means */}
-            <div className="flex flex-col justify-center space-y-4">
-              <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Data you can act on</p>
-              <h3 className="text-2xl sm:text-3xl font-heading uppercase tracking-tight leading-none">
-                Know who they are.{' '}
-                <span className="text-brutal-green">Know what they want.</span>
-              </h3>
-              <p className="text-sm text-brutal-fg/70 leading-relaxed">
-                Location, engagement, devices, tags, acquisition source. Every subscriber has a full profile so you can target with precision.
-              </p>
-              <Btn variant="primary" size="md" icon={<ArrowRight size={14} />} onClick={() => navigate('/demo')}>
-                Explore Subscriber Data
-              </Btn>
+
+            <div className="grid lg:grid-cols-2">
+              {/* Consent */}
+              <div className="p-5 sm:p-7 space-y-4 border-b-3 lg:border-b-0 lg:border-r-3 border-brutal-fg">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">Why you may contact them</p>
+                <div className="border-l-3 border-brutal-green pl-4 space-y-1">
+                  <p className="text-sm leading-relaxed">
+                    &ldquo;Yes, email me about events and offers from South Congress Coffee.&rdquo;
+                  </p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">Agreed 12 March 2026</p>
+                </div>
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs pt-1">
+                  {[
+                    ['Source', 'Capture form, footer'],
+                    ['Confirmed', 'Yes, 12 March'],
+                    ['Consent version', 'v2'],
+                    ['Location', 'Austin, TX'],
+                  ].map(([k, v]) => (
+                    <div key={k} className="min-w-0">
+                      <dt className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">{k}</dt>
+                      <dd className="font-bold truncate">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+
+              {/* Timeline */}
+              <div className="p-5 sm:p-7 space-y-4">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">Everything that has happened since</p>
+                <ol className="space-y-0">
+                  {[
+                    { when: '12 Mar', what: 'Signed up through the footer capture form' },
+                    { when: '12 Mar', what: 'Confirmed their email address' },
+                    { when: '02 Apr', what: 'Opened "Spring hours are changing"' },
+                    { when: '02 Apr', what: 'Clicked through to the opening times page' },
+                    { when: '19 Aug', what: 'Added to the Austin list' },
+                  ].map((ev, i, arr) => (
+                    <li key={i} className="flex gap-3">
+                      <div className="flex flex-col items-center shrink-0">
+                        <span className="w-2.5 h-2.5 bg-brutal-green mt-1.5" aria-hidden="true" />
+                        {i < arr.length - 1 && <span className="w-px flex-1 bg-brutal-fg/20" aria-hidden="true" />}
+                      </div>
+                      <div className="pb-4 min-w-0">
+                        <p className="text-xs font-bold leading-snug">{ev.what}</p>
+                        <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">{ev.when}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </div>
           </div>
         </div>
       </Section>
-      {/*
-        The stats strip and the "Growing Audiences" social-proof section stood
-        here and were removed on 2026-08-10.
 
-        Between them they asserted 12,453 subscribers, 847 campaigns sent, a 47%
-        open rate, 2,847 emails sent today, 147 businesses, a "Live · Updated
-        just now" pulse, a row of industries implying a customer base, and three
-        testimonials attributed to named people at named businesses. Production
-        had never sent a campaign and had no engagement events, so the live
-        endpoint these fell back from could not have produced honest numbers
-        either - it would have rendered a 0% open rate under the caption "Real
-        people. Real engagement."
+      {/* ═══ 6. CHANNELS AND PROVIDERS ═════════════════════ */}
+      <Section className="bg-brutal-surface/40 border-t-3 border-brutal-fg">
+        <div className="max-w-4xl mx-auto space-y-10">
+          <div className="max-w-2xl space-y-5">
+            <Badge variant="muted">Channels and providers</Badge>
+            <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none">
+              Your audience.{' '}
+              <span className="text-brutal-green">Your sending account.</span>
+            </h2>
+            <p className="text-base text-brutal-fg/70 leading-relaxed">
+              Veloce does not resell email. You connect your own provider, so your sending
+              reputation and your bill stay yours, and you can leave without losing either.
+            </p>
+          </div>
 
-        The demo below is the honest form of the same claim. See the note in
-        ./LandingPage/data.js before adding anything back here.
-      */}
-
-      {/* ═══ PILLAR SECTIONS ═══ */}
-      <div id="features" className="space-y-0">
-        {PILLARS.map((pillar, i) => {
-          const isReversed = i % 2 === 1
-          const bgClass = i % 2 === 0 ? 'bg-brutal-bg border-t-3 border-brutal-fg' : 'bg-stripes border-t-3 border-brutal-fg'
-          const Icon = pillar.icon
-
-          return (
-            <Section key={pillar.id} className={bgClass}>
-              <div className={`max-w-5xl mx-auto flex flex-col ${isReversed ? 'lg:flex-row-reverse' : 'lg:flex-row'} gap-10 lg:gap-20 items-center`}>
-                {/* Text side */}
-                <div className="flex-1 space-y-4 sm:space-y-5">
-                  <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/30">{pillar.number}</p>
-                  <div className="flex items-center gap-3">
-                    <Icon size={24} className="text-brutal-green" />
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading uppercase tracking-tight leading-none">{pillar.title}</h2>
-                  </div>
-                  {pillar.subtitle && <p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">{pillar.subtitle}</p>}
-                  <p className="text-sm text-brutal-fg/70 leading-relaxed max-w-md">{pillar.body}</p>
-                  <Btn variant="primary" size="lg" icon={<ArrowRight size={14} />} onClick={() => navigate(pillar.cta.to)}>
-                    {pillar.cta.label}
-                  </Btn>
-                  <Annotation>{pillar.annotation}</Annotation>
-                </div>
-
-                {/* Visual side */}
-                <div className="flex-1 w-full max-w-sm pillar-card">
-                  {pillar.id === 'grow' && (
-                    <form onSubmit={handleNotifySubmit} className="border-3 border-brutal-fg bg-white shadow-brutal">
-                      <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-4 py-3 flex items-center gap-2">
-                        <Mail size={16} />
-                        <p className="font-heading text-lg sm:text-xl uppercase">Get notified</p>
-                      </div>
-                      <div className="p-4 space-y-3">
-                        {/*
-                          Illustrative, not an input. It was a readOnly text box
-                          pre-filled with "Austin, TX", which looked like a field
-                          someone had already filled in on the visitor's behalf and
-                          was focusable with nothing to type. It is a picture of what
-                          the widget captures, so it is presented as one and hidden
-                          from assistive tech.
-                        */}
-                        <div
-                          aria-hidden="true"
-                          className="flex items-center gap-2 px-3 py-2 border-3 border-dashed border-brutal-fg/30 bg-brutal-bg text-xs text-brutal-muted"
-                        >
-                          <MapPin size={14} />
-                          <span>Austin, TX</span>
-                        </div>
-                        <Input
-                          label="Email"
-                          name="email"
-                          type="email"
-                          required
-                          autoComplete="email"
-                          placeholder="you@example.com"
-                        />
-                        <Btn
-                          variant="primary"
-                          fullWidth
-                          size="md"
-                          type="submit"
-                          disabled={notifyStatus === 'sending'}
-                          icon={<ArrowRight size={14} />}
-                        >
-                          {notifyStatus === 'sending' ? 'Subscribing…' : 'Subscribe'}
-                        </Btn>
-                        <p className="text-[9px] font-bold text-brutal-muted uppercase text-center flex items-center justify-center gap-1">
-                          <MapPin size={10} /> Location captured automatically
-                        </p>
-                        {notifyStatus && notifyStatus !== 'sending' && (
-                          <p
-                            role="status"
-                            aria-live="polite"
-                            className={`text-[10px] font-bold uppercase tracking-wider text-center ${
-                              notifyStatus === 'sent' || notifyStatus === 'saved-no-email'
-                                ? 'text-brutal-green'
-                                : 'text-brutal-red'
-                            }`}
-                          >
-                            {notifyStatus === 'sent'
-                              ? 'Check your inbox to confirm.'
-                              : notifyStatus === 'saved-no-email'
-                                ? "You're on the list. The confirmation email could not be sent right now."
-                                : notifyStatus}
-                          </p>
-                        )}
-                      </div>
-                    </form>
-                  )}
-
-                  {pillar.id === 'target' && (
-                    <div className="border-3 border-brutal-fg bg-white p-4 sm:p-5 shadow-brutal space-y-4">
-                      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
-                        <MapPin size={16} className="text-brutal-green" />
-                        <span>Subscribers near <span className="text-brutal-green">Austin, TX</span></span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center shrink-0">
-                          <div className="absolute inset-0 rounded-full border border-brutal-fg/15" />
-                          <div className="absolute inset-[20%] rounded-full border border-dashed border-brutal-fg/20" />
-                          <div className="absolute inset-0 rounded-full border-3 border-brutal-green/40 animate-radar-1" />
-                          <div className="absolute inset-0 rounded-full border-3 border-brutal-green/30 animate-radar-2" />
-                          <div className="relative z-10 w-3 h-3 bg-brutal-green rounded-full border-2 border-brutal-fg" />
-                        </div>
-                        <div className="flex-1 space-y-2">
-                          {[
-                            { label: 'Within 5 mi', value: '124', color: 'bg-brutal-green' },
-                            { label: 'Within 10 mi', value: '347', color: 'bg-brutal-yellow' },
-                            { label: 'Within 25 mi', value: '892', color: 'bg-brutal-surface' },
-                          ].map((r) => (
-                            <div key={r.label} className="flex items-center gap-2">
-                              <div className={`w-1.5 h-1.5 ${r.color} border border-brutal-fg`} />
-                              <span className="text-[10px] text-brutal-muted flex-1">{r.label}</span>
-                              <span className="text-xs font-bold">{r.value}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="border-t-2 border-brutal-fg/10 pt-3 flex items-center justify-between text-[10px]">
-                        <span className="text-brutal-muted">Radius: <strong className="text-brutal-fg">10 mi</strong></span>
-                        <span className="text-brutal-green font-bold flex items-center gap-1"><Radio size={12} /> 3,200 total reachable</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/*
-                    Was `pillar.id === 'send'`. No pillar has that id - they are
-                    target, grow, reach and automate - so this editor mockup never
-                    rendered once, and the Reach pillar showed an empty column
-                    where its visual should be. A rename in data.js left this
-                    consumer behind, which nothing catches: a JSX branch that never
-                    matches is not an error.
-                  */}
-                  {pillar.id === 'reach' && (
-                    <div className="border-3 border-brutal-fg bg-white shadow-brutal">
-                      <div className="border-b-3 border-brutal-fg bg-brutal-bg px-3 py-2 flex flex-wrap gap-1 items-center">
-                        {['B', 'I', 'H1', 'H2', '• List', '🔗'].map((b) => (
-                          <span key={b} className="px-2 py-1 text-[10px] font-bold uppercase border-2 border-brutal-fg bg-white">{b}</span>
-                        ))}
-                        <span className="ml-auto px-2 py-1 text-[10px] font-bold uppercase border-2 border-brutal-fg bg-brutal-green text-white flex items-center gap-1">
-                          <Mail size={10} /> {'{ }'} Tags
-                        </span>
-                      </div>
-                      <div className="p-4 sm:p-5 min-h-[130px]">
-                        <p className="text-xl sm:text-2xl font-bold">Hey <span className="text-brutal-green" id="merge-demo">Ben</span>! 👋</p>
-                        <p className="text-sm text-brutal-muted mt-2">Your event at <strong id="location-demo">South Congress</strong> is coming up. We've got <strong id="count-demo">47</strong> subscribers within 5 miles ready to hear about it.</p>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <span className="text-[10px] font-bold text-brutal-green border-2 border-brutal-green px-2 py-0.5 flex items-center gap-1"><CheckCircle size={10} /> {'{{first_name}}'}</span>
-                          <span className="text-[10px] font-bold text-brutal-yellow-dark border-2 border-brutal-yellow-dark px-2 py-0.5 flex items-center gap-1"><MapPin size={10} /> {'{{city}}'}</span>
-                          <span className="text-[10px] font-bold text-brutal-muted border-2 border-brutal-muted px-2 py-0.5 flex items-center gap-1"><BarChart3 size={10} /> {'{{unsubscribe_url}}'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {pillar.id === 'automate' && (
-                    <div className="border-3 border-brutal-fg bg-white p-4 sm:p-5 shadow-brutal space-y-3">
-                      {[
-                        { icon: Mail, label: 'Welcome Drip', desc: '3 emails over 7 days', active: true },
-                        { icon: Clock, label: 'Re-Engagement', desc: 'Win-back after 60 days', active: true },
-                        { icon: Activity, label: 'Smart Tagging', desc: 'Auto-label engaged vs cold', active: true },
-                        { icon: Zap, label: 'Birthday Email', desc: 'Auto-send on subscriber DOB', active: false },
-                      ].map((a) => (
-                        <div key={a.label} className={`flex items-center justify-between border-2 border-brutal-fg p-3 ${a.active ? 'bg-white' : 'opacity-40'}`}>
-                          <div className="flex items-center gap-3">
-                            <a.icon size={16} className="text-brutal-green shrink-0" />
-                            <div>
-                              <p className="text-xs font-bold">{a.label}</p>
-                              <p className="text-[9px] text-brutal-muted">{a.desc}</p>
-                            </div>
-                          </div>
-                          <span className={`text-[9px] font-bold px-2 py-0.5 border border-brutal-fg ${a.active ? 'bg-brutal-green text-white' : 'bg-brutal-surface text-brutal-muted'}`}>
-                            {a.active ? 'ON' : 'OFF'}
-                          </span>
-                        </div>
-                      ))}
-                      <div className="border-t-2 border-brutal-fg/10 pt-2 flex items-center justify-between text-[10px]">
-                        <span className="text-brutal-muted">Runs daily at 2am</span>
-                        <span className="text-brutal-green font-bold">Toggle on. They run.</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+          <div className="flex flex-wrap gap-3">
+            {PROVIDERS.map((p) => (
+              <div key={p.label} className="border-2 border-brutal-fg bg-white px-4 py-2.5">
+                <p className="text-xs font-bold uppercase tracking-wider">{p.label}</p>
+                <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">{p.note}</p>
               </div>
-            </Section>
-          )
-        })}
-      </div>
+            ))}
+          </div>
 
-      {/* ═══ FINAL CTA ═══ */}
-      <Section className="border-t-3 border-brutal-fg bg-brutal-fg text-brutal-bg">
-        <div className="text-center space-y-6 sm:space-y-8 max-w-3xl mx-auto">
-          <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
-            Ready to <span className="text-brutal-yellow">own your audience</span>?
+          <div className="flex flex-wrap items-center gap-3 pt-2 border-t-2 border-brutal-fg/10">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted pt-3">Next on the roadmap</span>
+            {PLANNED_CHANNELS.map((c) => (
+              <span key={c} className="mt-3 border-2 border-dashed border-brutal-fg/40 text-brutal-muted px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider">
+                {c}
+              </span>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      {/* ═══ 7. HOW IT WORKS ═══════════════════════════════ */}
+      <Section className="border-t-3 border-brutal-fg">
+        <div className="max-w-5xl mx-auto space-y-12">
+          <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-tight leading-none max-w-xl">
+            How it{' '}
+            <span className="text-brutal-green">works.</span>
           </h2>
-          <p className="text-sm sm:text-base opacity-60 max-w-lg mx-auto leading-relaxed">
-            No monthly fees and no per-contact charges. You pay your email provider directly for what you send, and nothing to us. No algorithms deciding who sees your content.
+
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {HOW_IT_WORKS.map((step) => (
+              <div key={step.id} className="reveal-item space-y-2.5">
+                <p className="text-xs font-bold uppercase tracking-[0.25em] text-brutal-fg/30">{step.number}</p>
+                <div className="flex items-center gap-2">
+                  <step.icon size={18} className="text-brutal-green shrink-0" aria-hidden="true" />
+                  <h3 className="font-heading text-2xl uppercase tracking-tight leading-none">{step.title}</h3>
+                </div>
+                <p className="text-sm text-brutal-fg/70 leading-relaxed">{step.body}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* The capture form, working. It is the honest form of proof: rather
+              than claiming forms collect consent, this one does it live. */}
+          <div className="grid lg:grid-cols-2 gap-8 items-center pt-4 border-t-3 border-brutal-fg">
+            <div className="space-y-3 pt-8">
+              <h3 className="text-2xl sm:text-3xl font-heading uppercase tracking-tight leading-none">
+                This is a capture form.
+              </h3>
+              <p className="text-sm text-brutal-fg/70 leading-relaxed max-w-md">
+                The same one you would embed on your own site. Subscribe and you become a
+                record with a source, a timestamp and a confirmation step, exactly as described above.
+              </p>
+              <Annotation>one line to embed · consent recorded on arrival · location captured</Annotation>
+            </div>
+
+            <form onSubmit={handleNotifySubmit} className="border-3 border-brutal-fg bg-white shadow-brutal lg:mt-8">
+              <div className="border-b-3 border-brutal-fg bg-brutal-yellow px-4 py-3 flex items-center gap-2">
+                <Inbox size={16} aria-hidden="true" />
+                <p className="font-heading text-lg sm:text-xl uppercase">Get notified</p>
+              </div>
+              <div className="p-4 space-y-3">
+                {/*
+                  Illustrative, not an input. It was a readOnly text box
+                  pre-filled with "Austin, TX", which looked like a field
+                  someone had already filled in on the visitor's behalf and
+                  was focusable with nothing to type. It is a picture of what
+                  the widget captures, so it is presented as one and hidden
+                  from assistive tech.
+                */}
+                <div
+                  aria-hidden="true"
+                  className="flex items-center gap-2 px-3 py-2 border-3 border-dashed border-brutal-fg/30 bg-brutal-bg text-xs text-brutal-muted"
+                >
+                  <MapPin size={14} />
+                  <span>Austin, TX</span>
+                </div>
+                <Input
+                  label="Email"
+                  name="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                />
+                <Btn
+                  variant="primary"
+                  fullWidth
+                  size="md"
+                  type="submit"
+                  disabled={notifyStatus === 'sending'}
+                  icon={<ArrowRight size={14} />}
+                >
+                  {notifyStatus === 'sending' ? 'Subscribing...' : 'Subscribe'}
+                </Btn>
+                {notifyStatus && notifyStatus !== 'sending' && (
+                  <p
+                    role="status"
+                    aria-live="polite"
+                    className={`text-[10px] font-bold uppercase tracking-wider text-center ${
+                      notifyStatus === 'sent' || notifyStatus === 'saved-no-email'
+                        ? 'text-brutal-green'
+                        : 'text-brutal-red'
+                    }`}
+                  >
+                    {notifyStatus === 'sent'
+                      ? 'Check your inbox to confirm.'
+                      : notifyStatus === 'saved-no-email'
+                        ? "You're on the list. The confirmation email could not be sent right now."
+                        : notifyStatus}
+                  </p>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      </Section>
+
+      {/* ═══ 8. FINAL CTA ══════════════════════════════════ */}
+      <Section className="border-t-3 border-brutal-fg bg-brutal-fg text-brutal-bg">
+        <div className="text-center space-y-7 max-w-2xl mx-auto">
+          <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-tight leading-none">
+            Own the list.{' '}
+            <span className="text-brutal-yellow">Know why you can use it.</span>
+          </h2>
+          <p className="text-sm sm:text-base opacity-70 leading-relaxed max-w-lg mx-auto">
+            Free to start. You connect your own provider and pay them directly for what you send.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 items-stretch sm:items-center">
             <Btn variant="primary" size="lg" icon={<ArrowRight size={16} />} onClick={() => navigate('/signup')}>
               Create Free Account
             </Btn>
             <Btn variant="ghostOnDark" size="lg" onClick={() => navigate('/demo')}>
-              Explore Live Demo
+              Explore the demo
             </Btn>
           </div>
-          <Annotation className="justify-center !text-brutal-bg/50">no credit card · no monthly fees · BYO Resend, SES, or SendGrid</Annotation>
-        </div>
-      </Section>
-
-      {/* ═══ INTEGRATIONS ═══ */}
-      <Section className="border-t-3 border-brutal-fg bg-brutal-surface/40">
-        <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
-          <Badge variant="muted">Works with your stack</Badge>
-          <h2 className="text-2xl sm:text-3xl font-heading uppercase tracking-tight leading-none">
-            Connect your tools.{' '}
-            <span className="text-brutal-green">Keep your data.</span>
-          </h2>
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 max-w-xl mx-auto">
-            {[
-              { label: 'Resend', icon: Mail },
-              { label: 'AWS SES', icon: Globe },
-              { label: 'SendGrid', icon: Mail },
-              { label: 'Twilio', icon: Smartphone },
-              { label: 'Supabase', icon: BarChart3 },
-              { label: 'CSV Import', icon: FileText },
-              { label: 'Zapier', icon: Zap },
-              { label: 'WordPress', icon: Monitor },
-              { label: 'Shopify', icon: Share2 },
-              { label: 'Custom API', icon: GitBranch },
-            ].map((i) => (
-              <div key={i.label} className="border-2 border-brutal-fg bg-white px-3 py-2 flex items-center gap-1.5 hover:shadow-brutal transition">
-                <i.icon size={14} className="text-brutal-muted" />
-                <span className="text-[9px] font-bold uppercase tracking-wider">{i.label}</span>
-              </div>
-            ))}
-          </div>
-          <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">More integrations shipping every month · Custom API for anything else</p>
+          <Annotation className="justify-center !text-brutal-bg/50">no credit card · no monthly fees · bring your own Resend, SES or SendGrid</Annotation>
         </div>
       </Section>
       </main>
@@ -767,17 +601,14 @@ export default function LandingPage() {
                     <li key={link.label}>
                       {link.href.startsWith('http') ? (
                         <a href={link.href} target="_blank" rel="noopener" className="text-xs font-bold text-brutal-muted hover:text-brutal-fg transition-colors flex items-center gap-1.5">
-                          {link.icon && <link.icon size={12} />}
                           {link.label}
                         </a>
                       ) : link.href.startsWith('#') ? (
                         <a href={link.href} className="text-xs font-bold text-brutal-muted hover:text-brutal-fg transition-colors flex items-center gap-1.5">
-                          {link.icon && <link.icon size={12} />}
                           {link.label}
                         </a>
                       ) : (
                         <Link to={link.href} className="text-xs font-bold text-brutal-muted hover:text-brutal-fg transition-colors flex items-center gap-1.5">
-                          {link.icon && <link.icon size={12} />}
                           {link.label}
                         </Link>
                       )}
@@ -792,7 +623,6 @@ export default function LandingPage() {
             <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider">
               &copy; {new Date().getFullYear()} Veloce. All rights reserved.
             </p>
-
           </div>
         </div>
       </footer>

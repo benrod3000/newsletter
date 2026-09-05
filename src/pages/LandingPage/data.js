@@ -1,4 +1,4 @@
-import { Share2, Target, Zap, Globe } from 'lucide-react'
+import { Users, ShieldCheck, Clock, Plug, Upload, Search, Send } from 'lucide-react'
 
 export const NAV_ITEMS = [
   { label: 'Features', href: '/#features' },
@@ -26,48 +26,99 @@ export const NAV_ITEMS = [
  * database and are worth showing.
  */
 
-export const PILLARS = [
+/*
+ * Replaced PILLARS (Target / Grow / Reach / Automate) on 2026-09-04.
+ *
+ * Those were four full-width sections, each with its own heading, visual, CTA
+ * and annotation, and between them they said "understand your audience" three
+ * times and "one audience, every channel" twice more than the rest of the page
+ * already did. They are now two sections: the three questions below, and the
+ * four steps further down.
+ *
+ * Every claim here maps to a real column on `subscribers` or a shipped table.
+ * Check before adding: consent_text, consent_source, consent_version,
+ * consented_at, confirmed, suppressed, suppressed_reason, health_score, the
+ * utm_* / referrer / landing_path provenance fields, and the
+ * /subscribers/:id/timeline endpoint.
+ */
+export const AUDIENCE_QUESTIONS = [
   {
-    id: 'target',
-    number: '01',
-    icon: Target,
-    title: 'Target',
-    subtitle: 'Know exactly where your audience lives.',
-    body: 'Send to subscribers within 1, 5, 10, or 100 miles of any ZIP code. Perfect for restaurants, events, retail, and local marketing.',
-    cta: { label: 'Try the radius filter', to: '/demo' },
-    annotation: '📍 Radius targeting · live subscriber map · ZIP resolution',
+    id: 'who',
+    key: 'Who',
+    icon: Users,
+    question: 'Who is actually in my audience?',
+    body: 'Not just an email address. Where they signed up, what they told you, where they are, which lists they belong to, and how they have engaged since.',
   },
   {
-    id: 'grow',
-    number: '02',
-    icon: Share2,
-    title: 'Grow',
-    subtitle: 'Collect subscribers with location data built in.',
-    body: 'Embed a widget on any website. Every signup includes city, state, ZIP, and lat/lng. No extra fields. No CSV uploads.',
-    cta: { label: 'See the form in action', to: '/demo' },
-    annotation: 'Embed one line · auto-enriched location · no CSV',
+    id: 'why',
+    key: 'Why',
+    icon: ShieldCheck,
+    question: 'Why am I allowed to contact them?',
+    body: 'The wording they agreed to, where that agreement came from, and when. Kept on the record itself, so permission is something you can show rather than assume.',
   },
   {
-    id: 'reach',
-    number: '03',
-    icon: Globe,
-    title: 'Reach',
-    subtitle: 'Email, SMS, RCS - every channel, one audience.',
-    body: 'Email, SMS, RCS, and soon social audience matching. One audience. Many destinations. Every channel respects subscriber consent.',
-    cta: { label: 'See all channels', to: '/demo' },
-    annotation: 'Email · SMS · RCS · Social matching (coming soon)',
-  },
-  {
-    id: 'automate',
-    number: '04',
-    icon: Zap,
-    title: 'Automate',
-    subtitle: 'Relationships that run on their own.',
-    body: 'Welcome drips, re-engagement campaigns, smart auto-tagging, and auto-clean for cold subscribers. Toggle on. They run daily.',
-    cta: { label: 'See automations', to: '/demo' },
-    annotation: 'welcome drip · smart-tag batching · auto-clean cold subs',
+    id: 'when',
+    key: 'When',
+    icon: Clock,
+    question: 'When does it make sense to reach out?',
+    body: 'Whether they have confirmed, how recently they engaged, and whether anything has happened since that should stop you sending.',
   },
 ]
+
+/*
+ * The three reachability states are computed from real columns, not invented
+ * labels: `confirmed`, `consent_email_marketing`, and `suppressed` with its
+ * `suppressed_reason`. Keep them in sync with the send pipeline, which
+ * re-checks consent at dispatch rather than trusting the list.
+ */
+export const REACHABILITY_STATES = [
+  {
+    id: 'reachable',
+    label: 'Reachable',
+    tone: 'green',
+    detail: 'Confirmed, consented, and not suppressed. Safe to send to today.',
+  },
+  {
+    id: 'pending',
+    label: 'Not yet confirmed',
+    tone: 'yellow',
+    detail: 'They signed up but have not confirmed. In the audience, not in the send.',
+  },
+  {
+    id: 'blocked',
+    label: 'Unreachable',
+    tone: 'red',
+    detail: 'Unsubscribed, bounced, or suppressed. The reason and the date stay on the record.',
+  },
+]
+
+export const HOW_IT_WORKS = [
+  { id: 'connect', number: '01', icon: Plug, title: 'Connect', body: 'Add your own Resend, SES or SendGrid key. Your sending reputation, your bill.' },
+  { id: 'import', number: '02', icon: Upload, title: 'Import', body: 'Bring a CSV, or put a capture form on your site. Consent is recorded as it arrives.' },
+  { id: 'understand', number: '03', icon: Search, title: 'Understand', body: 'See who you can reach, why, and what has happened with them before.' },
+  { id: 'send', number: '04', icon: Send, title: 'Send', body: 'Choose an audience, see the real recipient count, then send.' },
+]
+
+/*
+ * Only providers with shipped code. Zapier, WordPress, Shopify, a custom API and
+ * webhooks were listed here until 2026-09-04 and none of them exists in either
+ * repo - `webhook_configs` is a table with nothing delivering to it. The row
+ * also claimed "More integrations shipping every month", which nothing
+ * supported. Do not add a logo here before the integration exists.
+ */
+export const PROVIDERS = [
+  { label: 'Resend', note: 'Email' },
+  { label: 'Amazon SES', note: 'Email' },
+  { label: 'SendGrid', note: 'Email' },
+  { label: 'CSV import and export', note: 'Data' },
+]
+
+/*
+ * SMS and RCS are built but switched off: SMS_ENABLED is false and the backend
+ * returns 503 FEATURE_DISABLED. The send path does not share the email queue's
+ * durability, so it is off until it does. Shown as planned, never as available.
+ */
+export const PLANNED_CHANNELS = ['SMS', 'RCS']
 
 export const FOOTER_LINKS = [
   { heading: 'Product', links: [
