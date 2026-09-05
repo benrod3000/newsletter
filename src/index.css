@@ -6,7 +6,16 @@
   --color-brutal-bg: #f5f5f0;
   --color-brutal-fg: #0a0a0a;
   --color-brutal-yellow: #f5e642;
+  /* Same split as `muted` below. #d4c82e is a fine surface - it is the hover
+     and active fill for the heatmap and the CTA - but as TEXT it is 1.74:1 on
+     white, which is not a low-contrast label, it is an unreadable one. The
+     landing mockup used it for the "needs confirming" figure, the single number
+     on that page carrying a state the reader is meant to act on. `yellow-dark`
+     stays the surface value; `yellow-text` is the readable one (6.05:1 on
+     white, 5.5:1 on the page background, 4.9:1 on surface), so an amber label
+     is safe wherever it lands. */
   --color-brutal-yellow-dark: #d4c82e;
+  --color-brutal-yellow-text: #7a5f0a;
   /* #2f7f5f was 4.44:1 on --color-brutal-bg - fine for headings, but just under
      the 4.5:1 WCAG AA floor for the 10px trust badges and inline labels that
      also use it. Darkened to ~5.0:1 so one green is safe at every size; this

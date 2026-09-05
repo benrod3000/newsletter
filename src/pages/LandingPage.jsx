@@ -164,7 +164,7 @@ export default function LandingPage() {
                   {[
                     { label: 'In audience', short: 'Audience', value: 10310, tone: 'text-brutal-fg' },
                     { label: 'Reachable now', short: 'Reachable', value: 8642, tone: 'text-brutal-green' },
-                    { label: 'Needs confirming', short: 'Confirming', value: 1204, tone: 'text-brutal-yellow-dark' },
+                    { label: 'Needs confirming', short: 'Confirming', value: 1204, tone: 'text-brutal-yellow-text' },
                   ].map((kpi) => (
                     <div key={kpi.label} className="border-2 border-brutal-fg p-2 sm:p-3">
                       <p className="text-[9px] font-bold uppercase tracking-wider text-brutal-muted">
@@ -184,7 +184,7 @@ export default function LandingPage() {
                   {[
                     { name: 'ben@example.com', where: 'Austin, TX', state: 'Reachable', src: 'Capture form · 12 Mar', tone: 'text-brutal-green' },
                     { name: 'dana@example.com', where: 'Portland, OR', state: 'Reachable', src: 'CSV import · 04 Jan', tone: 'text-brutal-green' },
-                    { name: 'sam@example.com', where: 'Denver, CO', state: 'Unconfirmed', src: 'Capture form · 28 Aug', tone: 'text-brutal-yellow-dark' },
+                    { name: 'sam@example.com', where: 'Denver, CO', state: 'Unconfirmed', src: 'Capture form · 28 Aug', tone: 'text-brutal-yellow-text' },
                     { name: 'rae@example.com', where: 'Austin, TX', state: 'Unsubscribed', src: 'Unsubscribed · 02 Sep', tone: 'text-brutal-red' },
                   ].map((row) => (
                     <div key={row.name} className="flex items-center justify-between gap-3 px-3 py-2.5 border-b border-brutal-fg/20 last:border-0">
