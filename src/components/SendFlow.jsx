@@ -453,7 +453,7 @@ function toLocalInputValue(date) {
 
 function formatWhen(localValue) {
   const d = new Date(localValue)
-  if (Number.isNaN(d.getTime())) return '--'
+  if (Number.isNaN(d.getTime())) return 'None'
   return d.toLocaleString(undefined, {
     weekday: 'short', month: 'short', day: 'numeric',
     hour: 'numeric', minute: '2-digit',
@@ -472,7 +472,7 @@ function Row({ label, value }) {
   return (
     <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
       <span className="text-brutal-muted">{label}</span>
-      <span className="text-brutal-fg truncate ml-3">{value || '--'}</span>
+      <span className="text-brutal-fg truncate ml-3">{value || 'None'}</span>
     </div>
   )
 }

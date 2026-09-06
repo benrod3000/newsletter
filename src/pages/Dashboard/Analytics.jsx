@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { analyticsAPI } from '../../lib/api'
-import { fmt, fmtPct } from '../../lib/format'
+import { fmt, fmtPct, NOT_MEASURED } from '../../lib/format'
 import { EmptyState, LoadingState } from '../../components/ux'
 import ErrorBoundary from '../../components/ErrorBoundary'
 import CampaignTimeline from '../../components/CampaignTimeline'
@@ -180,7 +180,7 @@ function AnimatedGrowthChart({ points, height = 40 }) {
         <div className="mt-4 border-2 border-brutal-fg bg-brutal-yellow/20 px-3 py-2 flex items-center gap-3 flex-wrap">
           <span className="text-[10px] font-bold uppercase tracking-wider">
             {new Date(bars[range[0]].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-            {range[1] > range[0] && ` – ${new Date(bars[range[1]].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
+            {range[1] > range[0] && ` to ${new Date(bars[range[1]].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`}
           </span>
           <span className="text-xs font-bold">
             {rangeTotal.toLocaleString()} total
@@ -203,7 +203,7 @@ function AnimatedGrowthChart({ points, height = 40 }) {
 }
 
 /**
- * A single 0–100% rate track with a marker showing the workspace average, so a
+ * A single 0 to 100% rate track with a marker showing the workspace average, so a
  * campaign reads as "beat/missed your normal" rather than a bare percentage.
  */
 function RateBar({ label, rate, average, colorClass }) {
@@ -249,7 +249,7 @@ function CampaignPerformance({ campaigns, onFocus, focusedId, avgOpen, avgClick 
     <div ref={ref} className="border-3 border-brutal-fg bg-white p-6 shadow-brutal">
       <h3 className="font-heading text-xl uppercase tracking-wide mb-1">Campaign Performance</h3>
       <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-5">
-        Bars are 0–100%. The vertical line marks your average.
+        Bars are 0 to 100%. The vertical line marks your average.
       </p>
       <div className="space-y-4">
         {campaigns.map((c, i) => {
@@ -828,7 +828,7 @@ export default function AnalyticsPage() {
             />
             <AnimatedStatCard
               label="Avg Open Rate"
-              value={overview?.avg_open_rate != null ? `${overview.avg_open_rate.toFixed(1)}%` : '--'}
+              value={overview?.avg_open_rate != null ? `${overview.avg_open_rate.toFixed(1)}%` : NOT_MEASURED}
               current={overview?.avg_open_rate}
               previous={prev?.avg_open_rate}
               unit="points"
@@ -837,7 +837,7 @@ export default function AnalyticsPage() {
             />
             <AnimatedStatCard
               label="Avg Click Rate"
-              value={overview?.avg_click_rate != null ? `${overview.avg_click_rate.toFixed(1)}%` : '--'}
+              value={overview?.avg_click_rate != null ? `${overview.avg_click_rate.toFixed(1)}%` : NOT_MEASURED}
               current={overview?.avg_click_rate}
               previous={prev?.avg_click_rate}
               unit="points"
@@ -946,8 +946,8 @@ export default function AnalyticsPage() {
                 <div className="px-4 pb-4 border-t-2 border-brutal-fg pt-4">
                   <div className="grid grid-cols-3 gap-4">
                     <div><p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Reachable</p><p className="text-2xl font-heading text-brutal-green">{smsStats.reachable}</p></div>
-                    <div><p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Sent</p><p className="text-2xl font-heading">{smsStats.sent ?? '--'}</p></div>
-                    <div><p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Response Rate</p><p className="text-2xl font-heading text-brutal-muted">{smsStats.responseRate ?? '--'}</p></div>
+                    <div><p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Sent</p><p className="text-2xl font-heading">{smsStats.sent ?? 'None'}</p></div>
+                    <div><p className="text-xs font-bold uppercase tracking-wider text-brutal-muted">Response Rate</p><p className="text-2xl font-heading text-brutal-muted">{smsStats.responseRate ?? 'None'}</p></div>
                   </div>
                 </div>
               )}

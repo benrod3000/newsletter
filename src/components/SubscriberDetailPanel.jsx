@@ -205,7 +205,7 @@ export default function SubscriberDetailPanel({ subscriber, onClose, onRemove })
               </div>
             )}
             {subscriber.timezone && <Row label="Timezone" value={subscriber.timezone} />}
-            <Row label="Joined" value={subscriber.created_at ? new Date(subscriber.created_at).toLocaleDateString() : '--'} />
+            <Row label="Joined" value={subscriber.created_at ? new Date(subscriber.created_at).toLocaleDateString() : 'None'} />
           </Section>
 
           {/* Subscriber Journey Timeline */}

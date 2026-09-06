@@ -267,7 +267,7 @@ export default function LoginPage() {
                   aria-expanded={showWorkspaceField}
                   aria-controls="login-workspace"
                 >
-                  {showWorkspaceField ? '− Use default workspace' : '+ Sign in to a specific workspace'}
+                  {showWorkspaceField ? 'Use default workspace' : 'Sign in to a specific workspace'}
                 </button>
               </div>
 

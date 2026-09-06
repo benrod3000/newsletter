@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 import { useReveal } from '../../hooks/use-gsap'
 import { analyticsAPI, auditAPI, campaignsAPI, brandingAPI } from '../../lib/api'
-import { fmt, fmtPct } from '../../lib/format'
+import { fmt, fmtPct, NOT_MEASURED } from '../../lib/format'
 import { LoadingState } from '../../components/ux'
 import MetricCard from '../../components/ui/MetricCard'
 import Panel from '../../components/ui/Panel'
@@ -121,8 +121,8 @@ export default function DashboardHome() {
         const { data: body } = await analyticsAPI.overview(workspaceId)
         // The route replies through apiSuccess(), so the payload arrives wrapped
         // as { data: {...} }. Reading `body.total_subscribers` off the envelope
-        // yielded undefined for every metric, and fmt(undefined) renders '--' -
-        // so a workspace with 10,310 subscribers showed four empty cards and
+        // yielded undefined for every metric, and fmt(undefined) renders its
+        // placeholder, so a workspace with 10,310 subscribers showed four empty cards and
         // looked like the stats had stopped updating. Unwrapped tolerantly, the
         // same way Analytics.jsx does, so this keeps working if the route is
         // ever changed to return the payload flat.
@@ -444,7 +444,7 @@ export default function DashboardHome() {
           <Link to="/dashboard/analytics" className="cursor-pointer hover:-translate-y-0.5 transition">
             <MetricCard
               label={stats?.campaigns_sent ? `Open rate · ${stats.campaigns_sent} sent` : 'Open rate'}
-              value={stats?.campaigns_sent ? fmtPct(stats?.avg_open_rate) : '--'}
+              value={stats?.campaigns_sent ? fmtPct(stats?.avg_open_rate) : NOT_MEASURED}
               accentColor="border-t-brutal-fg"
               {...(stats?.campaigns_sent ? deltaProps(stats?.avg_open_rate, stats?.previous?.avg_open_rate, (n) => `${n.toFixed(1)} pts`) : {})}
             />
