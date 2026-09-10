@@ -1234,14 +1234,18 @@ export default function SubscribersPage() {
                       button under JOINED, which is what "things don't seem aligned"
                       was showing.
 
-                      Two columns hold a number and both are real. `phone` is what a
-                      capture form writes; `phone_number` is what CSV import writes and
-                      what the import template documents. A contact can have either, so
-                      the cell reads both rather than picking one and being blank for
-                      half the list.
+                      This used to read `s.phone || s.phone_number`, because two columns
+                      held a number and both were real: `phone` was what a capture form
+                      wrote, `phone_number` what CSV import wrote. Reading both was the
+                      right call for a display cell, but it was a workaround for a split
+                      that was doing real damage out of sight - every SMS query read
+                      `phone`, which held no rows, so SMS could never reach anyone.
+
+                      Migration 072 collapsed them onto `phone_number`. One column now,
+                      stored as E.164.
                     */}
                     <td className="p-3 text-brutal-muted text-xs hidden md:table-cell">
-                      {s.phone || s.phone_number || 'None'}
+                      {s.phone_number || 'None'}
                     </td>
                     <td className="p-3 text-brutal-muted text-xs hidden md:table-cell" title={s.created_at ? new Date(s.created_at).toLocaleDateString() : undefined}>
                       {relativeTime(s.created_at)}

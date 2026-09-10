@@ -24,6 +24,24 @@
  */
 export const CHANGELOG = [
     {
+      date: 'September 10, 2026',
+      items: [
+        {
+          title: 'Phone numbers are kept in one place, in one format',
+          body:
+            'Contacts were storing phone numbers in two different places depending on how they joined: ' +
+            'numbers from a signup form went one way, numbers from an import or added by hand went another. ' +
+            'The Contacts table papered over it by reading both. Everything now lives in one field, saved in ' +
+            'international format, so a number means the same thing wherever it came from.',
+          list: [
+            'Adding a contact with a number that cannot be read now tells you, instead of saving the contact without it',
+            'Importing a CSV now lists any numbers it could not read, separately from rows it skipped entirely',
+            'Numbers are stored as +15125550199 whether you type them that way or not',
+          ],
+        },
+      ],
+    },
+    {
       date: 'August 21, 2026',
       items: [
         {
