@@ -29,7 +29,7 @@ export default function FAQ() {
     },
     {
       q: 'Can I send SMS messages too?',
-      a: 'Yes. The SMS/RCS panel lets you send text messages to subscribers with phone consent. RCS is supported on Android with SMS fallback on iOS.',
+      a: 'Not yet. Signup forms can already collect a phone number and SMS consent, so the audience is being built, but sending is switched off while it moves onto the same delivery pipeline email uses. Sending text messages in the US also requires 10DLC registration with the carriers, which is a separate approval process. RCS is not supported and is not planned for the first release.',
     },
     {
       q: 'What happens to unsubscribes?',

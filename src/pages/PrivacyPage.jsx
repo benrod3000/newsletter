@@ -22,13 +22,13 @@ export default function PrivacyPage() {
           <h2 className="font-heading text-2xl uppercase mt-8">2. Information We Collect</h2>
           <p><strong>Account information:</strong> When you create an account, we collect your email address and workspace name. Passwords are hashed and never stored in plain text. A welcome email is sent to your address after signup.</p>
           <p><strong>Subscriber information:</strong> When someone subscribes to a newsletter, we collect their email address and, with consent, approximate location (city, region, postal code derived from IP address). Optional fields include first name, last name, and phone number for SMS campaigns.</p>
-          <p><strong>Usage data:</strong> Email opens, link clicks, SMS delivery status, and campaign engagement metrics.</p>
+          <p><strong>Usage data:</strong> Email opens, link clicks, and campaign engagement metrics.</p>
           <p><strong>Device data:</strong> IP address, browser type, and operating system for analytics and abuse prevention.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">3. How We Use Information</h2>
           <ul className="list-disc list-inside space-y-1">
             <li>Deliver newsletters and manage subscriptions</li>
-            <li>Enable SMS and RCS campaigns via Twilio (when configured by the workspace operator)</li>
+            <li>Enable SMS campaigns via Twilio, once that feature is available and the workspace operator has configured it</li>
             <li>Enable geo-targeted campaigns based on subscriber location</li>
             <li>Prevent abuse and enforce our terms</li>
             <li>Improve the platform</li>
@@ -55,13 +55,13 @@ export default function PrivacyPage() {
           <p>We share data only with:</p>
           <ul className="list-disc list-inside space-y-1">
           <li><strong>Supabase</strong> (database hosting), our infrastructure provider</li>
-          <li><strong>Twilio</strong> // SMS and RCS message delivery (when enabled by workspace operator)</li>
+          <li><strong>Twilio</strong> // SMS message delivery, once that feature is available and enabled by the workspace operator</li>
           <li><strong>Resend, SendGrid, or AWS SES</strong>, your chosen email delivery provider</li>
           </ul>
           <p>We require all third parties to maintain appropriate data protection standards.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">7. SMS & RCS Messaging</h2>
-          <p>When a workspace operator enables SMS/RCS campaigns, subscribers who have provided a phone number may receive text messages via Twilio. Phone numbers are only collected with explicit consent through our widget forms or CSV import. Standard message and data rates may apply. Subscribers can reply STOP to opt out of SMS messages at any time. Carriers are not liable for delayed or undelivered messages.</p>
+          <h2 className="font-heading text-2xl uppercase mt-8">7. SMS Messaging</h2>
+          <p>SMS campaigns are not yet available, so no text messages are currently sent. Phone numbers are already collected, with explicit consent, through our widget forms and CSV import, and are stored so the feature can use them later. When sending is enabled, subscribers who gave a phone number and SMS consent may receive text messages via Twilio; standard message and data rates may apply, messages are only sent between 8am and 9pm in the subscriber's local time, and replying STOP opts out at any time. Carriers are not liable for delayed or undelivered messages.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">8. Cookies & Tracking</h2>
           <p>We use email tracking pixels (opens and clicks) to provide analytics to workspace operators. Widget forms use a single session cookie for spam prevention. We do not use third-party tracking cookies, advertising cookies, or cross-site tracking.</p>

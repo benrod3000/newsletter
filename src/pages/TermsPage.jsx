@@ -40,8 +40,8 @@ export default function TermsPage() {
           <h2 className="font-heading text-2xl uppercase mt-8">5. Acceptable Use</h2>
           <p>You may not use Veloce for spam, phishing, fraud, harassment, hate speech, unsolicited SMS, malware distribution, or any illegal activity. We reserve the right to suspend or terminate accounts that violate these terms.</p>
 
-          <h2 className="font-heading text-2xl uppercase mt-8">6. SMS/MMS/RCS & 10DLC Compliance</h2>
-          <p>Veloce provides the platform for SMS and RCS campaigns. You are responsible for registering your brand and campaign with The Campaign Registry (TCR) through your Twilio account. You must comply with all CTIA messaging guidelines, 10DLC requirements, and carrier regulations. Veloce is not responsible for carrier filtering, message blocking, or delivery failures due to non-compliance.</p>
+          <h2 className="font-heading text-2xl uppercase mt-8">6. SMS/MMS & 10DLC Compliance</h2>
+          <p>SMS campaigns are not yet available. When they are, you will be responsible for registering your brand and campaign with The Campaign Registry (TCR) through your own Twilio account. You must comply with all CTIA messaging guidelines, 10DLC requirements, and carrier regulations. Veloce is not responsible for carrier filtering, message blocking, or delivery failures due to non-compliance.</p>
 
           <h2 className="font-heading text-2xl uppercase mt-8">7. Data Processing</h2>
           <p>Veloce acts as a data processor for subscriber information you collect. You are the data controller. We process data only in accordance with your instructions as the controller. By using Veloce, you enter into this Data Processing Agreement. You are responsible for providing your own privacy notice to your subscribers.</p>

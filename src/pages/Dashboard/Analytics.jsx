@@ -939,7 +939,7 @@ export default function AnalyticsPage() {
                 onClick={() => setShowSms(!showSms)}
                 className="w-full flex items-center justify-between p-4 hover:bg-brutal-yellow/5 transition text-left"
               >
-                <h3 className="font-heading text-lg uppercase tracking-wide">📱 SMS / RCS Stats</h3>
+                <h3 className="font-heading text-lg uppercase tracking-wide">📱 SMS Stats</h3>
                 <span className={`text-sm font-bold transition-transform ${showSms ? 'rotate-180' : ''}`}>▼</span>
               </button>
               {showSms && (

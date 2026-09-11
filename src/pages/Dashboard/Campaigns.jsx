@@ -14,6 +14,7 @@ import ConfirmModal from '../../components/ConfirmModal'
 import { useCommandAction } from '../../components/useCommandAction'
 import { STATUS_STYLES, STATUS_LABELS, AUDIENCE_OPTIONS, getAudienceLabel } from './Campaigns/constants'
 import { SMS_ENABLED } from '../../lib/features'
+import { smsSegments, estimateSmsCost, withoutNonGsm, MAX_SMS_SEGMENTS } from '../../lib/sms-segments'
 
 export default function CampaignsPage() {
   const { workspaceId, email } = useAuthStore()
@@ -45,10 +46,21 @@ export default function CampaignsPage() {
   const [smsOpen, setSmsOpen] = useState(false)
   const [smsMessage, setSmsMessage] = useState('')
   const [smsSending, setSmsSending] = useState(false)
-  const [smsCount, setSmsCount] = useState(0)
+  // null means not loaded yet. 0 is a real answer and must look different.
+  const [smsCount, setSmsCount] = useState(null)
   const [smsPreview, setSmsPreview] = useState(false)
-  const [geoTrigger, setGeoTrigger] = useState(false) // Location-triggered
-  const [smsImages, setSmsImages] = useState('') // RCS carousel (comma-separated URLs)
+
+  /*
+    Derived, not stored. The segment count has to track the textarea exactly;
+    holding it in state means one render where the count and the body disagree,
+    and the number it disagrees about is the price.
+
+    The opt-out line the backend appends is included, because the operator is
+    billed for it.
+  */
+  const smsBodyAsSent = smsMessage.trim() ? `${smsMessage.trimEnd()}\nReply STOP to opt out` : ''
+  const smsInfo = smsSegments(smsBodyAsSent)
+  const smsCost = estimateSmsCost(smsCount ?? 0, smsBodyAsSent)
   const [confirmAction, setConfirmAction] = useState(null) // { title, message, onConfirm, danger }
   const [sendFlowCampaign, setSendFlowCampaign] = useState(null)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
@@ -371,7 +383,12 @@ export default function CampaignsPage() {
                   const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/campaigns/sms`, { headers: { Authorization: `Bearer ${token}` } })
                   const data = await res.json()
                   setSmsCount(data.reachable || 0)
-                } catch { setSmsCount(0) }
+                } catch {
+                  // Left null rather than set to 0. Showing "0 contacts" for a
+                  // failed count is the same class of lie as reporting a send
+                  // that did not happen.
+                  setSmsCount(null)
+                }
               }
             }}
             className="px-3 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-[10px] uppercase tracking-wider hover:shadow-brutal transition flex items-center gap-1.5"
@@ -380,125 +397,139 @@ export default function CampaignsPage() {
           </button>}
         </div>
       </div>
-      {/* SMS / RCS Panel */}
+      {/* SMS Panel */}
       {SMS_ENABLED && smsOpen && (
         <div className="border-3 border-brutal-fg bg-white p-5 space-y-4 animate-fade-up">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-heading text-xl uppercase tracking-wide">📱 SMS / RCS Campaign</h3>
+              <h3 className="font-heading text-xl uppercase tracking-wide">📱 SMS Campaign</h3>
               <p className="text-[10px] text-brutal-muted font-bold uppercase tracking-wider mt-0.5">
-                {smsCount > 0 ? `${smsCount} subscribers with phone consent` : 'Loading...'} · RCS on Android, SMS fallback on iOS
+                {smsCount === null ? 'Counting...' : `${smsCount} contacts with a number and SMS consent`}
               </p>
             </div>
             <span className="text-[9px] font-bold bg-brutal-surface px-2 py-1 border border-brutal-fg uppercase">Beta</span>
           </div>
-          <textarea
-            value={smsMessage}
-            onChange={(e) => setSmsMessage(e.target.value)}
-            placeholder="Your message here (160 character limit suggested for SMS)"
-            maxLength={320}
-            rows={3}
-            className="w-full px-4 py-3 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 resize-y"
-          />
+
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">RCS Images (optional, comma-separated URLs)</label>
-            <input
-              type="text"
-              value={smsImages}
-              onChange={e => setSmsImages(e.target.value)}
-              placeholder="https://example.com/promo1.jpg, https://example.com/promo2.jpg"
-              className="w-full px-3 py-2 bg-white border-3 border-brutal-fg text-xs font-mono focus:outline-none focus:bg-brutal-yellow/10"
+            <label htmlFor="sms-body" className="block text-[10px] font-bold uppercase tracking-wider text-brutal-muted mb-1">
+              Message
+            </label>
+            <textarea
+              id="sms-body"
+              value={smsMessage}
+              onChange={(e) => setSmsMessage(e.target.value)}
+              placeholder="Your message. An opt-out line is added automatically."
+              rows={3}
+              className="w-full px-4 py-3 bg-brutal-bg border-3 border-brutal-fg text-sm focus:outline-none focus:bg-brutal-yellow/10 resize-y"
             />
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setSmsPreview(!smsPreview)} className="px-3 py-1 border-2 border-brutal-fg bg-white text-[10px] font-bold uppercase tracking-wider hover:bg-brutal-surface transition">
-              {smsPreview ? '✕ Hide Preview' : '📱 Preview'}
+
+          {/*
+            Segments, not characters.
+            There is no character limit worth showing: carriers bill per segment,
+            and the segment size depends on the encoding. The old counter said
+            "/320", which corresponded to nothing on the invoice.
+          */}
+          <div className="flex items-center gap-3 flex-wrap text-[10px] font-bold uppercase tracking-wider">
+            <span className={smsInfo.segments > 1 ? 'text-brutal-fg' : 'text-brutal-muted'}>
+              {smsInfo.segments} segment{smsInfo.segments === 1 ? '' : 's'} per recipient
+            </span>
+            <span className="text-brutal-muted">
+              {smsInfo.remainingInSegment} left in this one
+            </span>
+            <button
+              onClick={() => setSmsPreview(!smsPreview)}
+              className="px-3 py-1 border-2 border-brutal-fg bg-white hover:bg-brutal-surface transition"
+            >
+              {smsPreview ? 'Hide preview' : 'Preview'}
             </button>
-            <span className="text-[10px] text-brutal-muted font-bold">{smsMessage.length}/320</span>
           </div>
+
+          {/*
+            The expensive, invisible mistake: one character outside GSM-7 drops
+            capacity from 160 to 70, so a pasted curly apostrophe can nearly
+            triple the cost of the whole send. Name the characters responsible.
+          */}
+          {smsInfo.encoding === 'UCS-2' && (
+            <p className="text-[10px] font-bold text-brutal-fg bg-brutal-yellow border-2 border-brutal-fg px-3 py-2">
+              These characters cut each segment from 160 to 70:{' '}
+              <span className="font-mono">{smsInfo.nonGsmCharacters.join(' ')}</span>. Replacing them
+              would bring this message down to {smsSegments(withoutNonGsm(smsBodyAsSent)).segments}{' '}
+              segment(s) per recipient.
+            </p>
+          )}
+
+          {smsInfo.segments > MAX_SMS_SEGMENTS && (
+            <p className="text-[10px] font-bold text-white bg-brutal-red border-2 border-brutal-fg px-3 py-2">
+              Too long to send. The limit is {MAX_SMS_SEGMENTS} segments per recipient.
+            </p>
+          )}
+
           {smsPreview && smsMessage && (
-            <div className="space-y-3">
-              {/* If RCS images provided, show RCS preview; otherwise show SMS-only preview */}
-              {smsImages.trim() ? (
-                <div className="border-2 border-brutal-green p-3 bg-white max-w-[320px]">
-                  <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-green mb-1">📱 RCS Preview // rich cards with images & a tappable button</p>
-                  <div className="bg-gray-100 p-3 rounded-lg text-xs">
-                    <p className="font-bold text-xs mb-1">Your Business</p>
-                    <p>{smsMessage.slice(0, 160)}</p>
-                    <div className="flex gap-2 mt-2">
-                      {smsImages.split(',').slice(0, 3).map((url, i) => (
-                        <img
-                          key={i}
-                          src={url.trim()}
-                          alt={`RCS image ${i + 1}`}
-                          className="w-16 h-16 object-cover border border-gray-400 bg-gray-200"
-                          onError={(e) => { e.target.style.display = 'none' }}
-                        />
-                      ))}
-                    </div>
-                    <div className="mt-2 px-4 py-2 bg-white text-brutal-fg text-[11px] font-bold border-2 border-brutal-fg text-center rounded">
-                      Shop Now →
-                    </div>
-                    <p className="text-[8px] text-gray-400 mt-1">Button text is auto-generated. Custom buttons coming soon.</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="border-2 border-brutal-fg/30 p-3 bg-white max-w-[280px]">
-                  <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-muted mb-1">📱 SMS Preview</p>
-                  <div className="bg-gray-100 p-3 rounded text-xs">
-                    <p className="text-[10px] text-gray-500 mb-1">+1 (555) 123-4567</p>
-                    <p>{smsMessage.slice(0, 160)}{smsMessage.length > 160 ? '...' : ''}</p>
-                  </div>
-                </div>
-              )}
-              <p className="text-[9px] text-brutal-muted font-bold uppercase tracking-wider">
-                {smsImages.trim()
-                  ? '📱 Android users see a rich card with images & button. iPhone users get the message as plain SMS.'
-                  : '📱 Plain text message. Add image URLs above to upgrade to rich RCS cards on Android.'}
+            <div className="border-2 border-brutal-fg/30 p-3 bg-white max-w-[280px]">
+              <p className="text-[8px] font-bold uppercase tracking-wider text-brutal-muted mb-1">Preview</p>
+              <div className="bg-gray-100 p-3 rounded text-xs whitespace-pre-wrap">
+                {smsMessage}
+                {'\n'}Reply STOP to opt out
+              </div>
+              <p className="text-[8px] text-brutal-muted mt-1 font-bold uppercase tracking-wider">
+                The opt-out line is added for you and is counted above
               </p>
             </div>
           )}
+
           <div className="flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] text-brutal-muted font-bold">{smsMessage.length}/320</span>
-              <label className="flex items-center gap-1.5 cursor-pointer group" title="Only sends to subscribers within your GeoFilter area. Set up in Subscribers → Geo Filter.">
-                <input type="checkbox" checked={geoTrigger} onChange={e => setGeoTrigger(e.target.checked)} className="w-3 h-3 border border-brutal-fg accent-brutal-green" />
-                <span className="text-[9px] font-bold text-brutal-muted uppercase group-hover:text-brutal-fg transition-colors">📍 Trigger on location</span>
-              </label>
-            </div>
+            <p className="text-[10px] text-brutal-muted font-bold">
+              Sends between 8am and 9pm in each contact's local time
+            </p>
             <button
               onClick={() => {
                 if (!smsMessage.trim()) { toast.addToast('Enter a message', 'warning'); return }
-                const cost = (smsCount * 0.0079).toFixed(2)
                 setConfirmAction({
                   title: 'Send SMS Campaign?',
-                  message: `"${smsMessage.trim().slice(0, 50)}${smsMessage.length > 50 ? '...' : ''}" will be sent to ${smsCount} contacts. Estimated cost: $${cost} via Twilio.`,
+                  message:
+                    `"${smsMessage.trim().slice(0, 50)}${smsMessage.length > 50 ? '...' : ''}" goes to ${smsCount} contacts ` +
+                    `at ${smsInfo.segments} segment(s) each. Estimated cost $${smsCost.toFixed(2)} via Twilio, before carrier surcharges. ` +
+                    `Anyone outside 8am to 9pm locally is sent later.`,
                   onConfirm: async () => {
                     setConfirmAction(null)
                     setSmsSending(true)
                     try {
                       const token = getAuthToken()
                       const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'}/api/clients/${workspaceId}/campaigns/sms`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                        body: JSON.stringify({
-                          message: smsMessage.trim(),
-                          image_urls: smsImages.trim() ? smsImages.split(',').map(u => u.trim()).filter(Boolean) : undefined,
-                          geo_filter: geoTrigger ? true : undefined,
-                        }),
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ message: smsMessage.trim() }),
                       })
                       const data = await res.json()
-                      if (data.sent > 0) toast.addToast(`SMS sent to ${data.sent} recipients${data.failed > 0 ? `, ${data.failed} failed` : ''}`, data.failed > 0 ? 'warning' : 'success')
-                      else toast.addToast(data.error || 'Failed to send', 'error')
+                      /*
+                        Read `ok`, not `sent`.
+                        The send is a durable queue now, so a perfectly successful
+                        request routinely comes back with sent: 0 and the whole
+                        audience still queued - a long code manages about one
+                        message a second. The old check was `data.sent > 0`, which
+                        would have reported every large send as a failure.
+                      */
+                      if (!res.ok) {
+                        toast.addToast(data.error || 'Failed to send', 'error')
+                      } else if (data.remaining > 0) {
+                        toast.addToast(
+                          `Queued ${data.queued}. ${data.sent} sent so far, the rest continues automatically.`,
+                          'success'
+                        )
+                      } else {
+                        toast.addToast(`Sent to ${data.sent} contact${data.sent === 1 ? '' : 's'}.`, 'success')
+                      }
                     } catch { toast.addToast('Failed to send', 'error') }
                     finally { setSmsSending(false) }
                   },
                   onCancel: () => setConfirmAction(null),
                 })
               }}
-              disabled={smsSending || !smsMessage.trim()}
+              disabled={smsSending || !smsMessage.trim() || smsInfo.segments > MAX_SMS_SEGMENTS}
               className="px-5 py-2 border-3 border-brutal-fg bg-brutal-green text-white font-bold text-xs uppercase tracking-wider hover:shadow-brutal transition disabled:opacity-50"
             >
-              {smsSending ? 'Sending...' : `Send to ${smsCount} contacts // $${(smsCount * 0.0079).toFixed(2)}`}
+              {smsSending ? 'Sending...' : `Send to ${smsCount ?? 0} // $${smsCost.toFixed(2)}`}
             </button>
           </div>
         </div>

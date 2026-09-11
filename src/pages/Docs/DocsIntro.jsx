@@ -37,7 +37,7 @@ export default function DocsIntro() {
           <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Audience Management</strong>: Import, export, tag, and search your subscribers.</span></li>
           <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Geo Targeting</strong>: Send by city, ZIP code, or radius. Know exactly who you're reaching.</span></li>
           <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Automations</strong>: Welcome drips, re-engagement, smart tagging. Simple if/then flows.</span></li>
-          <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>SMS / RCS</strong>: Reach subscribers with phone consent via SMS or rich RCS messages.</span></li>
+          <li className="flex items-start gap-2"><span className="text-brutal-muted mt-0.5">→</span> <span><strong>SMS</strong> <em>(coming soon)</em>: Forms already collect phone numbers and SMS consent. Sending is not switched on yet.</span></li>
           <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Analytics</strong>: Opens, clicks, growth. See how your audience responds.</span></li>
           <li className="flex items-start gap-2"><span className="text-brutal-green mt-0.5">→</span> <span><strong>Newsletter Archive</strong>: Auto-publish sent newsletters to a public, SEO-friendly URL.</span></li>
         </ul>

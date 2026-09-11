@@ -24,6 +24,24 @@
  */
 export const CHANGELOG = [
     {
+      date: 'September 11, 2026',
+      items: [
+        {
+          title: 'The docs no longer say SMS works, because it does not yet',
+          body:
+            'The FAQ answered "Can I send SMS messages too?" with "Yes", and the feature list ' +
+            'presented SMS and RCS as things you could use today. Neither was true: SMS sending ' +
+            'is switched off, and RCS was never built. Those pages now say what is actually ' +
+            'available, and the privacy policy and terms have been corrected the same way.',
+          list: [
+            'Signup forms do already collect phone numbers and SMS consent, so the audience is being built',
+            'Sending stays off until 10DLC registration clears with the carriers, which is a separate approval process',
+            'RCS is on the roadmap and nowhere else',
+          ],
+        },
+      ],
+    },
+    {
       date: 'September 10, 2026',
       items: [
         {

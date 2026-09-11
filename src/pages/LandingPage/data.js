@@ -114,9 +114,16 @@ export const PROVIDERS = [
 ]
 
 /*
- * SMS and RCS are built but switched off: SMS_ENABLED is false and the backend
- * returns 503 FEATURE_DISABLED. The send path does not share the email queue's
- * durability, so it is off until it does. Shown as planned, never as available.
+ * Shown as planned, never as available, and for two different reasons.
+ *
+ * SMS is built and now runs on the same durable queue email uses, but it stays
+ * switched off (SMS_ENABLED is false, the backend returns 503 FEATURE_DISABLED)
+ * until 10DLC registration clears with the carriers. Unregistered US A2P traffic
+ * is filtered rather than rejected, so it would fail quietly.
+ *
+ * RCS is not built at all. It needs a Google RBM agent, brand verification and
+ * carrier approval, and a different Twilio API. Deferred deliberately, which is
+ * why it belongs on a roadmap and nowhere else on the page.
  */
 export const PLANNED_CHANNELS = ['SMS', 'RCS']
 

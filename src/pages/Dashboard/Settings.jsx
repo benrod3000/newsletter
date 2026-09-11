@@ -774,7 +774,8 @@ export default function SettingsPage() {
           <div className="border-3 border-brutal-fg bg-white p-8">
             <h3 className="font-heading text-2xl uppercase tracking-wide mb-6">📱 SMS Provider</h3>
             <p className="text-xs font-bold text-brutal-muted uppercase tracking-wider mb-6">
-              Connect a Twilio account to send SMS and RCS campaigns.
+              Connect a Twilio account to send SMS campaigns. Sending also requires 10DLC
+              registration with the carriers, which is done through Twilio.
             </p>
 
             <div className="space-y-5 max-w-md">
