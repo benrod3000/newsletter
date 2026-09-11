@@ -216,6 +216,34 @@ export default function SettingsPage() {
     finally { setActivityLogLoading(false) }
   }
 
+  const [smsStatus, setSmsStatus] = useState(null)
+  const [smsStatusLoading, setSmsStatusLoading] = useState(false)
+
+  async function checkSmsStatus() {
+    setSmsStatusLoading(true)
+    try {
+      const token = getAuthToken()
+      const base = import.meta.env.VITE_API_URL || 'https://newsletter-core.vercel.app'
+      const res = await fetch(base + '/api/clients/' + workspaceId + '/sms-status', {
+        headers: { Authorization: 'Bearer ' + token },
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        // Shown rather than swallowed. A check that fails silently and leaves the
+        // previous result on screen is worse than no check at all.
+        toast.addToast(data.error || 'Could not check the connection', 'error')
+        setSmsStatus(null)
+      } else {
+        setSmsStatus(data)
+      }
+    } catch {
+      toast.addToast('Could not check the connection', 'error')
+      setSmsStatus(null)
+    } finally {
+      setSmsStatusLoading(false)
+    }
+  }
+
   async function loadTeam() {
     setTeamLoading(true)
     try {
@@ -777,6 +805,42 @@ export default function SettingsPage() {
               Connect a Twilio account to send SMS campaigns. Sending also requires 10DLC
               registration with the carriers, which is done through Twilio.
             </p>
+
+            {/*
+              Checked, not assumed.
+              The Resend equivalent reported green three times while every send
+              was being rejected: the key was present, then the key was valid,
+              then the sender address was set - and the domain was unverified all
+              along. So this asks Twilio whether this specific number can actually
+              send a text, and says plainly what it did not check.
+            */}
+            <div className="mb-6">
+              <Btn variant="secondary" size="sm" onClick={checkSmsStatus} loading={smsStatusLoading}>
+                {smsStatus ? 'Re-check connection' : 'Check connection'}
+              </Btn>
+              {smsStatus && (
+                <div
+                  className={`mt-3 border-3 border-brutal-fg p-3 text-xs font-bold ${
+                    smsStatus.sender_usable ? 'bg-brutal-green text-white' : 'bg-brutal-yellow text-brutal-fg'
+                  }`}
+                >
+                  <p className="uppercase tracking-wider mb-1">
+                    {smsStatus.sender_usable ? 'Connected' : 'Not ready'}
+                  </p>
+                  <p className="font-normal normal-case">{smsStatus.details}</p>
+                  {smsStatus.missing_fields?.length > 0 && (
+                    <p className="font-normal normal-case mt-1">
+                      Missing: {smsStatus.missing_fields.join(', ')}
+                    </p>
+                  )}
+                  {!smsStatus.feature_enabled && (
+                    <p className="font-normal normal-case mt-1">
+                      SMS sending is switched off platform-wide, so nothing will send yet even once this is green.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="space-y-5 max-w-md">
               <div>
