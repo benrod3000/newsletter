@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { MapPin, Loader2, X, Search, LocateFixed, Users } from 'lucide-react'
 import { resolveZip, searchPlaces } from '../lib/geo'
+import { milesBetween, pointInAnyRadius, resolveInRange } from '../lib/geo-count'
 import gsap from 'gsap'
 import L from 'leaflet'
 
@@ -42,8 +43,19 @@ function AnimatedStat({ value }) {
  *   subscribers?: [{ id, latitude, longitude, health_score }] // plotted + counted
  *   total?: number // workspace-wide count, so the preview can say when it is
  *                  // counting a sample rather than everyone
+ *   clusters?: [{ lat, lng, total, active, at_risk, cold }] // server-aggregated
+ *                  // pins. Supplied, these replace `subscribers` on the map.
+ *   inRange?: number|null // exact server count inside the radius. A number here
+ *                  // replaces the local Haversine estimate and drops the tilde.
+ *   summaryLoading?: boolean // the exact count is in flight
+ *   onPreview?: ({ open, locations }) => void // the draft selection, on every
+ *                  // change. `onChange` only fires on apply, so without this the
+ *                  // parent cannot fetch a count for a radius still being dragged.
  */
-export default function GeoFilter({ onChange, onClear, loading = false, active = false, subscribers = [], total = null }) {
+export default function GeoFilter({
+  onChange, onClear, loading = false, active = false, subscribers = [], total = null,
+  clusters = null, inRange = null, summaryLoading = false, onPreview = null,
+}) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState([])
@@ -115,6 +127,19 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   // Mirror locations into a ref so async callers (map click, geolocation) always
   // read the current list without going stale.
   useEffect(() => { locationsRef.current = locations }, [locations])
+
+  /*
+   * Report the draft selection upward on every edit.
+   *
+   * `onChange` fires on apply, which is the right moment to refilter a table and
+   * the wrong one to count with: the count is what tells you whether to apply at
+   * all. The parent debounces - this fires on each tick of a slider drag.
+   */
+  const previewRef = useRef(onPreview)
+  useEffect(() => { previewRef.current = onPreview }, [onPreview])
+  useEffect(() => {
+    previewRef.current?.({ open, locations })
+  }, [open, locations])
 
   // ─── Debounced search: ZIP → resolveZip, otherwise forward-geocode ───
   const handleQueryChange = useCallback((value) => {
@@ -241,61 +266,107 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
   const inRangeIds = (() => {
     const set = new Set()
     if (locations.length === 0) return set
-    const R = 3959
     locations.forEach(loc => {
       const locRadius = loc.radius ?? 10
       subscribers.forEach(s => {
         if (!s.id || !s.latitude || !s.longitude) return
-        const dLat = (s.latitude - loc.lat) * Math.PI / 180
-        const dLng = (s.longitude - loc.lng) * Math.PI / 180
-        const a = Math.sin(dLat / 2) ** 2 + Math.cos(loc.lat * Math.PI / 180) * Math.cos(s.latitude * Math.PI / 180) * Math.sin(dLng / 2) ** 2
-        if (2 * R * Math.asin(Math.sqrt(a)) <= locRadius) set.add(s.id)
+        if (milesBetween(loc.lat, loc.lng, s.latitude, s.longitude) <= locRadius) set.add(s.id)
       })
     })
     return set
   })()
 
-  const totalInRange = inRangeIds.size
+  /** Which clusters fall inside some radius, so the map can dim the rest. */
+  const clusterInRange = (c) => pointInAnyRadius(c.lat, c.lng, locations)
 
-  const hasPlottable = subscribers.some(s => s.latitude && s.longitude)
+  const plottedClusters = Array.isArray(clusters) ? clusters.filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lng)) : null
 
   /*
-   * totalInRange is Haversine over the `subscribers` prop, which is the page
-   * the table currently has - fifty rows - not the workspace. On a workspace of
-   * 10,310 that is a sample, and the number was presented as fact. It happened
-   * to be correct in testing because the recent real signups sort above the
-   * 10,300 rows imported on one day, so page one held all of them; on page two,
-   * or after any import, it would not be.
-   *
-   * The count still comes from the loaded rows - the alternative is a
-   * server-side count endpoint per keystroke of the radius slider - but it says
-   * when it is looking at part of the data. Once the filter is applied the
-   * table's own total is server-derived and authoritative.
+   * How many contacts the selection catches, and whether that is an estimate.
+   * The ranking lives in lib/geo-count.js, where it is unit tested - it is the
+   * part of this component most likely to be got wrong later.
    */
-  const sampling = typeof total === 'number' && subscribers.length < total
+  const { count: totalInRange, sampling } = resolveInRange({
+    exact: inRange,
+    clusters: plottedClusters,
+    locations,
+    sampleCount: inRangeIds.size,
+    loadedCount: subscribers.length,
+    total,
+  })
+
+  const hasPlottable = plottedClusters
+    ? plottedClusters.length > 0
+    : subscribers.some(s => s.latitude && s.longitude)
+
   const maxRadius = locations.length ? Math.max(...locations.map(l => l.radius ?? 10)) : 0
   // Derived (not synced) so removing a location can never leave a stale index.
   const safeIdx = locations.length ? Math.min(selectedLocIdx, locations.length - 1) : 0
 
-  // ─── Helper: add subscriber pins to a Leaflet layer ───
+  const HEALTH_COLORS = { active: '#2b7657', at_risk: '#f5e642', cold: '#e03131' }
+
+  // ─── Helper: add contact pins to a Leaflet layer ───
+  //
+  // With a radius drawn, contacts outside it are context rather than content:
+  // dimmed and small, so the ones the filter has actually caught are the only
+  // thing reading as selected. With no radius, every contact is drawn normally -
+  // the map's other job is showing where an audience is.
   function addSubscriberPins(layer) {
-    // With a radius drawn, contacts outside it are context rather than content:
-    // dimmed and small, so the ones the filter has actually caught are the only
-    // thing reading as selected. With no radius, every contact is drawn normally
-    // - the map's other job is showing where an audience is.
+    if (plottedClusters) { addClusterPins(layer); return }
+
     const filtering = locations.length > 0
     subscribers.forEach(s => {
       if (!s.latitude || !s.longitude) return
-      const colors = { active: '#2b7657', at_risk: '#f5e642', cold: '#e03131' }
       const sizes = { active: 7, at_risk: 5, cold: 3 }
       const inRange = !filtering || inRangeIds.has(s.id)
       L.circleMarker([s.latitude, s.longitude], {
         radius: inRange ? (sizes[s.health_score] || 4) : 3,
         color: inRange ? '#0a0a0a' : '#a8a49a',
-        fillColor: inRange ? (colors[s.health_score] || '#a8a49a') : '#d4d0c8',
+        fillColor: inRange ? (HEALTH_COLORS[s.health_score] || '#a8a49a') : '#d4d0c8',
         fillOpacity: inRange ? 1 : 0.45,
         weight: inRange ? 2 : 1,
       }).addTo(layer)
+    })
+  }
+
+  /*
+   * Server-aggregated pins, sized by how many contacts they stand for.
+   *
+   * One marker per contact is the wrong drawing for this data: city-level
+   * coordinates put 500 people on one point, so 500 identical dots painted the
+   * same pixel 500 times and a city of 500 looked exactly like a city of 4.
+   * Area scales with the count - radius by square root, so the circle's area
+   * rather than its width carries the number - and the tooltip gives the figure
+   * for anyone who needs it exactly.
+   */
+  function addClusterPins(layer) {
+    const maxTotal = plottedClusters.reduce((m, c) => Math.max(m, c.total ?? 0), 0) || 1
+    const filtering = locations.length > 0
+
+    plottedClusters.forEach(c => {
+      const inRange = !filtering || clusterInRange(c)
+      // The largest cluster sits at 20px, the smallest stays at least 5px so a
+      // single contact is still clickable rather than a hairline.
+      const scaled = 5 + 15 * Math.sqrt((c.total ?? 0) / maxTotal)
+
+      // Coloured by whichever health band dominates the cluster. A mixed cluster
+      // has no single honest colour, so the tooltip carries the split.
+      const bands = [['active', c.active ?? 0], ['at_risk', c.at_risk ?? 0], ['cold', c.cold ?? 0]]
+      const [dominant] = bands.sort((a, b) => b[1] - a[1])[0]
+
+      const marker = L.circleMarker([c.lat, c.lng], {
+        radius: inRange ? scaled : Math.max(4, scaled * 0.55),
+        color: inRange ? '#0a0a0a' : '#a8a49a',
+        fillColor: inRange ? (HEALTH_COLORS[dominant] || '#a8a49a') : '#d4d0c8',
+        fillOpacity: inRange ? 0.85 : 0.4,
+        weight: inRange ? 2 : 1,
+      }).addTo(layer)
+
+      const parts = bands.filter(([, n]) => n > 0).map(([k, n]) => `${n.toLocaleString()} ${k.replace('_', ' ')}`)
+      marker.bindTooltip(
+        `<strong>${(c.total ?? 0).toLocaleString()} contact${c.total === 1 ? '' : 's'}</strong>${parts.length ? `<br>${parts.join(' · ')}` : ''}`,
+        { direction: 'top', offset: [0, -4] }
+      )
     })
   }
 
@@ -450,8 +521,13 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
     addSubscriberPins(g)
     g.addTo(map)
     subscriberLayerRef.current = g
+  /*
+   * `clusters` is in the deps because it arrives after the panel opens - the
+   * request starts on open, so the first paint has no pins and without this the
+   * map stayed empty until the next radius change.
+   */
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, locations])
+  }, [open, locations, clusters])
 
   // ─── Location radius change: update a single circle ───
   function updateLocationRadius(index, newRadius) {
@@ -620,7 +696,12 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
               */}
               {hasPlottable && (
                 <span className="flex items-center gap-2">
-                  <span className="opacity-70">Your contacts:</span>
+                  {/*
+                    With clusters, one circle is many contacts, so the legend has
+                    to say that - otherwise a big dot reads as one important
+                    person rather than five hundred ordinary ones.
+                  */}
+                  <span className="opacity-70">{plottedClusters ? 'Circle size = contacts:' : 'Your contacts:'}</span>
                   <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#2b7657'}} /> Active</span>
                   <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#f5e642'}} /> Risk</span>
                   <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full border border-white/60" style={{background:'#e03131'}} /> Cold</span>
@@ -666,8 +747,14 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
               <div className="border-3 border-brutal-fg bg-brutal-green text-white px-4 py-3 flex items-center justify-between gap-3">
                 <div className="flex items-baseline gap-2 min-w-0">
                   <Users size={20} className="shrink-0 self-center" />
-                  <span className="font-heading text-4xl sm:text-5xl leading-none">
+                  <span className="font-heading text-4xl sm:text-5xl leading-none flex items-center gap-2">
                     {sampling && '~'}<AnimatedStat value={totalInRange} />
+                    {/*
+                      The number keeps its last value while a new one is being
+                      fetched rather than blanking, so dragging the slider reads
+                      as a figure catching up rather than the panel flickering.
+                    */}
+                    {summaryLoading && <Loader2 size={16} className="animate-spin opacity-70" />}
                   </span>
                   <span className="text-[11px] font-bold uppercase tracking-wider opacity-90">
                     subscribers<br className="hidden sm:inline" /> in range
@@ -675,6 +762,12 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-wider opacity-80 text-right shrink-0">
                   {locations.length} area{locations.length !== 1 ? 's' : ''}<br />up to {maxRadius} mi
+                  {/*
+                    Said out loud only when it is still an estimate. Silence used
+                    to mean "this is a total", which was the problem: the tilde
+                    was easy to miss and nothing else admitted to the sampling.
+                  */}
+                  {sampling && <><br /><span className="opacity-90">estimated from {subscribers.length} loaded</span></>}
                 </span>
               </div>
             ) : (
@@ -736,7 +829,7 @@ export default function GeoFilter({ onChange, onClear, loading = false, active =
               {loading
                 ? 'Loading...'
                 : hasPlottable && locations.length > 0
-                  ? `Show ${sampling ? '~' : ''}${totalInRange} subscribers`
+                  ? `Show ${sampling ? '~' : ''}${totalInRange.toLocaleString()} subscribers`
                   : 'Show subscribers'}
             </button>
             {applied && (

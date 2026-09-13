@@ -24,6 +24,20 @@
  */
 export const CHANGELOG = [
     {
+      date: 'September 12, 2026',
+      items: [
+        {
+          title: 'The radius filter counts your whole audience, not just the page on screen',
+          body: 'The map and the "subscribers in range" figure were both worked out from the fifty contacts the table had loaded, so on a large list they described a sample. Drop a pin on a city with five hundred contacts in it and it could report two. Both now come from your full list.',
+          list: [
+            'The count is exact, and no longer marked with a "~" unless it genuinely is an estimate.',
+            'The map plots everywhere your contacts are, with each circle sized by how many are there, so a city of five hundred no longer looks like a city of four. Hover one for the exact figure and its health split.',
+            'A radius covering more than a thousand contacts used to quietly stop counting at a thousand. It no longer does.',
+          ],
+        },
+      ],
+    },
+    {
       date: 'September 11, 2026',
       items: [
         {

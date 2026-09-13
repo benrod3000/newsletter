@@ -123,3 +123,18 @@ export interface DnsCheckResponse {
   dmarc: DnsCheckResult;
   mx: DnsCheckResult;
 }
+
+/**
+ * One distinct contact coordinate and its health split, as the map plots it.
+ *
+ * Aggregated server-side: 500 contacts sharing a city centroid are one cluster
+ * with `total: 500`, not 500 markers stacked into a single pixel.
+ */
+export interface GeoCluster {
+  lat: number
+  lng: number
+  total: number
+  active: number
+  at_risk: number
+  cold: number
+}

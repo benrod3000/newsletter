@@ -72,6 +72,21 @@ export default function SubscribersPage() {
 
   // Geo-radius filter
   const [geoFilter, setGeoFilter] = useState(null)
+  /*
+   * What the radius picker draws and counts with.
+   *
+   * Both used to be derived in the browser from `subscribers` - the fifty rows
+   * this page has loaded. On 10,312 contacts that is a 0.5% sample: the map drew
+   * whoever sorted to the top of page one, and dropping a pin on Denver, where
+   * 500 contacts live, reported "~2 subscribers in range". `clusters` is every
+   * contact coordinate in the workspace, aggregated; `inRange` is the exact count
+   * inside the current radius, both from the database.
+   */
+  const [geoClusters, setGeoClusters] = useState(null)
+  const [geoInRange, setGeoInRange] = useState(null)
+  const [geoSummaryLoading, setGeoSummaryLoading] = useState(false)
+  const [geoPreview, setGeoPreview] = useState({ open: false, locations: [] })
+  const geoSummarySeq = useRef(0)
   // geoLoading removed: it tracked the duplicate load that no longer happens.
   // The GeoFilter spinner now reads the page's own `loading`, which is the
   // request it was always meant to be reporting on.
@@ -128,6 +143,56 @@ export default function SubscribersPage() {
       .catch(() => setSegments([]))
       .finally(() => setSegmentsLoading(false))
   }, [workspaceId])
+
+  /*
+   * Fetch the map's pins and the exact in-range count, debounced.
+   *
+   * Runs only while the picker is open, because nothing it produces is visible
+   * otherwise and the count query is a full-table haversine. 350ms is enough to
+   * collapse a slider drag into one request per pause; the sequence number makes
+   * a slow earlier answer unable to overwrite a newer one, the same guard the
+   * table load needs for the same reason.
+   */
+  useEffect(() => {
+    if (!workspaceId || !geoPreview.open) return
+
+    const areas = (geoPreview.locations ?? [])
+      .filter((l) => Number.isFinite(l.lat) && Number.isFinite(l.lng))
+      .map((l) => `${l.lat},${l.lng},${l.radius ?? 10}`)
+      .join(';')
+
+    const seq = ++geoSummarySeq.current
+    const t = setTimeout(() => {
+      // Inside the timeout, not before it: the spinner should mean "asking the
+      // server", not "you moved the slider 20ms ago".
+      setGeoSummaryLoading(true)
+      subscribersAPI
+        .geoSummary(workspaceId, areas ? { areas } : {})
+        .then(({ data }) => {
+          if (seq !== geoSummarySeq.current) return
+          const payload = data?.data ?? data ?? {}
+          setGeoClusters(payload.clusters ?? [])
+          // null when no areas were given, which the picker reads as "fall back
+          // to counting clusters" rather than as zero people.
+          setGeoInRange(typeof payload.inRange === 'number' ? payload.inRange : null)
+        })
+        .catch((err) => {
+          if (seq !== geoSummarySeq.current) return
+          /*
+           * Left as-is rather than zeroed. An empty clusters array would draw a
+           * blank map and a confident "0 in range" out of a network blip; keeping
+           * the last good picture and letting the picker fall back to its local
+           * estimate is the smaller lie.
+           */
+          console.error('Failed to load geo summary:', err)
+        })
+        .finally(() => {
+          if (seq === geoSummarySeq.current) setGeoSummaryLoading(false)
+        })
+    }, 350)
+
+    return () => clearTimeout(t)
+  }, [workspaceId, geoPreview])
 
   /**
    * The filter currently on screen, as query params.
@@ -877,6 +942,10 @@ export default function SubscribersPage() {
         active={!!geoFilter}
         subscribers={subscribers}
         total={total}
+        clusters={geoClusters}
+        inRange={geoInRange}
+        summaryLoading={geoSummaryLoading}
+        onPreview={setGeoPreview}
       />
 
       {/*

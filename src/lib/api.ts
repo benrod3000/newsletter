@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
-import type { ApiResponse, AnalyticsOverview, Campaign, Subscriber, DeliverabilityOverview, DnsCheckResponse } from './types'
+import type { ApiResponse, AnalyticsOverview, Campaign, Subscriber, DeliverabilityOverview, DnsCheckResponse, GeoCluster } from './types'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
@@ -89,6 +89,17 @@ export const subscribersAPI = {
     api.get(`/api/clients/${workspaceId}/subscribers/export`, { params, responseType: 'blob' }),
   importCsv: (workspaceId: string, csv: string, confirmed?: boolean, consentConfirmed?: boolean) =>
     api.post<ApiResponse>(`/api/clients/${workspaceId}/subscribers/import`, { csv, confirmed, consent_confirmed: consentConfirmed }),
+  /**
+   * Where the workspace's contacts are, and how many a radius actually catches.
+   *
+   * Both answers used to be computed in the browser from the fifty rows the
+   * contacts table had loaded, which on 10,312 contacts meant the map showed a
+   * sample and the count was a sample described as a total.
+   */
+  geoSummary: (workspaceId: string, params?: Record<string, unknown>) =>
+    api.get<ApiResponse<{ clusters: GeoCluster[]; plotted: number; inRange: number | null }>>(
+      `/api/clients/${workspaceId}/subscribers/geo-summary`, { params }
+    ),
 }
 
 // ── Campaigns / Broadcasts ──
