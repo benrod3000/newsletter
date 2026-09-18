@@ -5,6 +5,26 @@ import { milesBetween, pointInAnyRadius, resolveInRange } from '../lib/geo-count
 import gsap from 'gsap'
 import L from 'leaflet'
 
+/*
+ * Basemap tiles.
+ *
+ * CARTO began requiring a key for their basemaps and now stamps
+ * "API KEY REQUIRED" diagonally across every unauthenticated tile. The tiles
+ * still return 200, so nothing errors - the map just renders with a watermark
+ * through it.
+ *
+ * The key is a URL parameter on a public tile request, so it is public by
+ * nature; CARTO restricts it by referring domain rather than by secrecy. It
+ * still comes from the environment rather than the source so it can differ
+ * between preview and production, and so rotating it is a config change.
+ *
+ * Without a key this falls back to the unauthenticated URL, which works and is
+ * watermarked. That is deliberate: a missing key should degrade the map's looks,
+ * not break radius filtering, which is the part that does the work.
+ */
+const CARTO_KEY = import.meta.env.VITE_CARTO_BASEMAP_KEY || ''
+const TILE_URL = `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png${CARTO_KEY ? `?key=${encodeURIComponent(CARTO_KEY)}` : ''}`
+
 const PRESETS = [1, 5, 10, 25, 50, 100]
 const CIRCLE_COLORS = ['#2b7657', '#f5e642', '#e03131', '#4a9e7a', '#d4c82e']
 const MAX_LOCATIONS = 5
@@ -476,7 +496,7 @@ export default function GeoFilter({
         const map = L.map(el, {
           center, zoom: locations.length > 0 ? 10 : 4, zoomControl: true, attributionControl: true, scrollWheelZoom: false,
         })
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        L.tileLayer(TILE_URL, {
           maxZoom: 18,
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
         }).addTo(map)

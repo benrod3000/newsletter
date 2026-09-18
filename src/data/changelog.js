@@ -24,6 +24,15 @@
  */
 export const CHANGELOG = [
     {
+      date: 'September 18, 2026',
+      items: [
+        {
+          title: 'The watermark across the radius map is gone',
+          body: 'Our map provider started requiring an account key and stamped "API key required" diagonally across every tile until they got one. The map itself never stopped working, but it looked broken. It is now keyed, so the tiles are clean again.',
+        },
+      ],
+    },
+    {
       date: 'September 12, 2026',
       items: [
         {
