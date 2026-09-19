@@ -27,6 +27,19 @@ export const CHANGELOG = [
       date: 'September 19, 2026',
       items: [
         {
+          title: 'Export a list from the list itself',
+          body: 'Opening a list showed you who was in it and gave you no way to take them with you, so the only route was to rebuild the same list as a Contacts filter and hope the two agreed. There is now an Export button on the list.',
+          list: [
+            'The file is named after the list, so a folder of exports is readable.',
+            'Same columns and the same spreadsheet safety as the Contacts export.',
+          ],
+        },
+      ],
+    },
+    {
+      date: 'September 19, 2026',
+      items: [
+        {
           title: 'The location filter no longer hides behind a dropdown',
           body: 'The map is one of the most useful things in Contacts and it was tucked inside a collapsed bar that looked like an advanced setting, so most people never found it. It now says what it does and opens on its own whenever a location filter is already applied.',
           list: [

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { listsAPI } from '../lib/api'
+import { listsAPI, subscribersAPI } from '../lib/api'
 import { useToast } from './Toast'
 import { LoadingState } from './ux'
 import Btn from './ui/Button'
-import { X, Users, Check, Clock, Ban } from 'lucide-react'
+import { X, Users, Check, Clock, Ban, Download } from 'lucide-react'
 import { describeSource } from './list-member-source'
+import { listExportFilename } from '../lib/export-filename'
 
 /**
  * Who is in a list, and where each of them came from.
@@ -39,10 +40,47 @@ export default function ListMembersPanel({ list, workspaceId, onClose, onListUpd
   const [error, setError] = useState(null)
   const [removingId, setRemovingId] = useState(null)
 
+  const [exporting, setExporting] = useState(false)
+
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(list.name)
   const [description, setDescription] = useState(list.description || '')
   const [saving, setSaving] = useState(false)
+
+  /**
+   * Take this list away as a CSV.
+   *
+   * Opening a list showed who was in it and gave no way to get them out, so the
+   * only route was to rebuild the list as a Contacts filter and hope the two
+   * agreed. Same endpoint the Contacts export uses, narrowed by `list_id`, so
+   * the columns and the formula-injection guard are shared rather than
+   * reimplemented here.
+   */
+  async function exportList() {
+    setExporting(true)
+    try {
+      const response = await subscribersAPI.exportCsv(workspaceId, { list_id: list.id })
+      const url = window.URL.createObjectURL(response.data)
+      const a = document.createElement('a')
+      a.href = url
+      // Named after the list, because a folder of `subscribers-a1b2c3d4.csv`
+      // tells you nothing about which list each one was.
+      a.download = listExportFilename(list.name)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      toast.addToast(`Exported ${total.toLocaleString()} ${total === 1 ? 'contact' : 'contacts'}`, 'success')
+    } catch (err) {
+      // responseType is blob, so an error body arrives as a Blob rather than
+      // JSON and reads as "[object Blob]" unless it is parsed back.
+      let apiErr = err?.response?.data?.error
+      if (err?.response?.data instanceof Blob) {
+        try { apiErr = JSON.parse(await err.response.data.text())?.error } catch { apiErr = null }
+      }
+      toast.addToast(apiErr || 'Could not export this list', 'error')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   useEffect(() => {
     panelRef.current?.focus()
@@ -169,12 +207,23 @@ export default function ListMembersPanel({ list, workspaceId, onClose, onListUpd
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => setEditing(true)}
-                className="px-3 py-1.5 border-3 border-brutal-fg bg-white text-[10px] font-bold uppercase tracking-wider hover:bg-brutal-yellow/20 transition"
-              >
-                Edit
-              </button>
+              <>
+                <button
+                  onClick={exportList}
+                  disabled={exporting || total === 0}
+                  title={total === 0 ? 'This list has no contacts yet' : 'Download this list as CSV'}
+                  className="px-3 py-1.5 border-3 border-brutal-fg bg-white text-[10px] font-bold uppercase tracking-wider hover:bg-brutal-yellow/20 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-1.5"
+                >
+                  <Download size={12} />
+                  {exporting ? 'Exporting...' : 'Export'}
+                </button>
+                <button
+                  onClick={() => setEditing(true)}
+                  className="px-3 py-1.5 border-3 border-brutal-fg bg-white text-[10px] font-bold uppercase tracking-wider hover:bg-brutal-yellow/20 transition"
+                >
+                  Edit
+                </button>
+              </>
             )}
             <button onClick={onClose} aria-label="Close" className="p-1.5 border-3 border-brutal-fg bg-white hover:bg-brutal-surface transition">
               <X size={16} />
