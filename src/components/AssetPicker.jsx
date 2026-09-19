@@ -187,6 +187,7 @@ export default function AssetPicker({ workspaceId, value = null, onChange, disab
             className="sr-only"
             disabled={disabled || uploading}
             onChange={e => handleFile(e.target.files?.[0])}
+            accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.epub,.zip,.docx,.mp3,.txt,.csv"
           />
           <label
             htmlFor="asset-upload"
@@ -205,8 +206,14 @@ export default function AssetPicker({ workspaceId, value = null, onChange, disab
               <div className="h-full bg-brutal-green transition-all" style={{ width: `${progress}%` }} />
             </div>
           )}
+          {/*
+            Lists what the bucket actually accepts. This used to read "PDF,
+            images, epub, zip or docx", which omitted audio, text and CSV - all
+            three were already allowed, so the copy was telling people a file
+            would be rejected when it would have uploaded fine.
+          */}
           <p className="text-[10px] font-bold text-brutal-muted uppercase mt-1.5">
-            PDF, images, epub, zip or docx. Up to 10 MB.
+            PDF, images, audio, epub, zip, Word, text or CSV. Up to 10 MB.
           </p>
         </div>
 

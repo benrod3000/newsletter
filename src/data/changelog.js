@@ -24,6 +24,21 @@
  */
 export const CHANGELOG = [
     {
+      date: 'September 20, 2026',
+      items: [
+        {
+          title: 'Media: see everything you have uploaded in one place',
+          body: 'Uploaded files were only visible inside the capture form builder, which meant you could see them at the moment you were about to use one and nowhere else. There is now a Media page under Growth.',
+          list: [
+            'Images show a thumbnail; everything else shows its type, so the grid is scannable rather than a wall of identical icons.',
+            'Each file says which capture forms are giving it away, and files in use cannot be deleted by accident.',
+            'Filter by images, audio, documents or archives, copy a direct link, and see how much of your space is left.',
+            'MP3, text and CSV were always accepted, but the upload hint did not list them and made them look unsupported. It does now.',
+          ],
+        },
+      ],
+    },
+    {
       date: 'September 19, 2026',
       items: [
         {

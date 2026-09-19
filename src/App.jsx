@@ -41,6 +41,7 @@ const AnalyticsPage = lazy(() => import('./pages/Dashboard/Analytics'))
 const DeliverabilityPage = lazy(() => import('./pages/Dashboard/Deliverability'))
 const SettingsPage = lazy(() => import('./pages/Dashboard/Settings'))
 const WidgetsPage = lazy(() => import('./pages/Dashboard/Widgets'))
+const MediaPage = lazy(() => import('./pages/Dashboard/Media'))
 const DocsLayout = lazy(() => import('./pages/Docs/DocsLayout'))
 const DocsIntro = lazy(() => import('./pages/Docs/DocsIntro'))
 const Quickstart = lazy(() => import('./pages/Docs/Quickstart'))
@@ -236,6 +237,7 @@ function App() {
             <Route path="deliverability" element={<ErrorBoundary><DeliverabilityPage /></ErrorBoundary>} />
             <Route path="settings" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
             <Route path="widgets" element={<ErrorBoundary><WidgetsPage /></ErrorBoundary>} />
+            <Route path="media" element={<ErrorBoundary><MediaPage /></ErrorBoundary>} />
           </Route>
 
           {/* Public widget form // no layout wrapper */}

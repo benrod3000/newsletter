@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/authStore'
 import {
   LayoutDashboard, Send, Users, PieChart, BarChart3,
   Settings, ChevronLeft, ChevronRight, Search,
-  HelpCircle, LogOut, Globe, Menu, X, Shield
+  HelpCircle, LogOut, Globe, Menu, X, Shield, Image
 } from 'lucide-react'
 
 const navGroups = [
@@ -38,6 +38,9 @@ const navGroups = [
     label: 'Growth',
     items: [
       { path: '/dashboard/widgets', label: 'Capture Forms', icon: Globe },
+      // Next to Capture Forms because that is what the files are for: a giveaway
+      // is picked here and handed out there.
+      { path: '/dashboard/media', label: 'Media', icon: Image },
       { path: '/dashboard/settings', label: 'Settings', icon: Settings },
     ],
   },
