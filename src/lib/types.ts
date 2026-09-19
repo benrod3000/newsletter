@@ -138,3 +138,13 @@ export interface GeoCluster {
   at_risk: number
   cold: number
 }
+
+/** A file in a workspace's content library. */
+export interface Asset {
+  id: string
+  filename: string
+  mime: string
+  bytes: number
+  public_url: string
+  created_at: string
+}

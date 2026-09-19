@@ -24,6 +24,21 @@
  */
 export const CHANGELOG = [
     {
+      date: 'September 19, 2026',
+      items: [
+        {
+          title: 'Upload the file you are giving away, instead of hosting it yourself',
+          body: 'A lead magnet used to need a link to a file you hosted somewhere else, which meant a Drive share or your own site, and a broken link only showed up for the person who had already handed over their email address. You can now upload the file to your library and pick it when building the widget.',
+          list: [
+            'Files are reusable: upload once, give it away from as many widgets as you like.',
+            'Pasting a link still works, and is still the better option if you have a large list.',
+            'Deleting a file that a live widget is still handing out is refused, so you cannot break a giveaway by tidying up.',
+            'Up to 10 MB per file, 100 MB per account.',
+          ],
+        },
+      ],
+    },
+    {
       date: 'September 18, 2026',
       items: [
         {

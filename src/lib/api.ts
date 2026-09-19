@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
-import type { ApiResponse, AnalyticsOverview, Campaign, Subscriber, DeliverabilityOverview, DnsCheckResponse, GeoCluster } from './types'
+import type { ApiResponse, AnalyticsOverview, Campaign, Subscriber, DeliverabilityOverview, DnsCheckResponse, GeoCluster, Asset } from './types'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
@@ -100,6 +100,33 @@ export const subscribersAPI = {
     api.get<ApiResponse<{ clusters: GeoCluster[]; plotted: number; inRange: number | null }>>(
       `/api/clients/${workspaceId}/subscribers/geo-summary`, { params }
     ),
+}
+
+// ── Content library ──
+
+/**
+ * Files a workspace can give away, as an alternative to hosting them elsewhere
+ * and pasting a link.
+ *
+ * Uploading is three steps rather than one because the bytes never pass through
+ * the API: Vercel caps serverless request bodies at a few megabytes, so proxying
+ * the file would put a ceiling under the feature. `uploadUrl` authorises and
+ * returns somewhere to PUT, the browser sends the bytes straight to storage, and
+ * `create` records the result once it has landed.
+ */
+export const assetsAPI = {
+  list: (workspaceId: string) =>
+    api.get<ApiResponse<{ assets: Asset[]; used_bytes: number; quota_bytes: number }>>(
+      `/api/clients/${workspaceId}/assets`
+    ),
+  uploadUrl: (workspaceId: string, file: { filename: string; mime: string; bytes: number }) =>
+    api.post<ApiResponse<{ signed_url: string; token: string; storage_path: string; filename: string; mime: string }>>(
+      `/api/clients/${workspaceId}/assets/upload-url`, file
+    ),
+  create: (workspaceId: string, body: { storage_path: string; filename: string; sha256?: string }) =>
+    api.post<ApiResponse<{ asset: Asset }>>(`/api/clients/${workspaceId}/assets`, body),
+  remove: (workspaceId: string, id: string) =>
+    api.delete<ApiResponse>(`/api/clients/${workspaceId}/assets/${id}`),
 }
 
 // ── Campaigns / Broadcasts ──

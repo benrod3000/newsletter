@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuthStore } from '../../stores/authStore'
 import { widgetsAPI, listsAPI } from '../../lib/api'
 import { EmptyState, LoadingState } from '../../components/ux'
+import AssetPicker from '../../components/AssetPicker'
 import { useToast } from '../../components/Toast'
 import Btn from '../../components/ui/Button'
 import ConfirmModal from '../../components/ConfirmModal'
@@ -45,6 +46,7 @@ const DEFAULT_FORM = {
   headline: 'Get the Free Download',
   description: 'Enter your email and we\'ll send you the download link.',
   download_url: '',
+  asset_id: null,
   button_text: 'Send Me the Link',
   success_message: 'Check your inbox! The download link is on its way.',
   placeholder: 'you@example.com',
@@ -218,6 +220,7 @@ export default function WidgetsPage() {
       headline: w.headline || 'Get the Free Download',
       description: w.description || '',
       download_url: w.download_url || '',
+      asset_id: w.asset_id || null,
       button_text: w.button_text || 'Send Me the Link',
       success_message: w.success_message || 'Check your inbox!',
       placeholder: w.placeholder || 'you@example.com',
@@ -253,6 +256,11 @@ export default function WidgetsPage() {
       // Lead Magnet is not a coupon code, and showing it under the new label
       // would present stale input as if it had been entered for this type.
       download_url: TYPES_WITH_DOWNLOAD.includes(value) ? prev.download_url : '',
+      // Only a lead magnet gives away a library file. A coupon stores a discount
+      // code in download_url and prints it on screen, so carrying an asset over
+      // to one would offer the subscriber a URL where a code should be - and the
+      // API refuses that pairing anyway.
+      asset_id: value === 'lead_magnet' ? prev.asset_id : null,
     }))
     setIsDirty(true)
     setErrors(prev => ({ ...prev, download_url: undefined }))
@@ -279,8 +287,11 @@ export default function WidgetsPage() {
       if (!form.name.trim()) errs.name = 'Required'
       if (!form.slug.trim()) errs.slug = 'Required'
       if (!form.list_id) errs.list_id = 'Select a list'
-      if (TYPES_WITH_DOWNLOAD.includes(form.type) && !form.download_url.trim()) {
-        errs.download_url = 'Required'
+      // Either source counts. A lead magnet can give away a library file
+      // instead of a link, and requiring the URL regardless would make the
+      // uploaded file impossible to use.
+      if (TYPES_WITH_DOWNLOAD.includes(form.type) && !form.download_url.trim() && !form.asset_id) {
+        errs.download_url = form.type === 'lead_magnet' ? 'Upload a file or paste a link' : 'Required'
       }
     }
     setErrors(errs)
@@ -512,19 +523,54 @@ export default function WidgetsPage() {
                 wrong prompt for "SAVE20".
               */}
               {TYPES_WITH_DOWNLOAD.includes(form.type) && (
-                <div>
-                  <label htmlFor="wb-download" className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
-                    {DOWNLOAD_FIELD_COPY[form.type].label}
-                  </label>
-                  <input
-                    id="wb-download"
-                    value={form.download_url}
-                    onChange={e => updateField('download_url', e.target.value)}
-                    className={`w-full px-4 py-2.5 bg-white border-3 text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted ${errors.download_url ? 'border-brutal-red' : 'border-brutal-fg'}`}
-                    placeholder={DOWNLOAD_FIELD_COPY[form.type].placeholder}
-                  />
-                  {errors.download_url && <p className="text-xs font-bold text-brutal-red mt-1">{errors.download_url}</p>}
-                  <p className="text-[10px] font-bold text-brutal-muted uppercase mt-1">{DOWNLOAD_FIELD_COPY[form.type].help}</p>
+                <div className="space-y-3">
+                  {/*
+                    A lead magnet can give away a file from the library instead
+                    of a link. Both are offered rather than one replacing the
+                    other: a hosted download draws on this project's shared
+                    egress budget, so an operator with a large list needs
+                    somewhere else to point, and pasting a URL stays a first
+                    class answer rather than a legacy path.
+
+                    Selecting one clears the other, because a widget gives away
+                    exactly one thing - the API refuses both, and migration 079
+                    has a CHECK behind that.
+                  */}
+                  {form.type === 'lead_magnet' && (
+                    <AssetPicker
+                      workspaceId={workspaceId}
+                      value={form.asset_id}
+                      onChange={assetId => {
+                        updateField('asset_id', assetId)
+                        if (assetId) updateField('download_url', '')
+                      }}
+                    />
+                  )}
+
+                  <div>
+                    <label htmlFor="wb-download" className="block text-xs font-bold uppercase tracking-wider text-brutal-fg/60 mb-1.5">
+                      {form.type === 'lead_magnet' && form.asset_id
+                        ? 'Or link to a file elsewhere'
+                        : DOWNLOAD_FIELD_COPY[form.type].label}
+                    </label>
+                    <input
+                      id="wb-download"
+                      value={form.download_url}
+                      onChange={e => {
+                        updateField('download_url', e.target.value)
+                        // Typing a link means the link is the giveaway now.
+                        if (e.target.value.trim() && form.asset_id) updateField('asset_id', null)
+                      }}
+                      className={`w-full px-4 py-2.5 bg-white border-3 text-sm font-mono focus:outline-none focus:bg-brutal-yellow/10 placeholder:text-brutal-muted ${errors.download_url ? 'border-brutal-red' : 'border-brutal-fg'}`}
+                      placeholder={DOWNLOAD_FIELD_COPY[form.type].placeholder}
+                    />
+                    {errors.download_url && <p className="text-xs font-bold text-brutal-red mt-1">{errors.download_url}</p>}
+                    <p className="text-[10px] font-bold text-brutal-muted uppercase mt-1">
+                      {form.type === 'lead_magnet' && form.asset_id
+                        ? 'Replaces the file selected above'
+                        : DOWNLOAD_FIELD_COPY[form.type].help}
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
