@@ -168,8 +168,13 @@ export default function DemoPage() {
                   ))}
                 </div>
 
-                {/* GeoFilter renders its own titled toggle - no wrapper title needed */}
-                <GeoFilter onChange={() => {}} onClear={() => {}} active={false} subscribers={DEMO_GEO_SUBSCRIBERS} />
+                {/*
+                  Open on arrival. This page exists to show the product, and the
+                  map is the most showable thing on it - rendering it collapsed
+                  behind a disclosure meant the visitor had to guess there was
+                  anything worth clicking. Nothing else on this page hides.
+                */}
+                <GeoFilter defaultOpen onChange={() => {}} onClear={() => {}} active={false} subscribers={DEMO_GEO_SUBSCRIBERS} />
 
                 <Panel title="Recent Campaigns">
                   <div className="divide-y-2 divide-brutal-fg/10">

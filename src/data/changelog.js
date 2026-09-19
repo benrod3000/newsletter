@@ -27,6 +27,19 @@ export const CHANGELOG = [
       date: 'September 19, 2026',
       items: [
         {
+          title: 'The location filter no longer hides behind a dropdown',
+          body: 'The map is one of the most useful things in Contacts and it was tucked inside a collapsed bar that looked like an advanced setting, so most people never found it. It now says what it does and opens on its own whenever a location filter is already applied.',
+          list: [
+            'Coming back to Contacts with a radius applied shows the map, instead of a filtered list with no visible reason.',
+            'The demo page shows the map straight away rather than making you go looking for it.',
+          ],
+        },
+      ],
+    },
+    {
+      date: 'September 19, 2026',
+      items: [
+        {
           title: 'Upload the file you are giving away, instead of hosting it yourself',
           body: 'A lead magnet used to need a link to a file you hosted somewhere else, which meant a Drive share or your own site, and a broken link only showed up for the person who had already handed over their email address. You can now upload the file to your library and pick it when building the widget.',
           list: [

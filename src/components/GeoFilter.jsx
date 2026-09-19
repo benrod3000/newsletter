@@ -71,12 +71,30 @@ function AnimatedStat({ value }) {
  *   onPreview?: ({ open, locations }) => void // the draft selection, on every
  *                  // change. `onChange` only fires on apply, so without this the
  *                  // parent cannot fetch a count for a radius still being dragged.
+ *   defaultOpen?: boolean // start expanded. For places whose job is to show the
+ *                  // map rather than to offer it, like the demo page.
  */
 export default function GeoFilter({
   onChange, onClear, loading = false, active = false, subscribers = [], total = null,
   clusters = null, inRange = null, summaryLoading = false, onPreview = null,
+  defaultOpen = false,
 }) {
-  const [open, setOpen] = useState(false)
+  /*
+   * Starts expanded when a filter is already in force.
+   *
+   * `locations` and `applied` rehydrate from localStorage, so coming back to
+   * this page with a radius applied used to show a filtered table of 500 people
+   * above a collapsed bar - the control explaining why was one click away, and
+   * nothing on screen connected the two. If the filter is doing something, it
+   * should be visible doing it.
+   */
+  const [open, setOpen] = useState(() => {
+    if (defaultOpen) return true
+    try {
+      const saved = localStorage.getItem(GEO_FILTER_KEY)
+      return saved ? JSON.parse(saved).applied === true : false
+    } catch { return false }
+  })
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState([])
   const [searching, setSearching] = useState(false)
@@ -318,6 +336,28 @@ export default function GeoFilter({
   const hasPlottable = plottedClusters
     ? plottedClusters.length > 0
     : subscribers.some(s => s.latitude && s.longitude)
+
+  /*
+   * What the closed teaser can claim about this workspace, for free.
+   *
+   * `clusters` only arrives once the panel has been opened, by design - the
+   * summary query is the thing the closed state exists to avoid. So the mapped
+   * figure is used when it happens to be known, and otherwise this falls back to
+   * the table's own total, which the page has already fetched. It says
+   * "contacts" rather than "contacts mapped" in that case, because a contact
+   * without coordinates is not on the map and promising otherwise would be the
+   * same overstatement the in-range count used to make.
+   */
+  const mappedLabel = (() => {
+    if (plottedClusters?.length) {
+      const plotted = plottedClusters.reduce((sum, c) => sum + (c.total ?? 0), 0)
+      return `${plotted.toLocaleString()} contact${plotted === 1 ? '' : 's'} mapped`
+    }
+    if (typeof total === 'number' && total > 0) {
+      return `${total.toLocaleString()} contact${total === 1 ? '' : 's'} to filter`
+    }
+    return null
+  })()
 
   const maxRadius = locations.length ? Math.max(...locations.map(l => l.radius ?? 10)) : 0
   // Derived (not synced) so removing a location can never leave a stale index.
@@ -588,21 +628,58 @@ export default function GeoFilter({
   // ─── Render ───
   return (
     <div className="border-3 border-brutal-fg bg-white">
-      {/* Toggle button */}
-      <button
-        onClick={() => setOpen(!open)}
-        className={`w-full flex items-center gap-2.5 px-4 py-3 text-xs font-bold uppercase tracking-wider transition ${
-          active || applied
-            ? 'bg-brutal-green text-white border-brutal-fg'
-            : 'bg-white text-brutal-fg hover:bg-brutal-yellow/20'
-        }`}
-      >
-        <MapPin size={14} />
-        {applied && locations.length > 0
-          ? `${locations[0].city || 'Pin'}, ${locations[0].state || '-'}${locations.length > 1 ? ` +${locations.length - 1} more` : ''} · ${locations[0]?.radius ?? 10} mi`
-          : 'Radius filter'}
-        <span className="ml-auto text-[10px] opacity-60">{open ? '▲' : '▼'}</span>
-      </button>
+      {/*
+        Closed with nothing applied, this is a pitch rather than a control.
+
+        It used to be a white bar reading "Radius filter" with a small triangle,
+        which is the same shape as every other form control on the page - so the
+        most distinctive thing in the product looked like an advanced-options
+        disclosure and went unopened. Nothing about it suggested a map.
+
+        It stays closed by default even so, because open costs about 600px above
+        the contacts table plus Leaflet, tiles and a summary query on every
+        visit, and most sessions came here to find one person. The fix for
+        discoverability is to say what is behind the door, not to remove it.
+      */}
+      {!open && !applied && !active ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="w-full text-left px-4 py-4 bg-white hover:bg-brutal-yellow/10 transition group"
+        >
+          <div className="flex items-start gap-3">
+            <span className="shrink-0 border-3 border-brutal-fg bg-brutal-green text-white p-1.5">
+              <MapPin size={16} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase tracking-wider text-brutal-fg">Filter by location</p>
+              <p className="text-[11px] text-brutal-muted mt-0.5 normal-case">
+                Draw a radius around any city and see who is inside it.
+              </p>
+              {mappedLabel && (
+                <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-green mt-1.5">{mappedLabel}</p>
+              )}
+            </div>
+            <span className="shrink-0 self-center px-3 py-2 border-3 border-brutal-fg bg-brutal-yellow text-brutal-fg text-[10px] font-bold uppercase tracking-wider group-hover:shadow-brutal transition">
+              Open the map
+            </span>
+          </div>
+        </button>
+      ) : (
+        <button
+          onClick={() => setOpen(!open)}
+          className={`w-full flex items-center gap-2.5 px-4 py-3 text-xs font-bold uppercase tracking-wider transition ${
+            active || applied
+              ? 'bg-brutal-green text-white border-brutal-fg'
+              : 'bg-white text-brutal-fg hover:bg-brutal-yellow/20'
+          }`}
+        >
+          <MapPin size={14} />
+          {applied && locations.length > 0
+            ? `${locations[0].city || 'Pin'}, ${locations[0].state || '-'}${locations.length > 1 ? ` +${locations.length - 1} more` : ''} · ${locations[0]?.radius ?? 10} mi`
+            : 'Filter by location'}
+          <span className="ml-auto text-[10px] opacity-60">{open ? '▲' : '▼'}</span>
+        </button>
+      )}
 
       <div ref={panelRef} style={{ height: '0px', overflow: 'hidden' }} className="border-t-3 border-brutal-fg">
         <div className="p-5 sm:p-6 space-y-5">
