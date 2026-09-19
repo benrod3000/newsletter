@@ -104,8 +104,25 @@ export default function AssetPicker({ workspaceId, value = null, onChange, disab
         }
         xhr.onload = () => (xhr.status >= 200 && xhr.status < 300
           ? resolve()
-          : reject(new Error(`Upload failed (${xhr.status})`)))
-        xhr.onerror = () => reject(new Error('Upload failed'))
+          : reject(new Error(
+              // Storage rejects a type the bucket does not allow with a 400,
+              // which is worth saying plainly rather than as a status code.
+              xhr.status === 400
+                ? 'Storage rejected that file type.'
+                : `Upload failed (${xhr.status}).`
+            )))
+        /*
+         * onerror is a network-level failure, not an HTTP error - the request
+         * never got an answer. The usual cause is the page's own
+         * Content-Security-Policy: this PUT goes to the storage origin rather
+         * than to our API, so the storage host has to be in `connect-src` or
+         * the browser blocks it before it leaves the page. That is exactly what
+         * happened on first release, and "Upload failed" gave no way to tell.
+         */
+        xhr.onerror = () => reject(new Error(
+          'Could not reach file storage. If this keeps happening the storage host may be blocked by the page security policy.'
+        ))
+        xhr.ontimeout = () => reject(new Error('The upload timed out.'))
         xhr.send(file)
       })
 
