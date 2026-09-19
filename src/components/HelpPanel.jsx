@@ -78,6 +78,17 @@ const PAGE_HELP = {
     ],
     next: 'Capture forms are the fastest way to grow your audience. Put one on your homepage.',
   },
+  '/dashboard/media': {
+    title: 'Media',
+    what: 'Everything you have uploaded. A file here can be handed out by a capture form in exchange for an email address.',
+    actions: [
+      { label: 'Upload a file', tip: 'PDF, images, audio, epub, zip, Word, text or CSV, up to 10 MB each' },
+      { label: 'Give one away', tip: 'Build a lead magnet capture form and pick the file there, instead of pasting a link to somewhere else' },
+      { label: 'See what is in use', tip: 'Each file lists the capture forms handing it out. Those cannot be deleted until nothing points at them' },
+      { label: 'Free up space', tip: 'Delete anything no form is using. The bar at the top shows how much room is left' },
+    ],
+    next: 'A file hosted here cannot break the way a shared Drive link can once its permissions change.',
+  },
   '/dashboard/settings': {
     title: 'Settings',
     what: 'Configure your workspace. Set up your email provider, toggle automations, manage your team, and enable sandbox mode for testing.',

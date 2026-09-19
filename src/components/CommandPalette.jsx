@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Send, Users, PieChart, BarChart3, Settings, Globe, Shield, Mail } from 'lucide-react'
+import { LayoutDashboard, Send, Users, PieChart, BarChart3, Settings, Globe, Shield, Mail, Image } from 'lucide-react'
 import { useCommandAction } from './useCommandAction'
 
 const COMMANDS = [
@@ -12,6 +12,7 @@ const COMMANDS = [
     { id: 'analytics', label: 'Analytics', description: 'Track opens, clicks, and subscriber growth over time.', keywords: ['stats', 'open rate', 'click rate', 'growth', 'chart', 'see who opened', 'report'], shortcut: 'g a', action: '/dashboard/analytics', icon: BarChart3 },
     { id: 'deliverability', label: 'Deliverability', description: 'Check DNS health, bounce rates, and email reputation.', keywords: ['dns', 'spf', 'dkim', 'dmarc', 'bounce', 'spam', 'complaint', 'reputation', 'health', 'delivery'], shortcut: 'g v', action: '/dashboard/deliverability', icon: Shield },
     { id: 'widgets', label: 'Capture Forms', description: 'Embed a signup form on your website to grow your audience.', keywords: ['form', 'website', 'sign up', 'lead magnet', 'embed', 'collect', 'form on website', 'widget'], shortcut: 'g w', action: '/dashboard/widgets', icon: Globe },
+    { id: 'media', label: 'Media', description: 'Files you have uploaded to give away from a capture form.', keywords: ['file', 'upload', 'pdf', 'image', 'audio', 'mp3', 'download', 'asset', 'library', 'lead magnet', 'giveaway'], shortcut: 'g m', action: '/dashboard/media', icon: Image },
     { id: 'settings', label: 'Settings', description: 'Manage your account, automations, email provider, and team.', keywords: ['account', 'password', 'automation', 'branding', 'change', 'configure', 'team', 'provider', 'sandbox'], shortcut: 'g e', action: '/dashboard/settings', icon: Settings },
   ]},
   { group: 'Actions', items: [
