@@ -52,6 +52,7 @@ export default function MediaPage() {
 
   const [assets, setAssets] = useState([])
   const [usage, setUsage] = useState({ used: 0, quota: 0 })
+  const [egress, setEgress] = useState({ used: 0, quota: 0 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [uploading, setUploading] = useState(false)
@@ -69,6 +70,10 @@ export default function MediaPage() {
       const payload = data?.data ?? data ?? {}
       setAssets(payload.assets ?? [])
       setUsage({ used: payload.used_bytes ?? 0, quota: payload.quota_bytes ?? 0 })
+      setEgress({
+        used: payload.estimated_egress_bytes ?? 0,
+        quota: payload.egress_quota_bytes ?? 0,
+      })
       setError(null)
     } catch (err) {
       console.error('Failed to load media:', err)
@@ -162,6 +167,8 @@ export default function MediaPage() {
 
   const visible = kindFilter ? assets.filter(a => describeMime(a.mime).kind === kindFilter) : assets
   const pct = usage.quota ? Math.min(100, Math.round((usage.used / usage.quota) * 100)) : 0
+  const egressPct = egress.quota ? Math.min(100, Math.round((egress.used / egress.quota) * 100)) : 0
+  const totalClaims = assets.reduce((sum, a) => sum + (a.claims ?? 0), 0)
 
   return (
     <div className="space-y-6">
@@ -201,24 +208,73 @@ export default function MediaPage() {
         </div>
       </div>
 
-      {/* Quota */}
-      <div className="border-3 border-brutal-fg bg-white p-4">
-        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-2">
-          <span>{formatBytes(usage.used)} of {formatBytes(usage.quota)} used</span>
-          <span className={pct >= 90 ? 'text-brutal-red' : 'text-brutal-muted'}>
-            {assets.length} {assets.length === 1 ? 'file' : 'files'}
-          </span>
+      {/*
+        Two meters, because they answer different questions and only one of them
+        can take the site down.
+
+        Storage is "how much room is left" and is enforced at upload. Bandwidth
+        is what giveaway downloads spend, it is shared with the database that
+        serves the app, and nothing here can enforce it - a subscriber clicking a
+        link is not something the library gets to refuse. Showing it is the whole
+        point: it is the only warning that arrives before the platform starts
+        answering 402.
+      */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="border-3 border-brutal-fg bg-white p-4">
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-2">
+            <span>Storage</span>
+            <span className={pct >= 90 ? 'text-brutal-red' : 'text-brutal-muted'}>
+              {assets.length} {assets.length === 1 ? 'file' : 'files'}
+            </span>
+          </div>
+          <p className="font-heading text-2xl leading-none mb-2">
+            {formatBytes(usage.used)} <span className="text-sm text-brutal-muted">of {formatBytes(usage.quota)}</span>
+          </p>
+          <div className="h-2.5 border-2 border-brutal-fg bg-brutal-bg">
+            <div
+              className={`h-full transition-all ${pct >= 90 ? 'bg-brutal-red' : 'bg-brutal-green'}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mt-2">
+            Up to 10 MB per file
+          </p>
         </div>
-        <div className="h-2.5 border-2 border-brutal-fg bg-brutal-bg">
-          <div
-            className={`h-full transition-all ${pct >= 90 ? 'bg-brutal-red' : 'bg-brutal-green'}`}
-            style={{ width: `${pct}%` }}
-          />
+
+        <div className="border-3 border-brutal-fg bg-white p-4">
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-2">
+            <span>Downloads this month</span>
+            <span className={egressPct >= 80 ? 'text-brutal-red' : 'text-brutal-muted'}>
+              {totalClaims.toLocaleString()} {totalClaims === 1 ? 'claim' : 'claims'}
+            </span>
+          </div>
+          <p className="font-heading text-2xl leading-none mb-2">
+            {/*
+              "Up to", because this is claims multiplied by file size: an upper
+              bound rather than a measurement. Repeat downloads can come from
+              CDN cache and a recorded click is not a finished download.
+            */}
+            <span className="text-sm text-brutal-muted">up to </span>
+            {formatBytes(egress.used)}
+            <span className="text-sm text-brutal-muted"> of {formatBytes(egress.quota)}</span>
+          </p>
+          <div className="h-2.5 border-2 border-brutal-fg bg-brutal-bg">
+            <div
+              className={`h-full transition-all ${egressPct >= 80 ? 'bg-brutal-red' : 'bg-brutal-green'}`}
+              style={{ width: `${egressPct}%` }}
+            />
+          </div>
+          <p className={`text-[10px] font-bold uppercase tracking-wider mt-2 ${egressPct >= 80 ? 'text-brutal-red' : 'text-brutal-muted'}`}>
+            {egressPct >= 80
+              ? 'Close to the monthly limit - link large files elsewhere'
+              : 'Shared with the rest of Veloce'}
+          </p>
         </div>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted mt-2">
-          Up to 10 MB per file. PDF, images, audio, epub, zip, Word, text or CSV.
-        </p>
       </div>
+
+      <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted -mt-3">
+        PDF, images, audio, epub, zip, Word, text or CSV
+      </p>
 
       {uploading && (
         <div className="h-1.5 border-2 border-brutal-fg bg-brutal-bg">
@@ -297,6 +353,7 @@ export default function MediaPage() {
                   <p className="text-xs font-bold break-words" title={asset.filename}>{asset.filename}</p>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-brutal-muted">
                     {label} · {formatBytes(asset.bytes)}
+                    {asset.claims > 0 && ` · ${asset.claims.toLocaleString()} claimed`}
                   </p>
 
                   {usedBy.length > 0 && (

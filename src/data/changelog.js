@@ -27,6 +27,15 @@ export const CHANGELOG = [
       date: 'September 20, 2026',
       items: [
         {
+          title: 'See how much bandwidth your giveaways are using',
+          body: 'Media now shows two meters instead of one. Storage is how much room your files take up. Downloads is what those files cost to hand out, which is the number that matters if a giveaway takes off, and each file shows how many times it has been claimed this month.',
+        },
+      ],
+    },
+    {
+      date: 'September 20, 2026',
+      items: [
+        {
           title: 'Media: see everything you have uploaded in one place',
           body: 'Uploaded files were only visible inside the capture form builder, which meant you could see them at the moment you were about to use one and nowhere else. There is now a Media page under Growth.',
           list: [
